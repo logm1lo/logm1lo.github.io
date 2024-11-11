@@ -51,7 +51,12 @@ body {
     text-align: center;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     width: 90%;
-    max-width: 400px; /* Limits form width */
+    max-width: 400px;
+}
+
+.wish-form h2 {
+    margin-top: 0;
+    font-size: 20px;
 }
 
 .wish-form input {
