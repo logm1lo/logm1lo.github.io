@@ -27,6 +27,63 @@
 
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-database-compat.js"></script>
-    <script src="script.js"></script>
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBinhf3-PpbAeQaQKToNnLHBBBxVQeLbp4",
+            authDomain: "yayy-93c45.firebaseapp.com",
+            databaseURL: "https://yayy-93c45.firebaseio.com",
+            projectId: "yayy-93c45",
+            storageBucket: "yayy-93c45.appspot.com",
+            messagingSenderId: "281901593072",
+            appId: "1:281901593072:web:614dff92e64d25669c6d35",
+            measurementId: "G-JB3PWXQ56M"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // Show form when "Send a Wish" button is clicked
+        document.getElementById("wishButton").addEventListener("click", () => {
+            document.getElementById("wishFormContainer").style.display = "flex";
+        });
+
+        // Close form when "Close" button is clicked
+        document.getElementById("closeFormButton").addEventListener("click", () => {
+            document.getElementById("wishFormContainer").style.display = "none";
+        });
+
+        // Submit wish and close form
+        document.getElementById("submitWishButton").addEventListener("click", () => {
+            const name = document.getElementById("nameInput").value;
+            const wish = document.getElementById("wishInput").value;
+
+            if (name && wish) {
+                const wishData = { 
+                    name, 
+                    text: wish, 
+                    x: Math.random() * window.innerWidth, 
+                    y: Math.random() * window.innerHeight 
+                };
+                
+                db.ref("wishes").push(wishData);
+                displayWish(wishData); // Display the wish on the screen
+                document.getElementById("wishFormContainer").style.display = "none"; // Hide form
+            } else {
+                alert("Please enter both your name and your wish.");
+            }
+        });
+
+        // Function to display the wish on the screen
+        function displayWish(wishData) {
+            const wishContainer = document.getElementById("wishes-container");
+            const wishElement = document.createElement("div");
+            wishElement.className = "wish";
+            wishElement.style.top = `${wishData.y}px`;
+            wishElement.style.left = `${wishData.x}px`;
+            wishElement.innerText = `${wishData.name}: ${wishData.text}`;
+            wishContainer.appendChild(wishElement);
+        }
+    </script>
 </body>
 </html>
