@@ -12,12 +12,16 @@
         <div id="hearts-container"></div>
         <div id="wishes-container"></div>
     </div>
+    <button id="wishButton">Send a Wish</button>
 
-    <!-- Form for entering name and wish -->
-    <div class="wish-form">
-        <input type="text" id="nameInput" placeholder="Your Name" required>
-        <input type="text" id="wishInput" placeholder="Your Wish" required>
-        <button id="submitWishButton">Send a Wish</button>
+    <!-- Form popup overlay for entering name and wish -->
+    <div id="wishFormContainer" class="wish-form-container">
+        <div class="wish-form">
+            <input type="text" id="nameInput" placeholder="Your Name" required>
+            <input type="text" id="wishInput" placeholder="Your Wish" required>
+            <button id="submitWishButton">Submit Wish</button>
+            <button id="closeFormButton">Close</button>
+        </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
@@ -37,7 +41,17 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Handling the wish submission
+        // Show form when "Send a Wish" button is clicked
+        document.getElementById("wishButton").addEventListener("click", () => {
+            document.getElementById("wishFormContainer").style.display = "flex";
+        });
+
+        // Close form when "Close" button is clicked
+        document.getElementById("closeFormButton").addEventListener("click", () => {
+            document.getElementById("wishFormContainer").style.display = "none";
+        });
+
+        // Submit wish and close form
         document.getElementById("submitWishButton").addEventListener("click", () => {
             const name = document.getElementById("nameInput").value;
             const wish = document.getElementById("wishInput").value;
@@ -52,6 +66,7 @@
                 
                 db.ref("wishes").push(wishData);
                 displayWish(wishData); // Display the wish on the screen
+                document.getElementById("wishFormContainer").style.display = "none"; // Hide form
             } else {
                 alert("Please enter both your name and your wish.");
             }
