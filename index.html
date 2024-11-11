@@ -14,20 +14,31 @@
     </div>
     <button id="wishButton">Send a Wish</button>
     
-    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-database.js"></script>
+    <!-- Updated Firebase library links with `-compat` versions -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-database-compat.js"></script>
+    
     <script>
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBinhf3-PpbAeQaQKToNnLHBBBxVQeLbp4",
             authDomain: "yayy-93c45.firebaseapp.com",
+            databaseURL: "https://yayy-93c45.firebaseio.com",
             projectId: "yayy-93c45",
-            storageBucket: "yayy-93c45.firebasestorage.app",
+            storageBucket: "yayy-93c45.appspot.com",
             messagingSenderId: "281901593072",
             appId: "1:281901593072:web:614dff92e64d25669c6d35",
             measurementId: "G-JB3PWXQ56M"
         };
+        
+        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
+        
+        // Get a reference to the database
+        const db = firebase.database();
     </script>
+
+    <!-- Your main JavaScript file -->
     <script src="script.js"></script>
 </body>
 </html>
