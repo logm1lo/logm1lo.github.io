@@ -18,23 +18,25 @@ body {
 }
 
 /* Position the "Send a Wish" button at the top of the poster */
+/* Position the "Send a Wish" button at the top of the poster */
 #wishButton {
     position: absolute;
     top: 10px; /* Distance from the top of the poster */
     left: 50%; /* Center horizontally */
     transform: translateX(-50%); /* Center button perfectly */
-    padding: 10px 20px;
-    font-size: 16px;
+    padding: 20px 40px; /* Increase padding for a bigger button */
+    font-size: 24px; /* Larger font size */
     background-color: #ff6b6b; /* Button color */
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px; /* Rounded corners */
     cursor: pointer;
     z-index: 10; /* Ensure it's above the poster */
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
     transition: background-color 0.3s ease;
 }
 
+/* Hover effect for the button */
 #wishButton:hover {
     background-color: #ff3d3d;
 }
@@ -44,6 +46,7 @@ body {
     outline: none;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
 }
+
 
 #poster {
     width: 80%;
