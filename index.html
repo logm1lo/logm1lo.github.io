@@ -52,7 +52,6 @@
         .then(text => {
             // Process the content to create the array
             offensiveWords = parseOffensiveWords(text);
-            console.log("Offensive words loaded:", offensiveWords); // Debugging line
         })
         .catch(error => {
             console.error("Error fetching the offensive words list:", error);
@@ -106,17 +105,19 @@
 
     // Function to check if the wish contains offensive words
     function containsOffensiveWords(wishText) {
-        // Loop through the array and check if any offensive word is in the wish text
-        for (let word of offensiveWords) {
-            // Use word boundaries and case-insensitive matching to ensure proper checking
-            const regex = new RegExp(`\\b${word.toLowerCase()}\\b`, 'i');
-            if (regex.test(wishText)) {
-                console.log(`Offensive word found: ${word}`); // Debugging line
-                return true;
-            }
+    // Convert wish text to lowercase and split into words using regex to handle spaces and punctuation
+    const words = wishText.toLowerCase().split(/\b\W+\b/);
+    
+    // Check each word against the offensiveWords Set
+    for (let word of words) {
+        if (offensiveWords.has(word)) {
+            console.log(`Offensive word found: ${word}`); // Debugging line
+            return true;
         }
-        return false;
     }
+    return false;
+}
+
 
     // Function to display the wish on the screen
     function displayWish(wishData) {
