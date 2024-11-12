@@ -96,14 +96,14 @@
 
         // Function to check if the wish contains offensive words
         function containsOffensiveWords(wishText) {
-            if (!offensiveWords.length) {
-                console.warn("Offensive words list is empty. Check the loading process.");
-                return false;
-            }
-            
-            const words = wishText.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").match(/\b\w+\b/g) || [];
-            for (let word of words) {
-                if (offensiveWords.includes(word)) {
+            const normalizedWishText = wishText
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "");
+
+            for (const word of offensiveWords) {
+                const wordRegex = new RegExp(`\\b${word}\\b`, "i"); // Match whole word only
+                if (wordRegex.test(normalizedWishText)) {
                     console.log(`Offensive word found: ${word}`); // Debugging line
                     return true;
                 }
