@@ -45,7 +45,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Fetch the list of offensive words
+        // Fetch the list of offensive words (no longer needed for this version)
         fetch("https://raw.githubusercontent.com/logm1lo/logm1lo.github.io/main/vn_offensive_words_other_formats.txt")
             .then(response => response.text())
             .then(text => {
@@ -74,11 +74,6 @@
             const wish = document.getElementById("wishInput").value.trim();
 
             if (name && wish) {
-                if (containsOffensiveWords(wish)) {
-                    alert("Your wish contains inappropriate content. Please edit and try again.");
-                    return;
-                }
-
                 const wishData = {
                     name,
                     text: wish,
@@ -93,22 +88,6 @@
                 alert("Please enter both your name and your wish.");
             }
         });
-
-        // Function to check if the wish contains offensive words
-        function containsOffensiveWords(wishText) {
-            // Trim leading/trailing spaces and convert to lowercase for case-insensitive comparison
-            const normalizedWishText = wishText.trim().toLowerCase();
-
-            // Check if any offensive word appears in the wish text
-            for (const word of offensiveWords) {
-                if (normalizedWishText.includes(word.toLowerCase())) {
-                    console.log(`Offensive word found: ${word}`); // Debugging line
-                    return true;
-                }
-            }
-            return false;
-        }
-
 
         function displayWish(wishData) {
             const wishContainer = document.getElementById("wishes-container");
