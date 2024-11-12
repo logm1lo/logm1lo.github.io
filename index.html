@@ -32,6 +32,20 @@
     // Variable to store the offensive words array
     let offensiveWords = [];
 
+    const firebaseConfig = {
+        apiKey: "AIzaSyBinhf3-PpbAeQaQKToNnLHBBBxVQeLbp4",
+        authDomain: "yayy-93c45.firebaseapp.com",
+        databaseURL: "https://yayy-93c45-default-rtdb.asia-southeast1.firebasedatabase.app", 
+        projectId: "yayy-93c45",
+        storageBucket: "yayy-93c45.appspot.com",
+        messagingSenderId: "281901593072",
+        appId: "1:281901593072:web:614dff92e64d25669c6d35",
+        measurementId: "G-JB3PWXQ56M"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+
+
     // Fetch the list of offensive words from the GitHub link
     fetch("https://raw.githubusercontent.com/logm1lo/logm1lo.github.io/main/vn_offensive_words_other_formats.txt")
         .then(response => response.text())
