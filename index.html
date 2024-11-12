@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teacher's Day Poster</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Google Fonts for Roboto -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="poster-container">
@@ -25,7 +27,6 @@
         </div>
     </div>
 
-    <!-- Firebase SDK and app script -->
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-database-compat.js"></script>
     <script>
@@ -41,8 +42,8 @@
             measurementId: "G-JB3PWXQ56M"
         };
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
+
         const db = firebase.database();
 
         // Show form when "Send a Wish" button is clicked
@@ -67,23 +68,16 @@
                     x: Math.random() * window.innerWidth, 
                     y: Math.random() * window.innerHeight 
                 };
-
-                db.ref("wishes").push(wishData)
-                    .then(() => {
-                        displayWish(wishData); // Display the wish on the screen
-                        document.getElementById("wishFormContainer").style.display = "none"; // Hide form
-                        document.getElementById("nameInput").value = ""; // Clear form inputs
-                        document.getElementById("wishInput").value = "";
-                    })
-                    .catch((error) => {
-                        console.error("Error saving wish to Firebase:", error);
-                    });
+                
+                db.ref("wishes").push(wishData);
+                displayWish(wishData); // Display the wish on the screen
+                document.getElementById("wishFormContainer").style.display = "none"; // Hide form
             } else {
                 alert("Please enter both your name and your wish.");
             }
         });
 
-        // Function to display the wish on the screen
+        // Function to display the wish on the screen with floating animation
         function displayWish(wishData) {
             const wishContainer = document.getElementById("wishes-container");
             const wishElement = document.createElement("div");
@@ -92,41 +86,7 @@
             wishElement.style.left = `${wishData.x}px`;
             wishElement.innerText = `${wishData.name}: ${wishData.text}`;
             wishContainer.appendChild(wishElement);
-
-            // Fade out the wish after a few seconds
-            setTimeout(() => {
-                wishElement.style.opacity = 0;
-                setTimeout(() => wishElement.remove(), 2000);
-            }, 5000);
         }
-
-        // Heart display and Firebase integration
-        document.getElementById("poster").addEventListener("click", () => {
-            const x = Math.random() * window.innerWidth;
-            const y = Math.random() * window.innerHeight;
-            addHeart(x, y);
-            db.ref("hearts").push({ x, y });  // Firebase write for hearts
-        });
-
-
-        function addHeart(x, y) {
-            const heart = document.createElement("div");
-            heart.className = "heart";
-            heart.style.left = `${x}px`;
-            heart.style.top = `${y}px`;
-            heart.innerText = "❤️";
-            document.getElementById("hearts-container").appendChild(heart);
-            setTimeout(() => heart.remove(), 3000); // Heart disappears after 3 seconds
-        }
-
-        // Listen for new hearts and wishes from Firebase
-        db.ref("hearts").on("child_added", (data) => {
-            addHeart(data.val().x, data.val().y);
-        });
-
-        db.ref("wishes").on("child_added", (data) => {
-            displayWish(data.val());
-        });
     </script>
 </body>
 </html>
