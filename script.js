@@ -53,7 +53,9 @@ document.getElementById("poster").addEventListener("click", () => {
 db.ref("hearts").on("child_added", (data) => {
     const heart = data.val();
     addHeart(heart.x, heart.y);
+    console.log("Heart retrieved from database:", heart);
 });
+
 
 db.ref("wishes").on("child_added", (data) => {
     displayWish(data.val(), data.key);
