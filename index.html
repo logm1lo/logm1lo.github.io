@@ -77,20 +77,6 @@
         }
     });
 
-    // Function to check if the wish contains offensive words
-    function containsOffensiveWords(wishText) {
-        // Loop through the array and check if any offensive word is in the wish text
-        for (let word of offensiveWords) {
-            // Use word boundaries and case-insensitive matching to ensure proper checking
-            const regex = new RegExp(`\\b${word.toLowerCase()}\\b`, 'i');
-            if (regex.test(wishText)) {
-                console.log(`Offensive word found: ${word}`); // Debugging line
-                return true;
-            }
-        }
-        return false;
-    }
-
     // Function to display the wish on the screen
     function displayWish(wishData) {
         const wishContainer = document.getElementById("wishes-container");
