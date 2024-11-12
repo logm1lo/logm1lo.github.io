@@ -94,11 +94,18 @@
 
     // Heart animation when clicking anywhere on the document
     document.addEventListener('click', function(event) {
+        const poster = document.querySelector('.poster-container'); // Get the poster container element
+        const rect = poster.getBoundingClientRect(); // Get the position of the poster on the page
+
+        // Calculate the position of the mouse relative to the poster container
+        const mouseX = event.clientX - rect.left;
+        const mouseY = event.clientY - rect.top;
+
         const heart = document.createElement('div');
         heart.className = 'heart';
         heart.innerText = '💖';
-        heart.style.left = `${event.clientX - 15}px`; // Position heart at mouse click
-        heart.style.top = `${event.clientY - 15}px`;
+        heart.style.left = `${mouseX - 15}px`; // Center the heart on the click point
+        heart.style.top = `${mouseY - 15}px`; // Center the heart on the click point
 
         document.getElementById('hearts-container').appendChild(heart);
 
