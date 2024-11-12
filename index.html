@@ -108,15 +108,16 @@
     // Convert wish text to lowercase and split into words using regex to handle spaces and punctuation
     const words = wishText.toLowerCase().split(/\b\W+\b/);
     
-    // Check each word against the offensiveWords Set
+    // Check each word against the offensiveWords array
     for (let word of words) {
-        if (offensiveWords.has(word)) {
+        if (offensiveWords.includes(word)) { // Use .includes() for arrays
             console.log(`Offensive word found: ${word}`); // Debugging line
             return true;
         }
     }
     return false;
 }
+
 
 
     // Function to display the wish on the screen
