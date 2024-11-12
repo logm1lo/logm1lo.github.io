@@ -1,4 +1,33 @@
-<script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher's Day Poster</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="poster-container">
+        <img id="poster" src="poster.jpg" alt="Teacher's Day Poster">
+        <div id="hearts-container"></div>
+        <div id="wishes-container"></div>
+    </div>
+    <button id="wishButton">Send a Wish</button>
+
+    <!-- Popup form container -->
+    <div id="wishFormContainer" class="wish-form-container">
+        <div class="wish-form">
+            <h2>Send Your Wish</h2>
+            <input type="text" id="nameInput" placeholder="Your Name" required>
+            <input type="text" id="wishInput" placeholder="Your Wish" required>
+            <button id="submitWishButton">Submit Wish</button>
+            <button id="closeFormButton">Close</button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-database-compat.js"></script>
+    <script>
     // Firebase configuration
     const firebaseConfig = {
         apiKey: "AIzaSyBinhf3-PpbAeQaQKToNnLHBBBxVQeLbp4",
@@ -79,3 +108,5 @@
         }, 4000); // Matches heart animation duration
     });
 </script>
+</body>
+</html>
