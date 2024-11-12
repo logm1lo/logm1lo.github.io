@@ -99,10 +99,10 @@
             const normalizedWishText = wishText
                 .toLowerCase()
                 .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "");
+                .replace(/[\u0300-\u036f]/g, "");  // Normalize characters with diacritical marks
 
             for (const word of offensiveWords) {
-                const wordRegex = new RegExp(`\\b${word}\\b`, "i"); // Match whole word only
+                const wordRegex = new RegExp(`\\b${word}\\b`, "i"); // Match whole word only, case-insensitive
                 if (wordRegex.test(normalizedWishText)) {
                     console.log(`Offensive word found: ${word}`); // Debugging line
                     return true;
@@ -110,6 +110,7 @@
             }
             return false;
         }
+
 
         function displayWish(wishData) {
             const wishContainer = document.getElementById("wishes-container");
