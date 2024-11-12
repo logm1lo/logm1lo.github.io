@@ -11,10 +11,14 @@ body {
     flex-direction: column;
 }
 
-/* Container for the poster and button */
+/* Style for the poster container */
 .poster-container {
-    position: relative; /* Allow absolute positioning of the button */
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw; /* Full viewport width */
+    height: auto;
+    overflow: hidden; /* Hide any overflow */
 }
 
 /* Position the "Send a Wish" button at the top of the poster */
@@ -48,11 +52,12 @@ body {
 }
 
 
+/* Style for the poster image */
 #poster {
-    width: 80%;
-    max-width: 800px;
-    margin-bottom: 20px;
-    border-radius: 10px;
+    width: 100%;
+    max-width: 100%; /* Prevents the image from extending beyond its container */
+    height: auto;
+    object-fit: contain; /* Maintain aspect ratio while fitting within the container */
 }
 
 #wishes-container, #hearts-container {
