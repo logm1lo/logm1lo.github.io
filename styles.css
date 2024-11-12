@@ -13,13 +13,13 @@ body {
     justify-content: center;
     align-items: center;
     position: relative;
-    max-width: 600px; /* Limits width on large screens */
+    max-width: 600px;
 }
 
 #poster {
     width: 100%;
     height: auto;
-    max-width: 100%; /* Makes sure image scales */
+    max-width: 100%;
 }
 
 #wishButton {
@@ -38,7 +38,7 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    background: rgba(0, 0, 0, 0.5);
     justify-content: center;
     align-items: center;
     z-index: 10;
@@ -72,6 +72,25 @@ body {
     font-size: 16px;
     margin-top: 10px;
     cursor: pointer;
+}
+
+/* Style for hearts */
+.heart {
+    position: absolute;
+    color: red;
+    font-size: 20px;
+    animation: floatUp 1.5s ease-in-out forwards;
+}
+
+@keyframes floatUp {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-50px) scale(1.5);
+    }
 }
 
 /* Mobile Styles */
