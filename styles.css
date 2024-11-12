@@ -29,8 +29,8 @@ body {
     top: 10px; /* Distance from the top of the poster */
     left: 50%; /* Center horizontally */
     transform: translateX(-50%); /* Center button perfectly */
-    padding: 20px 40px; /* Increase padding for a bigger button */
-    font-size: 24px; /* Larger font size */
+    padding: 10px 20px; /* Increase padding for a bigger button */
+    font-size: 19px; /* Larger font size */
     background-color: #ff6b6b; /* Button color */
     color: white;
     border: none;
