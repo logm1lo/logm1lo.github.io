@@ -21,6 +21,17 @@ console.log("Firebase initialized:", firebase.apps.length > 0);
 const heartsContainer = document.getElementById("hearts-container");
 const poster = document.getElementById("poster");
 
+function displayWish(wishData) {
+    const wishContainer = document.getElementById("wishes-container");
+    const wishElement = document.createElement("div");
+    wishElement.className = "wish";
+    wishElement.style.top = `${wishData.y}px`;
+    wishElement.style.left = `${wishData.x}px`;
+    wishElement.innerText = `${wishData.name}: ${wishData.text}`;
+    wishContainer.appendChild(wishElement);
+}
+
+
 // Function to add a heart locally on the screen
 function addHeart(x, y) {
     console.log("Adding heart at:", x, y); // Debug log for heart position
