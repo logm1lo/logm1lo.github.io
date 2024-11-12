@@ -61,7 +61,7 @@ body {
     object-fit: contain; /* Maintain aspect ratio while fitting within the container */
 }
 
-#wishes-container, #hearts-container {
+#hearts-container {
     position: absolute;
     top: 0;
     left: 0;
@@ -70,6 +70,14 @@ body {
     pointer-events: none;
 }
 
+#wishes-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+}
 
 /* Wish container (cloud) */
 .wish {
@@ -79,7 +87,7 @@ body {
     border-radius: 5px;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
     font-family: 'Roboto', sans-serif;
-    font-size: 1.2rem;
+    font-size: 1.2em;
     line-height: 1.5;
     color: #333;
     max-width: 80%; /* Prevent it from going too wide */
