@@ -96,13 +96,22 @@
 
         // Function to check if the wish contains offensive words
         function containsOffensiveWords(wishText) {
+            // Trim leading/trailing spaces and normalize the text
             const normalizedWishText = wishText
+                .trim()  // Remove any leading/trailing spaces
                 .toLowerCase()
                 .normalize("NFD")
                 .replace(/[\u0300-\u036f]/g, "");  // Normalize characters with diacritical marks
 
+            // Return false if the wish is empty or just contains spaces
+            if (normalizedWishText === "") {
+                return false;
+            }
+
+            // Check each offensive word in the list
             for (const word of offensiveWords) {
-                const wordRegex = new RegExp(`\\b${word}\\b`, "i"); // Match whole word only, case-insensitive
+                // Match whole word only, case-insensitive
+                const wordRegex = new RegExp(`\\b${word}\\b`, "i");
                 if (wordRegex.test(normalizedWishText)) {
                     console.log(`Offensive word found: ${word}`); // Debugging line
                     return true;
