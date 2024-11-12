@@ -15,7 +15,7 @@
     <button id="wishButton">Send a Wish</button>
 
     <!-- Popup form container -->
-    <div id="wishFormContainer" class="wish-form-container">
+    <div id="wishFormContainer" class="wish-form-container" style="display: none;">
         <div class="wish-form">
             <h2>Send Your Wish</h2>
             <input type="text" id="nameInput" placeholder="Your Name" required>
@@ -27,156 +27,129 @@
 
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-database-compat.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bad-words@3.1.0/lib/badwords.min.js"></script>
+
     <script>
-    // Variable to store the offensive words array
-    let offensiveWords = [];
+        let offensiveWords = [];
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyBinhf3-PpbAeQaQKToNnLHBBBxVQeLbp4",
-        authDomain: "yayy-93c45.firebaseapp.com",
-        databaseURL: "https://yayy-93c45-default-rtdb.asia-southeast1.firebasedatabase.app", 
-        projectId: "yayy-93c45",
-        storageBucket: "yayy-93c45.appspot.com",
-        messagingSenderId: "281901593072",
-        appId: "1:281901593072:web:614dff92e64d25669c6d35",
-        measurementId: "G-JB3PWXQ56M"
-    };
+        const firebaseConfig = {
+            apiKey: "AIzaSyBinhf3-PpbAeQaQKToNnLHBBBxVQeLbp4",
+            authDomain: "yayy-93c45.firebaseapp.com",
+            databaseURL: "https://yayy-93c45-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "yayy-93c45",
+            storageBucket: "yayy-93c45.appspot.com",
+            messagingSenderId: "281901593072",
+            appId: "1:281901593072:web:614dff92e64d25669c6d35",
+            measurementId: "G-JB3PWXQ56M"
+        };
 
-    firebase.initializeApp(firebaseConfig);
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
+        // Fetch the list of offensive words
+        fetch("https://raw.githubusercontent.com/logm1lo/logm1lo.github.io/main/vn_offensive_words_other_formats.txt")
+            .then(response => response.text())
+            .then(text => {
+                offensiveWords = text.split(";")
+                    .map(word => word.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim())
+                    .filter(word => word !== "");
+            })
+            .catch(error => {
+                console.error("Error fetching offensive words:", error);
+            });
 
-    // Fetch the list of offensive words from the GitHub link
-    fetch("https://raw.githubusercontent.com/logm1lo/logm1lo.github.io/main/vn_offensive_words_other_formats.txt")
-        .then(response => response.text())
-        .then(text => {
-            // Process the content to create the array
-            offensiveWords = parseOffensiveWords(text);
-        })
-        .catch(error => {
-            console.error("Error fetching the offensive words list:", error);
+        // Show form when "Send a Wish" button is clicked
+        document.getElementById("wishButton").addEventListener("click", () => {
+            document.getElementById("wishFormContainer").style.display = "flex";
         });
 
-    // Function to parse the offensive words
-    function parseOffensiveWords(text) {
-        // Split by semicolon, trim quotes, and remove any empty items
-        return text.split(";").map(word => word.replace(/"/g, "").trim()).filter(word => word !== "");
-    }
+        // Close form when "Close" button is clicked
+        document.getElementById("closeFormButton").addEventListener("click", () => {
+            document.getElementById("wishFormContainer").style.display = "none";
+        });
 
-    // Firebase initialization (You should already have this part)
-    const db = firebase.database();
+        // Submit wish and close form
+        document.getElementById("submitWishButton").addEventListener("click", () => {
+            const name = document.getElementById("nameInput").value.trim();
+            const wish = document.getElementById("wishInput").value.trim();
 
-    // Show form when "Send a Wish" button is clicked
-    document.getElementById("wishButton").addEventListener("click", () => {
-        document.getElementById("wishFormContainer").style.display = "flex";
-    });
+            if (name && wish) {
+                if (containsOffensiveWords(wish)) {
+                    alert("Your wish contains inappropriate content. Please edit and try again.");
+                    return;
+                }
 
-    // Close form when "Close" button is clicked
-    document.getElementById("closeFormButton").addEventListener("click", () => {
-        document.getElementById("wishFormContainer").style.display = "none";
-    });
+                const wishData = {
+                    name,
+                    text: wish,
+                    x: Math.random() * window.innerWidth,
+                    y: Math.random() * window.innerHeight
+                };
 
-    // Submit wish and close form
-    document.getElementById("submitWishButton").addEventListener("click", () => {
-        const name = document.getElementById("nameInput").value;
-        const wish = document.getElementById("wishInput").value;
-
-        if (name && wish) {
-            // Check if the wish contains offensive words
-            if (containsOffensiveWords(wish)) {
-                alert("Your wish contains inappropriate content. Please edit and try again.");
-                return;
+                db.ref("wishes").push(wishData);
+                displayWish(wishData);
+                document.getElementById("wishFormContainer").style.display = "none";
+            } else {
+                alert("Please enter both your name and your wish.");
             }
+        });
 
-            const wishData = {
-                name,
-                text: wish,
-                x: Math.random() * window.innerWidth,
-                y: Math.random() * window.innerHeight
-            };
+        function containsOffensiveWords(wishText) {
+            const normalizedWishText = wishText.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            const words = normalizedWishText.match(/\b\w+\b/g) || [];
 
-            db.ref("wishes").push(wishData);
-            displayWish(wishData); // Display the wish on the screen
-            document.getElementById("wishFormContainer").style.display = "none"; // Hide form
-        } else {
-            alert("Please enter both your name and your wish.");
+            for (let word of words) {
+                if (offensiveWords.includes(word)) {
+                    console.log(`Offensive word found: ${word}`);
+                    return true;
+                }
+            }
+            return false;
         }
-    });
 
-    // Function to check if the wish contains offensive words
-    function containsOffensiveWords(wishText) {
-    // Convert offensive words array to lowercase, just once if needed
-    offensiveWords = offensiveWords.map(word => word.toLowerCase());
+        function displayWish(wishData) {
+            const wishContainer = document.getElementById("wishes-container");
+            const wishElement = document.createElement("div");
+            wishElement.className = "wish";
+            const padding = 20;
 
-    // Convert wishText to lowercase and split it into words, ignoring punctuation
-    const words = wishText.toLowerCase().match(/\b\w+\b/g) || [];
+            const poster = document.getElementById("poster");
+            const posterWidth = poster.offsetWidth;
+            const posterHeight = poster.offsetHeight;
 
-    // Check each word in wishText against offensiveWords
-    for (let word of words) {
-        if (offensiveWords.includes(word)) {
-            console.log(`Offensive word found: ${word}`); // Debugging line
-            return true;
+            const posX = Math.random() * (posterWidth - padding * 2) + padding;
+            const posY = Math.random() * (posterHeight - padding * 2) + padding;
+
+            wishElement.style.top = `${posY}px`;
+            wishElement.style.left = `${posX}px`;
+            wishElement.innerText = `${wishData.name}: ${wishData.text}`;
+            wishContainer.appendChild(wishElement);
         }
-    }
-    return false;
-}
 
+        db.ref("wishes").on("child_added", (snapshot) => {
+            const wishData = snapshot.val();
+            displayWish(wishData);
+        });
 
+        document.addEventListener('click', function(event) {
+            const poster = document.querySelector('.poster-container');
+            const rect = poster.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
 
-    // Function to display the wish on the screen
-    function displayWish(wishData) {
-        const wishContainer = document.getElementById("wishes-container");
-        const wishElement = document.createElement("div");
-        wishElement.className = "wish";
-        
-        // Get poster dimensions and set an inner boundary
-        const poster = document.getElementById("poster");
-        const padding = 20; // Adjust the padding value as needed
-        
-        const posterWidth = poster.offsetWidth;
-        const posterHeight = poster.offsetHeight;
-        
-        const maxX = posterWidth - padding;
-        const maxY = posterHeight - padding;
-        
-        const posX = Math.random() * (maxX - padding * 2) + padding;
-        const posY = Math.random() * (maxY - padding * 2) + padding;
-        
-        wishElement.style.top = `${posY}px`;
-        wishElement.style.left = `${posX}px`;
-        wishElement.innerText = `${wishData.name}: ${wishData.text}`;
-        
-        wishContainer.appendChild(wishElement);
-    }
+            if (mouseX >= 0 && mouseX <= rect.width && mouseY >= 0 && mouseY <= rect.height) {
+                const heart = document.createElement('div');
+                heart.className = 'heart';
+                heart.innerText = '💖';
+                heart.style.left = `${mouseX - 15}px`;
+                heart.style.top = `${mouseY - 15}px`;
 
-    // Listen for new wishes in Firebase and add them to the page
-    db.ref("wishes").on("child_added", (snapshot) => {
-        const wishData = snapshot.val();
-        displayWish(wishData);
-    });
+                document.getElementById('hearts-container').appendChild(heart);
 
-    // Heart animation when clicking anywhere on the document
-    document.addEventListener('click', function(event) {
-        const poster = document.querySelector('.poster-container'); // Get the poster container element
-        const rect = poster.getBoundingClientRect(); // Get the position of the poster on the page
-
-        // Calculate the position of the mouse relative to the poster container
-        const mouseX = event.clientX - rect.left;
-        const mouseY = event.clientY - rect.top;
-
-        const heart = document.createElement('div');
-        heart.className = 'heart';
-        heart.innerText = '💖';
-        heart.style.left = `${mouseX - 15}px`; // Center the heart on the click point
-        heart.style.top = `${mouseY - 15}px`; // Center the heart on the click point
-
-        document.getElementById('hearts-container').appendChild(heart);
-
-        // Remove heart after animation duration
-        setTimeout(() => {
-            heart.remove();
-        }, 4000); // Matches heart animation duration
-    });
+                setTimeout(() => {
+                    heart.remove();
+                }, 4000);
+            }
+        });
     </script>
 </body>
 </html>
