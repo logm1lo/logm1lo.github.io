@@ -41,12 +41,14 @@ document.getElementById("submitWishButton").addEventListener("click", () => {
     }
 });
 
-document.getElementById("poster").addEventListener("click", (event) => {
-    const x = event.clientX;
-    const y = event.clientY;
+document.getElementById("poster").addEventListener("click", () => {
+    console.log("Poster clicked, adding heart.");
+    const x = Math.random() * window.innerWidth;
+    const y = Math.random() * window.innerHeight;
     addHeart(x, y);
     db.ref("hearts").push({ x, y });
 });
+
 
 db.ref("hearts").on("child_added", (data) => {
     const heart = data.val();
