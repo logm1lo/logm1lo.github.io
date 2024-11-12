@@ -105,12 +105,15 @@
 
     // Function to check if the wish contains offensive words
     function containsOffensiveWords(wishText) {
-    // Convert wish text to lowercase and split into words using regex to handle spaces and punctuation
-    const words = wishText.toLowerCase().split(/\b\W+\b/);
-    
-    // Check each word against the offensiveWords array
+    // Convert offensive words array to lowercase, just once if needed
+    offensiveWords = offensiveWords.map(word => word.toLowerCase());
+
+    // Convert wishText to lowercase and split it into words, ignoring punctuation
+    const words = wishText.toLowerCase().match(/\b\w+\b/g) || [];
+
+    // Check each word in wishText against offensiveWords
     for (let word of words) {
-        if (offensiveWords.includes(word)) { // Use .includes() for arrays
+        if (offensiveWords.includes(word)) {
             console.log(`Offensive word found: ${word}`); // Debugging line
             return true;
         }
