@@ -45,25 +45,6 @@
 
     firebase.initializeApp(firebaseConfig);
 
-
-    // Fetch the list of offensive words from the GitHub link
-    fetch("https://raw.githubusercontent.com/logm1lo/logm1lo.github.io/main/vn_offensive_words_other_formats.txt")
-        .then(response => response.text())
-        .then(text => {
-            // Process the content to create the array
-            offensiveWords = parseOffensiveWords(text);
-            console.log("Offensive words loaded:", offensiveWords); // Debugging line
-        })
-        .catch(error => {
-            console.error("Error fetching the offensive words list:", error);
-        });
-
-    // Function to parse the offensive words
-    function parseOffensiveWords(text) {
-        // Split by semicolon, trim quotes, and remove any empty items
-        return text.split(";").map(word => word.replace(/"/g, "").trim()).filter(word => word !== "");
-    }
-
     // Firebase initialization (You should already have this part)
     const db = firebase.database();
 
@@ -83,12 +64,6 @@
         const wish = document.getElementById("wishInput").value;
 
         if (name && wish) {
-            // Check if the wish contains offensive words
-            if (containsOffensiveWords(wish)) {
-                alert("Your wish contains inappropriate content. Please edit and try again.");
-                return;
-            }
-
             const wishData = {
                 name,
                 text: wish,
