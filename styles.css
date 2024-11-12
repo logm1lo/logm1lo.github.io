@@ -76,24 +76,24 @@ body {
     cursor: pointer;
 }
 
-/* Style for hearts */
 .heart {
     position: absolute;
-    color: red;
     font-size: 24px;
-    animation: floatUp 2s ease-in-out forwards;
+    animation: floatUp 3s ease-in-out forwards;
+    pointer-events: none;
 }
 
 @keyframes floatUp {
-    0% {
+    from {
         opacity: 1;
-        transform: translateY(0) scale(1);
+        transform: translateY(0);
     }
-    100% {
+    to {
         opacity: 0;
-        transform: translateY(-50px) scale(1.5);
+        transform: translateY(-100px);
     }
 }
+
 
 /* Mobile Styles */
 @media (max-width: 600px) {
