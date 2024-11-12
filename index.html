@@ -92,17 +92,17 @@
         displayWish(wishData);
     });
 
-    // Heart animation when clicking on the poster
-    document.getElementById('poster').addEventListener('click', function(event) {
+    // Heart animation when clicking anywhere on the document
+    document.addEventListener('click', function(event) {
         const heart = document.createElement('div');
         heart.className = 'heart';
         heart.innerText = '💖';
-        heart.style.left = `${event.clientX - 15}px`; // Position heart relative to mouse click
+        heart.style.left = `${event.clientX - 15}px`; // Position heart at mouse click
         heart.style.top = `${event.clientY - 15}px`;
 
         document.getElementById('hearts-container').appendChild(heart);
 
-        // Remove heart after animation
+        // Remove heart after animation duration
         setTimeout(() => {
             heart.remove();
         }, 4000); // Matches heart animation duration
