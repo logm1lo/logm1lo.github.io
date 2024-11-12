@@ -29,19 +29,29 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-database-compat.js"></script>
     <script>
         // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBinhf3-PpbAeQaQKToNnLHBBBxVQeLbp4",
-            authDomain: "yayy-93c45.firebaseapp.com",
-            databaseURL: "https://yayy-93c45-default-rtdb.asia-southeast1.firebasedatabase.app/",
-            projectId: "yayy-93c45",
-            storageBucket: "yayy-93c45.appspot.com",
-            messagingSenderId: "281901593072",
-            appId: "1:281901593072:web:614dff92e64d25669c6d35",
-            measurementId: "G-JB3PWXQ56M"
-        };
-        
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+        // Firebase Configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyBinhf3-PpbAeQaQKToNnLHBBBxVQeLbp4",
+        authDomain: "yayy-93c45.firebaseapp.com",
+        databaseURL: "https://yayy-93c45-default-rtdb.firebaseio.com", // Ensure this matches your database URL
+        projectId: "yayy-93c45",
+        storageBucket: "yayy-93c45.appspot.com",
+        messagingSenderId: "281901593072",
+        appId: "1:281901593072:web:614dff92e64d25669c6d35",
+        measurementId: "G-JB3PWXQ56M"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+
+    // Check Firebase initialization
+    console.log("Firebase initialized:", firebase.apps.length > 0);
+
+    // Test database write to check connectivity
+    const db = firebase.database();
+    db.ref("test").set({ test: "Hello, Firebase!" })
+        .then(() => console.log("Test write to Firebase succeeded"))
+        .catch((error) => console.error("Test write to Firebase failed:", error));
+
 
         // Show form when "Send a Wish" button is clicked
         document.getElementById("wishButton").addEventListener("click", () => {
