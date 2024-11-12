@@ -66,8 +66,10 @@ function addHeart(x, y) {
     heart.style.top = `${y}px`;
     heart.innerText = "❤️";
     heartsContainer.appendChild(heart);
+    console.log("Heart added at:", x, y);
     setTimeout(() => heart.remove(), 3000);
 }
+
 
 function displayWish(wish, key) {
     const wishDiv = document.createElement("div");
