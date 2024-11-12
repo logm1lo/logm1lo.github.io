@@ -62,6 +62,7 @@ function addHeart(x, y) {
     heart.className = "heart";
     heart.style.left = `${x}px`;
     heart.style.top = `${y}px`;
+    heart.innerText = "❤️";
     heartsContainer.appendChild(heart);
     setTimeout(() => heart.remove(), 3000);
 }
