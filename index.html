@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teacher's Day Poster</title>
     <link rel="stylesheet" href="styles.css">
-    <!-- Google Fonts for Roboto -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="poster-container">
@@ -34,7 +32,7 @@
         const firebaseConfig = {
             apiKey: "AIzaSyBinhf3-PpbAeQaQKToNnLHBBBxVQeLbp4",
             authDomain: "yayy-93c45.firebaseapp.com",
-            databaseURL: "https://yayy-93c45-default-rtdb.asia-southeast1.firebasedatabase.app",
+            databaseURL: "https://yayy-93c45-default-rtdb.asia-southeast1.firebasedatabase.app", 
             projectId: "yayy-93c45",
             storageBucket: "yayy-93c45.appspot.com",
             messagingSenderId: "281901593072",
@@ -43,7 +41,6 @@
         };
 
         firebase.initializeApp(firebaseConfig);
-
         const db = firebase.database();
 
         // Show form when "Send a Wish" button is clicked
@@ -77,7 +74,7 @@
             }
         });
 
-        // Function to display the wish on the screen with floating animation
+        // Function to display the wish on the screen
         function displayWish(wishData) {
             const wishContainer = document.getElementById("wishes-container");
             const wishElement = document.createElement("div");
@@ -87,6 +84,46 @@
             wishElement.innerText = `${wishData.name}: ${wishData.text}`;
             wishContainer.appendChild(wishElement);
         }
+
+        // Fetch hearts from Firebase and display them
+        function fetchHearts() {
+            const heartsContainer = document.getElementById("hearts-container");
+            db.ref("hearts").on("child_added", (snapshot) => {
+                const heartData = snapshot.val();
+                if (heartData) {
+                    displayHeart(heartData);
+                }
+            });
+        }
+
+        // Function to display the heart on the screen
+        function displayHeart(heartData) {
+            const heartContainer = document.getElementById("hearts-container");
+            const heartElement = document.createElement("div");
+            heartElement.className = "heart";
+            heartElement.style.top = `${heartData.y}px`;
+            heartElement.style.left = `${heartData.x}px`;
+            heartElement.innerHTML = "❤️"; // You can use any heart icon here
+
+            heartContainer.appendChild(heartElement);
+        }
+
+        // Function to add heart to Firebase
+        function addHeart() {
+            const heartData = { 
+                x: Math.random() * window.innerWidth, 
+                y: Math.random() * window.innerHeight 
+            };
+            db.ref("hearts").push(heartData);
+        }
+
+        // Listen for heart button click
+        document.getElementById("wishButton").addEventListener("click", () => {
+            addHeart(); // Add heart to Firebase on button click
+        });
+
+        // Initialize hearts fetching
+        fetchHearts();
     </script>
 </body>
 </html>
