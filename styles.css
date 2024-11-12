@@ -16,9 +16,10 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 100vw; /* Full viewport width */
-    height: auto;
-    overflow: hidden; /* Hide any overflow */
+    position: relative;
+    width: 100vw;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 /* Position the "Send a Wish" button at the top of the poster */
@@ -69,15 +70,16 @@ body {
     pointer-events: none;
 }
 
+
 /* Wish container (cloud) */
 .wish {
     position: absolute;
-    background: #fff;
-    padding: 20px;
-    border-radius: 20px;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 5px;
+    border-radius: 5px;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
     font-family: 'Roboto', sans-serif;
-    font-size: 16px;
+    font-size: 0.9rem;
     line-height: 1.5;
     color: #333;
     max-width: 80%; /* Prevent it from going too wide */
