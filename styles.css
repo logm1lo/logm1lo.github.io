@@ -2,6 +2,7 @@
 body {
     font-family: 'Roboto', sans-serif;
     margin: 0;
+    padding: 0;
     background-color: #f0f0f0;
     display: flex;
     justify-content: center;
@@ -10,32 +11,28 @@ body {
     flex-direction: column;
 }
 
-/* Style for the poster container */
+/* Container for the poster and button */
 .poster-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    width: 100vw;
-    max-width: 100%;
-    overflow: hidden;
+    position: relative; /* Allow absolute positioning of the button */
+    text-align: center;
 }
 
-/* Style for the "Send a Wish" button */
+/* Position the "Send a Wish" button at the top of the poster */
+/* Position the "Send a Wish" button at the top of the poster */
 #wishButton {
     position: absolute;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 10px 20px;
-    font-size: 19px;
-    background-color: #ff6b6b; 
+    top: 10px; /* Distance from the top of the poster */
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%); /* Center button perfectly */
+    padding: 20px 40px; /* Increase padding for a bigger button */
+    font-size: 24px; /* Larger font size */
+    background-color: #ff6b6b; /* Button color */
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 8px; /* Rounded corners */
     cursor: pointer;
-    z-index: 10;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 10; /* Ensure it's above the poster */
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
     transition: background-color 0.3s ease;
 }
 
@@ -44,15 +41,20 @@ body {
     background-color: #ff3d3d;
 }
 
-/* Style for the poster image */
-#poster {
-    width: 100%;
-    max-width: 100%;
-    height: auto;
-    object-fit: contain;
+/* Optional: add a focus effect */
+#wishButton:focus {
+    outline: none;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
 }
 
-/* Container for wishes and hearts */
+
+#poster {
+    width: 80%;
+    max-width: 800px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+}
+
 #wishes-container, #hearts-container {
     position: absolute;
     top: 0;
@@ -65,19 +67,19 @@ body {
 /* Wish container (cloud) */
 .wish {
     position: absolute;
-    background-color: rgba(255, 255, 255, 0.8);
-    padding: 5px;
-    border-radius: 5px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 20px;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
     font-family: 'Roboto', sans-serif;
-    font-size: 0.8rem;
+    font-size: 16px;
     line-height: 1.5;
     color: #333;
-    max-width: 80%;
-    word-wrap: break-word;
-    white-space: normal;
+    max-width: 80%; /* Prevent it from going too wide */
+    word-wrap: break-word; /* Break long words if necessary */
+    white-space: normal; /* Allow wrapping */
     opacity: 0;
-    animation: floatCloud 5s ease-in-out forwards;
+    animation: floatCloud 5s ease-in-out forwards; /* Floating animation */
 }
 
 /* Add floating animation */
@@ -96,7 +98,6 @@ body {
     }
 }
 
-/* Show wish animation */
 .wish.show {
     opacity: 1;
     animation: floatWish 4s ease-in-out infinite;
@@ -112,6 +113,11 @@ body {
     100% {
         transform: translateY(0);
     }
+}
+/* Optional: add a hover effect for the wish (if needed) */
+.wish:hover {
+    background: #f1f1f1;
+    cursor: pointer;
 }
 
 /* Heart styling */
@@ -136,6 +142,13 @@ body {
         transform: translateY(0);
     }
 }
+
+/* Hover effect for hearts (optional) */
+.heart:hover {
+    transform: scale(1.2);
+    opacity: 1;
+}
+
 
 /* Styling for the buttons */
 button {
@@ -163,7 +176,7 @@ button:hover {
     background-color: rgba(255, 255, 255, 0.9);
     padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
     display: none;
     z-index: 10;
 }
@@ -180,6 +193,9 @@ button:hover {
     border-radius: 5px;
     border: 1px solid #ccc;
     font-size: 16px;
+}
+
+#wishInput, #nameInput {
     font-family: 'Roboto', sans-serif;
 }
 
