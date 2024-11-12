@@ -98,22 +98,27 @@ body {
     background-color: #45a049;
 }
 
-/* Floating Wish Styling */
+/* Floating Wish Styling as Clouds */
 .wish {
     position: absolute;
     font-size: 18px;
-    padding: 10px 15px;
-    background-color: #fff;
+    padding: 20px 30px;
+    background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white background */
     color: #333;
-    border-radius: 5px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    animation: floatAnimation 4s ease-in-out infinite;
+    border-radius: 50px; /* Rounded corners for cloud-like effect */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); /* Soft shadow */
+    animation: floatAnimation 6s ease-in-out infinite, cloudExpand 1s ease-in-out forwards; /* Floating + Expanding animation */
     font-family: 'Roboto', sans-serif; /* Apply Roboto to wish text */
     text-align: center;
     opacity: 0.9;
+    max-width: 300px;
+    word-wrap: break-word;
     z-index: 1;
+    transition: all 0.3s ease;
+    transform-origin: bottom;
 }
 
+/* Cloud animation - floating and expanding */
 @keyframes floatAnimation {
     0% {
         transform: translateY(0);
@@ -124,6 +129,21 @@ body {
     100% {
         transform: translateY(0);
     }
+}
+
+@keyframes cloudExpand {
+    0% {
+        transform: scale(1);
+    }
+    100% {
+        transform: scale(1.1); /* Slightly larger size for cloud effect */
+    }
+}
+
+/* Shadow effect when hover over wishes */
+.wish:hover {
+    transform: scale(1.1);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
 }
 
 /* Mobile Styles */
@@ -141,5 +161,11 @@ body {
     .wish-form button {
         font-size: 14px;
         padding: 8px 16px;
+    }
+
+    .wish {
+        font-size: 16px;
+        padding: 15px 20px;
+        max-width: 250px;
     }
 }
