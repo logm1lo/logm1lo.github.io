@@ -33,7 +33,7 @@
         const firebaseConfig = {
             apiKey: "AIzaSyBinhf3-PpbAeQaQKToNnLHBBBxVQeLbp4",
             authDomain: "yayy-93c45.firebaseapp.com",
-            databaseURL: "https://yayy-93c45-default-rtdb.asia-southeast1.firebasedatabase.app", // Ensure this matches your database URL
+            databaseURL: "https://yayy-93c45-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "yayy-93c45",
             storageBucket: "yayy-93c45.appspot.com",
             messagingSenderId: "281901593072",
@@ -67,7 +67,7 @@
                     x: Math.random() * window.innerWidth, 
                     y: Math.random() * window.innerHeight 
                 };
-                
+
                 db.ref("wishes").push(wishData)
                     .then(() => {
                         displayWish(wishData); // Display the wish on the screen
@@ -100,7 +100,29 @@
             }, 5000);
         }
 
-        // Listen for new wishes from Firebase
+        // Heart display and Firebase integration
+        document.getElementById("poster").addEventListener("click", () => {
+            const x = Math.random() * window.innerWidth;
+            const y = Math.random() * window.innerHeight;
+            addHeart(x, y);
+            db.ref("hearts").push({ x, y });  // Firebase write for hearts
+        });
+
+        function addHeart(x, y) {
+            const heart = document.createElement("div");
+            heart.className = "heart";
+            heart.style.left = `${x}px`;
+            heart.style.top = `${y}px`;
+            heart.innerText = "❤️";
+            document.getElementById("hearts-container").appendChild(heart);
+            setTimeout(() => heart.remove(), 3000); // Heart disappears after 3 seconds
+        }
+
+        // Listen for new hearts and wishes from Firebase
+        db.ref("hearts").on("child_added", (data) => {
+            addHeart(data.val().x, data.val().y);
+        });
+
         db.ref("wishes").on("child_added", (data) => {
             displayWish(data.val());
         });
