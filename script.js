@@ -43,10 +43,7 @@ document.getElementById("submitWishButton").addEventListener("click", () => {
 
 document.getElementById("poster").addEventListener("click", () => {
     console.log("Poster clicked, adding heart.");
-    const x = Math.random() * window.innerWidth;
-    const y = Math.random() * window.innerHeight;
-    addHeart(x, y);
-    db.ref("hearts").push({ x, y });
+    addHeart(Math.random() * window.innerWidth, Math.random() * window.innerHeight);
 });
 
 
