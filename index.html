@@ -27,21 +27,30 @@
 
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bad-words@3.1.0/lib/badwords.min.js"></script>
     <script>
-    // Firebase configuration
-    const firebaseConfig = {
-        apiKey: "AIzaSyBinhf3-PpbAeQaQKToNnLHBBBxVQeLbp4",
-        authDomain: "yayy-93c45.firebaseapp.com",
-        databaseURL: "https://yayy-93c45-default-rtdb.asia-southeast1.firebasedatabase.app", 
-        projectId: "yayy-93c45",
-        storageBucket: "yayy-93c45.appspot.com",
-        messagingSenderId: "281901593072",
-        appId: "1:281901593072:web:614dff92e64d25669c6d35",
-        measurementId: "G-JB3PWXQ56M"
-    };
+    // Variable to store the offensive words array
+    let offensiveWords = [];
 
-    firebase.initializeApp(firebaseConfig);
+    // Fetch the list of offensive words from the GitHub link
+    fetch("https://raw.githubusercontent.com/logm1lo/logm1lo.github.io/main/vn_offensive_words_other_formats.txt")
+        .then(response => response.text())
+        .then(text => {
+            // Process the content to create the array
+            offensiveWords = parseOffensiveWords(text);
+            console.log("Offensive words loaded:", offensiveWords); // Debugging line
+        })
+        .catch(error => {
+            console.error("Error fetching the offensive words list:", error);
+        });
 
+    // Function to parse the offensive words
+    function parseOffensiveWords(text) {
+        // Split by semicolon, trim quotes, and remove any empty items
+        return text.split(";").map(word => word.replace(/"/g, "").trim()).filter(word => word !== "");
+    }
+
+    // Firebase initialization (You should already have this part)
     const db = firebase.database();
 
     // Show form when "Send a Wish" button is clicked
@@ -60,13 +69,19 @@
         const wish = document.getElementById("wishInput").value;
 
         if (name && wish) {
-            const wishData = { 
-                name, 
-                text: wish, 
-                x: Math.random() * window.innerWidth, 
-                y: Math.random() * window.innerHeight 
+            // Check if the wish contains offensive words
+            if (containsOffensiveWords(wish)) {
+                alert("Your wish contains inappropriate content. Please edit and try again.");
+                return;
+            }
+
+            const wishData = {
+                name,
+                text: wish,
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * window.innerHeight
             };
-                
+
             db.ref("wishes").push(wishData);
             displayWish(wishData); // Display the wish on the screen
             document.getElementById("wishFormContainer").style.display = "none"; // Hide form
@@ -75,11 +90,25 @@
         }
     });
 
+    // Function to check if the wish contains offensive words
+    function containsOffensiveWords(wishText) {
+        // Loop through the array and check if any offensive word is in the wish text
+        for (let word of offensiveWords) {
+            // Use word boundaries and case-insensitive matching to ensure proper checking
+            const regex = new RegExp(`\\b${word.toLowerCase()}\\b`, 'i');
+            if (regex.test(wishText)) {
+                console.log(`Offensive word found: ${word}`); // Debugging line
+                return true;
+            }
+        }
+        return false;
+    }
+
     // Function to display the wish on the screen
     function displayWish(wishData) {
         const wishContainer = document.getElementById("wishes-container");
         const wishElement = document.createElement("div");
-        wishElement.className = "wish show";  // Add 'show' to trigger fade-in
+        wishElement.className = "wish";
         wishElement.style.top = `${wishData.y}px`;
         wishElement.style.left = `${wishData.x}px`;
         wishElement.innerText = `${wishData.name}: ${wishData.text}`;
@@ -114,6 +143,6 @@
             heart.remove();
         }, 4000); // Matches heart animation duration
     });
-</script>
+    </script>
 </body>
 </html>
