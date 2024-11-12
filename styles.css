@@ -1,171 +1,166 @@
 /* General Styles */
 body {
+    font-family: 'Roboto', sans-serif;
     margin: 0;
+    padding: 0;
+    background-color: #f0f0f0;
     display: flex;
-    flex-direction: column;
+    justify-content: center;
     align-items: center;
-    font-family: 'Roboto', sans-serif; /* Set Roboto font */
-    background-color: #f7f7f7; /* Light background for better contrast */
+    height: 100vh;
+    flex-direction: column;
 }
 
 .poster-container {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     position: relative;
-    max-width: 600px; /* Limits width on large screens */
+    text-align: center;
 }
 
 #poster {
-    width: 100%;
-    height: auto;
-    max-width: 100%; /* Makes sure image scales */
+    width: 80%;
+    max-width: 800px;
+    margin-bottom: 20px;
+    border-radius: 10px;
 }
 
-#wishButton {
-    padding: 12px 20px;
-    font-size: 16px;
-    margin: 20px;
-    cursor: pointer;
-    border-radius: 5px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    font-weight: 700;
-    transition: background-color 0.3s ease;
-}
-
-#wishButton:hover {
-    background-color: #45a049;
-}
-
-/* Popup form container */
-.wish-form-container {
-    display: none;
-    position: fixed;
+#wishes-container, #hearts-container {
+    position: absolute;
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
-    justify-content: center;
-    align-items: center;
-    z-index: 10;
-}
-
-.wish-form {
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    text-align: center;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    width: 90%;
-    max-width: 400px;
-}
-
-.wish-form h2 {
-    margin-top: 0;
-    font-size: 20px;
-    font-weight: 700;
-    color: #333;
-}
-
-.wish-form input {
-    display: block;
     width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    font-size: 16px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    box-sizing: border-box;
+    height: 100%;
+    pointer-events: none;
 }
 
-.wish-form button {
-    padding: 10px 20px;
-    font-size: 16px;
-    margin-top: 10px;
-    cursor: pointer;
-    border-radius: 5px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    transition: background-color 0.3s ease;
-}
-
-.wish-form button:hover {
-    background-color: #45a049;
-}
-
-/* Floating Wish Styling as Clouds */
+/* Styling for the wishes */
 .wish {
     position: absolute;
-    font-size: 18px;
-    padding: 20px 30px;
-    background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white background */
-    color: #333;
-    border-radius: 50px; /* Rounded corners for cloud-like effect */
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); /* Soft shadow */
-    animation: floatAnimation 6s ease-in-out infinite, cloudExpand 1s ease-in-out forwards; /* Floating + Expanding animation */
-    font-family: 'Roboto', sans-serif; /* Apply Roboto to wish text */
-    text-align: center;
-    opacity: 0.9;
-    max-width: 300px;
-    word-wrap: break-word;
-    z-index: 1;
-    transition: all 0.3s ease;
-    transform-origin: bottom;
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 10px;
+    border-radius: 15px;
+    font-size: 16px;
+    box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.2);
+    font-family: 'Roboto', sans-serif;
+    transition: all 0.5s ease-in-out;
+    opacity: 0;
 }
 
-/* Cloud animation - floating and expanding */
-@keyframes floatAnimation {
+.wish.show {
+    opacity: 1;
+    animation: floatWish 4s ease-in-out infinite;
+}
+
+@keyframes floatWish {
     0% {
         transform: translateY(0);
     }
     50% {
-        transform: translateY(-20px);
+        transform: translateY(-30px);
     }
     100% {
         transform: translateY(0);
     }
 }
 
-@keyframes cloudExpand {
+/* Heart styling */
+.heart {
+    position: absolute;
+    font-size: 30px;
+    animation: floatHeart 4s ease-in-out infinite;
+    z-index: 1;
+    opacity: 0.9;
+    transition: all 0.3s ease;
+}
+
+/* Floating animation for hearts */
+@keyframes floatHeart {
     0% {
-        transform: scale(1);
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-30px);
     }
     100% {
-        transform: scale(1.1); /* Slightly larger size for cloud effect */
+        transform: translateY(0);
     }
 }
 
-/* Shadow effect when hover over wishes */
-.wish:hover {
-    transform: scale(1.1);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+/* Hover effect for hearts (optional) */
+.heart:hover {
+    transform: scale(1.2);
+    opacity: 1;
 }
 
-/* Mobile Styles */
-@media (max-width: 600px) {
-    #wishButton {
-        padding: 10px 15px;
-        font-size: 14px;
-    }
+/* Styling for the buttons */
+button {
+    background-color: #ff4d4d;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 20px;
+    transition: background-color 0.3s ease;
+}
 
-    .wish-form input {
-        font-size: 14px;
-        padding: 10px;
-    }
+button:hover {
+    background-color: #e60000;
+}
 
-    .wish-form button {
-        font-size: 14px;
-        padding: 8px 16px;
-    }
+/* Form Container Styling */
+.wish-form-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
+    display: none;
+    z-index: 10;
+}
 
-    .wish {
-        font-size: 16px;
-        padding: 15px 20px;
-        max-width: 250px;
-    }
+.wish-form h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.wish-form input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+}
+
+#wishInput, #nameInput {
+    font-family: 'Roboto', sans-serif;
+}
+
+/* Close button for the form */
+#wishFormContainer #closeFormButton {
+    background-color: #ccc;
+    color: black;
+}
+
+#wishFormContainer #closeFormButton:hover {
+    background-color: #999;
+}
+
+/* Additional styles for the page layout */
+#hearts-container {
+    pointer-events: none;
+    z-index: 2;
+}
+
+#poster {
+    max-width: 100%;
+}
+
+#wishes-container {
+    pointer-events: none;
+    z-index: 1;
 }
