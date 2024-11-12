@@ -52,6 +52,7 @@
                 offensiveWords = text.split(";")
                     .map(word => word.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim())
                     .filter(word => word !== "");
+                console.log("Offensive words loaded:", offensiveWords); // Confirm words are loaded
             })
             .catch(error => {
                 console.error("Error fetching offensive words:", error);
@@ -95,13 +96,12 @@
 
         // Function to check if the wish contains offensive words
         function containsOffensiveWords(wishText) {
-            // Normalize and convert each offensive word to lowercase
-            offensiveWords = offensiveWords.map(word => word.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
+            if (!offensiveWords.length) {
+                console.warn("Offensive words list is empty. Check the loading process.");
+                return false;
+            }
             
-            // Normalize and convert wishText to lowercase, then split into words ignoring punctuation
             const words = wishText.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").match(/\b\w+\b/g) || [];
-
-            // Check each word in wishText against offensiveWords
             for (let word of words) {
                 if (offensiveWords.includes(word)) {
                     console.log(`Offensive word found: ${word}`); // Debugging line
