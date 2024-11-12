@@ -78,20 +78,13 @@ body {
 
 .heart {
     position: absolute;
-    font-size: 24px;
+    font-size: 30px;
     animation: floatUp 3s ease-in-out forwards;
-    pointer-events: none;
 }
 
 @keyframes floatUp {
-    from {
-        opacity: 1;
-        transform: translateY(0);
-    }
-    to {
-        opacity: 0;
-        transform: translateY(-100px);
-    }
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-50px); }
 }
 
 
