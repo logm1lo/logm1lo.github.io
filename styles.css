@@ -18,48 +18,78 @@ body {
     align-items: center;
     position: relative;
     width: 100vw;
-    max-width: 600px; /* Optional max width for large screens */
+    max-width: 100%;
     overflow: hidden;
 }
+
+/* Position the "Send a Wish" button at the top of the poster */
+/* Position the "Send a Wish" button at the top of the poster */
+#wishButton {
+    position: absolute;
+    top: 10px; /* Distance from the top of the poster */
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%); /* Center button perfectly */
+    padding: 20px 40px; /* Increase padding for a bigger button */
+    font-size: 24px; /* Larger font size */
+    background-color: #ff6b6b; /* Button color */
+    color: white;
+    border: none;
+    border-radius: 8px; /* Rounded corners */
+    cursor: pointer;
+    z-index: 10; /* Ensure it's above the poster */
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
+}
+
+/* Hover effect for the button */
+#wishButton:hover {
+    background-color: #ff3d3d;
+}
+
+/* Optional: add a focus effect */
+#wishButton:focus {
+    outline: none;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+}
+
 
 /* Style for the poster image */
 #poster {
     width: 100%;
-    max-width: 100%;
+    max-width: 100%; /* Prevents the image from extending beyond its container */
     height: auto;
-    object-fit: contain;
+    object-fit: contain; /* Maintain aspect ratio while fitting within the container */
 }
 
-/* Wishes container */
-#wishes-container {
+#wishes-container, #hearts-container {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     pointer-events: none;
-    padding: 20px; /* Adds space between the wishes and the border */
 }
 
-/* Style for the wishes */
+
+/* Wish container (cloud) */
 .wish {
     position: absolute;
     background-color: rgba(255, 255, 255, 0.8);
-    padding: 10px;
-    border-radius: 8px;
+    padding: 5px;
+    border-radius: 5px;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
     font-family: 'Roboto', sans-serif;
-    font-size: 1.4em; /* Adjusted for readability */
+    font-size: 1.2rem;
     line-height: 1.5;
     color: #333;
-    max-width: 80%;
-    word-wrap: break-word;
-    white-space: normal;
+    max-width: 80%; /* Prevent it from going too wide */
+    word-wrap: break-word; /* Break long words if necessary */
+    white-space: normal; /* Allow wrapping */
     opacity: 0;
-    animation: floatCloud 5s ease-in-out forwards;
+    animation: floatCloud 5s ease-in-out forwards; /* Floating animation */
 }
 
-/* Floating animation */
+/* Add floating animation */
 @keyframes floatCloud {
     0% {
         opacity: 0;
@@ -91,29 +121,7 @@ body {
         transform: translateY(0);
     }
 }
-
-/* Style for the Send a Wish button */
-#wishButton {
-    position: absolute;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 20px 40px;
-    font-size: 24px;
-    background-color: #ff6b6b;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    z-index: 10;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.3s ease;
-}
-
-#wishButton:hover {
-    background-color: #ff3d3d;
-}
-
+/* Optional: add a hover effect for the wish (if needed) */
 .wish:hover {
     background: #f1f1f1;
     cursor: pointer;
@@ -129,6 +137,7 @@ body {
     transition: all 0.3s ease;
 }
 
+/* Floating animation for hearts */
 @keyframes floatHeart {
     0% {
         transform: translateY(0);
@@ -141,9 +150,28 @@ body {
     }
 }
 
+/* Hover effect for hearts (optional) */
 .heart:hover {
     transform: scale(1.2);
     opacity: 1;
+}
+
+
+/* Styling for the buttons */
+button {
+    background-color: #ff4d4d;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 20px;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #e60000;
 }
 
 /* Form Container Styling */
@@ -178,23 +206,7 @@ body {
     font-family: 'Roboto', sans-serif;
 }
 
-/* Button styling */
-button {
-    background-color: #ff4d4d;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    margin-top: 20px;
-    transition: background-color 0.3s ease;
-}
-
-button:hover {
-    background-color: #e60000;
-}
-
+/* Close button for the form */
 #wishFormContainer #closeFormButton {
     background-color: #ccc;
     color: black;
@@ -204,15 +216,10 @@ button:hover {
     background-color: #999;
 }
 
-/* Additional styling */
+/* Additional styles for the page layout */
 #hearts-container {
     pointer-events: none;
     z-index: 2;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
 }
 
 #poster {
