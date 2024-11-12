@@ -45,6 +45,25 @@
 
     // Firebase initialization (You should already have this part)
     const db = firebase.database();
+    const wishFormContainer = document.querySelector('.wish-form-container');
+    const wishButton = document.getElementById('wishButton');
+    const closeFormButton = document.getElementById('closeFormButton');
+    
+    wishButton.addEventListener('click', () => {
+        wishFormContainer.classList.remove('hide');
+        wishFormContainer.classList.add('show');
+    });
+    
+    closeFormButton.addEventListener('click', () => {
+        wishFormContainer.classList.remove('show');
+        wishFormContainer.classList.add('hide');
+    
+        // Delay hiding the form after the animation completes
+        setTimeout(() => {
+            wishFormContainer.style.display = 'none';
+        }, 300); // Match with animation duration
+    });
+
 
     // Show form when "Send a Wish" button is clicked
     document.getElementById("wishButton").addEventListener("click", () => {

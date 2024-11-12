@@ -9,14 +9,25 @@ body {
     align-items: center;
     height: 100vh;
     flex-direction: column;
+    overflow: hidden; /* Prevent scrolling */
 }
 
 /* Container for the poster and button */
 .poster-container {
-    position: relative;
+    position: relative; /* Important for absolute positioning of children */
     text-align: center;
+    width: 100%;
+    max-width: 1000px; /* Max width for larger screens */
+    max-height: 100vh; /* Max height for larger screens */
+    overflow: hidden; /* Prevents overflow */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px; /* Adds padding around the content */
+    box-sizing: border-box; /* Ensure padding doesn't overflow the container */
 }
 
+/* Wish Button */
 #wishButton {
     position: absolute;
     top: 10px;
@@ -43,11 +54,14 @@ body {
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
 }
 
+/* Poster */
 #poster {
-    width: 80%;
-    max-width: 800px;
-    margin-bottom: 20px;
+    width: 100%;
+    max-width: 100%; /* Ensure the poster takes up the available space */
+    height: auto;
+    max-height: 100%; /* Ensure the poster fits within the height of the container */
     border-radius: 10px;
+    object-fit: contain; /* Keeps aspect ratio intact */
 }
 
 #wishes-container, #hearts-container {
@@ -160,17 +174,53 @@ button:hover {
 }
 
 /* Form Container Styling */
+/* Form Container Styling */
 .wish-form-container {
-    position: fixed;
+    position: absolute; /* Absolute positioning relative to .poster-container */
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%); /* Correct centering */
     background-color: rgba(255, 255, 255, 0.9);
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
-    display: none;
-    z-index: 10;
+    z-index: 100; /* Ensure it's on top */
+    width: 80%;
+    max-width: 400px;
+    visibility: hidden;  /* Initially hidden */
+    opacity: 0;
+    transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+}
+
+/* Show form with pop-in animation */
+.wish-form-container.show {
+    visibility: visible;
+    opacity: 1;
+    animation: popIn 0.3s ease-out forwards;
+}
+
+
+/* Smooth pop-in and pop-out animations */
+@keyframes popIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes popOut {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.8);
+    }
 }
 
 .wish-form h2 {
@@ -200,17 +250,41 @@ button:hover {
     background-color: #999;
 }
 
-/* Additional page layout styles */
-#hearts-container {
-    pointer-events: none;
-    z-index: 2;
+/* Additional responsive adjustments for smaller screens */
+@media (max-width: 768px) {
+    .poster-container {
+        padding: 10px;
+    }
+
+    #poster {
+        width: 90%;
+        max-width: 90%; /* Fit the poster within smaller screen width */
+        margin: 10px;
+    }
+
+    #wishButton {
+        padding: 15px 30px;
+        font-size: 20px;
+    }
+
+    .wish-form-container {
+        width: 90%;
+        max-width: 350px;
+    }
 }
 
-#poster {
-    max-width: 100%;
-}
+@media (max-width: 480px) {
+    .poster-container {
+        padding: 10px;
+    }
 
-#wishes-container {
-    pointer-events: none;
-    z-index: 1;
+    #wishButton {
+        padding: 12px 25px;
+        font-size: 18px;
+    }
+
+    #poster {
+        width: 100%;
+        max-width: 95%; /* Ensure it's fully mobile-friendly */
+    }
 }
