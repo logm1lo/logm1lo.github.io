@@ -20,14 +20,16 @@ body {
     width: 100%;
     height: auto;
     max-width: 100%;
+    cursor: pointer;
 }
 
-#wishButton {
-    padding: 12px 20px;
-    font-size: 16px;
-    margin: 20px;
-    cursor: pointer;
-    border-radius: 5px;
+#hearts-container, #wishes-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
 }
 
 /* Popup form container */
@@ -78,8 +80,8 @@ body {
 .heart {
     position: absolute;
     color: red;
-    font-size: 20px;
-    animation: floatUp 1.5s ease-in-out forwards;
+    font-size: 24px;
+    animation: floatUp 2s ease-in-out forwards;
 }
 
 @keyframes floatUp {
