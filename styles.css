@@ -4,7 +4,8 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-family: Arial, sans-serif;
+    font-family: 'Roboto', sans-serif; /* Set Roboto font */
+    background-color: #f7f7f7; /* Light background for better contrast */
 }
 
 .poster-container {
@@ -13,23 +14,30 @@ body {
     justify-content: center;
     align-items: center;
     position: relative;
-    max-width: 600px;
+    max-width: 600px; /* Limits width on large screens */
 }
 
 #poster {
     width: 100%;
     height: auto;
-    max-width: 100%;
-    cursor: pointer;
+    max-width: 100%; /* Makes sure image scales */
 }
 
-#hearts-container, #wishes-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
+#wishButton {
+    padding: 12px 20px;
+    font-size: 16px;
+    margin: 20px;
+    cursor: pointer;
+    border-radius: 5px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    font-weight: 700;
+    transition: background-color 0.3s ease;
+}
+
+#wishButton:hover {
+    background-color: #45a049;
 }
 
 /* Popup form container */
@@ -40,7 +48,7 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
     justify-content: center;
     align-items: center;
     z-index: 10;
@@ -59,6 +67,8 @@ body {
 .wish-form h2 {
     margin-top: 0;
     font-size: 20px;
+    font-weight: 700;
+    color: #333;
 }
 
 .wish-form input {
@@ -67,6 +77,9 @@ body {
     padding: 12px;
     margin: 10px 0;
     font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box;
 }
 
 .wish-form button {
@@ -74,19 +87,44 @@ body {
     font-size: 16px;
     margin-top: 10px;
     cursor: pointer;
+    border-radius: 5px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    transition: background-color 0.3s ease;
 }
 
-.heart {
+.wish-form button:hover {
+    background-color: #45a049;
+}
+
+/* Floating Wish Styling */
+.wish {
     position: absolute;
-    font-size: 30px;
-    animation: floatUp 3s ease-in-out forwards;
+    font-size: 18px;
+    padding: 10px 15px;
+    background-color: #fff;
+    color: #333;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    animation: floatAnimation 4s ease-in-out infinite;
+    font-family: 'Roboto', sans-serif; /* Apply Roboto to wish text */
+    text-align: center;
+    opacity: 0.9;
+    z-index: 1;
 }
 
-@keyframes floatUp {
-    0% { transform: translateY(0); }
-    100% { transform: translateY(-50px); }
+@keyframes floatAnimation {
+    0% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
+    100% {
+        transform: translateY(0);
+    }
 }
-
 
 /* Mobile Styles */
 @media (max-width: 600px) {
