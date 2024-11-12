@@ -93,13 +93,18 @@
             }
         });
 
+        // Function to check if the wish contains offensive words
         function containsOffensiveWords(wishText) {
-            const normalizedWishText = wishText.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-            const words = normalizedWishText.match(/\b\w+\b/g) || [];
+            // Normalize and convert each offensive word to lowercase
+            offensiveWords = offensiveWords.map(word => word.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
+            
+            // Normalize and convert wishText to lowercase, then split into words ignoring punctuation
+            const words = wishText.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").match(/\b\w+\b/g) || [];
 
+            // Check each word in wishText against offensiveWords
             for (let word of words) {
                 if (offensiveWords.includes(word)) {
-                    console.log(`Offensive word found: ${word}`);
+                    console.log(`Offensive word found: ${word}`); // Debugging line
                     return true;
                 }
             }
