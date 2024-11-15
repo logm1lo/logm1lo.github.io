@@ -13,6 +13,7 @@
         <div id="wishes-container"></div>
     </div>
     <button id="wishButton">Send a Wish</button>
+    <div id="liveUserCounter">Users Online: <span id="userCount">0</span></div>
 
     <!-- Popup form container -->
     <div id="wishFormContainer" class="wish-form-container">
@@ -28,127 +29,95 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-database-compat.js"></script>
     <script>
-    // Variable to store the offensive words array
-
+    // Firebase Configuration
     const firebaseConfig = {
         apiKey: "AIzaSyBinhf3-PpbAeQaQKToNnLHBBBxVQeLbp4",
         authDomain: "yayy-93c45.firebaseapp.com",
-        databaseURL: "https://yayy-93c45-default-rtdb.asia-southeast1.firebasedatabase.app", 
+        databaseURL: "https://yayy-93c45-default-rtdb.asia-southeast1.firebasedatabase.app",
         projectId: "yayy-93c45",
         storageBucket: "yayy-93c45.appspot.com",
         messagingSenderId: "281901593072",
         appId: "1:281901593072:web:614dff92e64d25669c6d35",
         measurementId: "G-JB3PWXQ56M"
     };
-
     firebase.initializeApp(firebaseConfig);
 
-    // Firebase initialization (You should already have this part)
+    // Firebase Database References
     const db = firebase.database();
-    const wishFormContainer = document.querySelector('.wish-form-container');
-    const wishButton = document.getElementById('wishButton');
-    const closeFormButton = document.getElementById('closeFormButton');
-    
-    wishButton.addEventListener('click', () => {
-        wishFormContainer.classList.remove('hide');
-        wishFormContainer.classList.add('show');
-    });
-    
-    closeFormButton.addEventListener('click', () => {
-        wishFormContainer.classList.remove('show');
-        wishFormContainer.classList.add('hide');
-    
-        // Delay hiding the form after the animation completes
-        setTimeout(() => {
-            wishFormContainer.style.display = 'none';
-        }, 300); // Match with animation duration
+    const wishesRef = db.ref("wishes");
+    const userCountRef = db.ref("userCount");
+
+    // Display the last 100 wishes only
+    wishesRef.limitToLast(100).on("child_added", (snapshot) => {
+        displayWish(snapshot.val());
     });
 
-
-    // Show form when "Send a Wish" button is clicked
-    document.getElementById("wishButton").addEventListener("click", () => {
-        document.getElementById("wishFormContainer").style.display = "flex";
-    });
-
-    // Close form when "Close" button is clicked
-    document.getElementById("closeFormButton").addEventListener("click", () => {
-        document.getElementById("wishFormContainer").style.display = "none";
-    });
-
-    // Submit wish and close form
-    document.getElementById("submitWishButton").addEventListener("click", () => {
-        const name = document.getElementById("nameInput").value;
-        const wish = document.getElementById("wishInput").value;
-
-        if (name && wish) {
-            const wishData = {
-                name,
-                text: wish,
-                x: Math.random() * window.innerWidth,
-                y: Math.random() * window.innerHeight
-            };
-
-            db.ref("wishes").push(wishData);
-            displayWish(wishData); // Display the wish on the screen
-            document.getElementById("wishFormContainer").style.display = "none"; // Hide form
-        } else {
-            alert("Please enter both your name and your wish.");
-        }
-    });
-
-    // Function to display the wish on the screen
+    // Function to display wishes on the screen
     function displayWish(wishData) {
         const wishContainer = document.getElementById("wishes-container");
         const wishElement = document.createElement("div");
         wishElement.className = "wish";
-        
-        // Get poster dimensions and set an inner boundary
-        const poster = document.getElementById("poster");
-        const padding = 20; // Adjust the padding value as needed
-        
-        const posterWidth = poster.offsetWidth;
-        const posterHeight = poster.offsetHeight;
-        
-        const maxX = posterWidth - padding;
-        const maxY = posterHeight - padding;
-        
-        const posX = Math.random() * (maxX - padding * 2) + padding;
-        const posY = Math.random() * (maxY - padding * 2) + padding;
-        
-        wishElement.style.top = `${posY}px`;
-        wishElement.style.left = `${posX}px`;
+        wishElement.style.top = `${Math.random() * (window.innerHeight - 50)}px`;
+        wishElement.style.left = `${Math.random() * (window.innerWidth - 50)}px`;
         wishElement.innerText = `${wishData.name}: ${wishData.text}`;
-        
         wishContainer.appendChild(wishElement);
     }
 
-    // Listen for new wishes in Firebase and add them to the page
-    db.ref("wishes").on("child_added", (snapshot) => {
-        const wishData = snapshot.val();
-        displayWish(wishData);
+    // Prune old wishes to maintain only the latest 100
+    function pruneOldWishes() {
+        wishesRef.once("value", (snapshot) => {
+            const wishes = snapshot.val();
+            const keys = Object.keys(wishes);
+            if (keys.length > 100) {
+                const excessKeys = keys.slice(0, keys.length - 100);
+                excessKeys.forEach((key) => wishesRef.child(key).remove());
+            }
+        });
+    }
+    setInterval(pruneOldWishes, 24 * 60 * 60 * 1000); // Prune daily
+
+    // Function to show live user count
+    let userCount = 0;
+    const userId = Math.random().toString(36).substring(2);
+
+    userCountRef.child(userId).set(true);
+    userCountRef.on("value", (snapshot) => {
+        userCount = snapshot.numChildren();
+        document.getElementById("userCount").textContent = userCount;
+    });
+    window.addEventListener("beforeunload", () => {
+        userCountRef.child(userId).remove();
     });
 
-    // Heart animation when clicking anywhere on the document
+    // Heart animation
     document.addEventListener('click', function(event) {
-        const poster = document.querySelector('.poster-container'); // Get the poster container element
-        const rect = poster.getBoundingClientRect(); // Get the position of the poster on the page
-
-        // Calculate the position of the mouse relative to the poster container
-        const mouseX = event.clientX - rect.left;
-        const mouseY = event.clientY - rect.top;
-
         const heart = document.createElement('div');
         heart.className = 'heart';
         heart.innerText = '💖';
-        heart.style.left = `${mouseX - 15}px`; // Center the heart on the click point
-        heart.style.top = `${mouseY - 15}px`; // Center the heart on the click point
+        heart.style.left = `${event.pageX - 15}px`;
+        heart.style.top = `${event.pageY - 15}px`;
 
         document.getElementById('hearts-container').appendChild(heart);
 
-        // Remove heart after animation duration
+        // Save heart click to Firebase for real-time display
+        db.ref("hearts").push({ x: event.pageX, y: event.pageY });
+
+        // Remove heart after animation
         setTimeout(() => {
             heart.remove();
-        }, 4000); // Matches heart animation duration
+        }, 4000);
+    });
+
+    // Real-time hearts from other users
+    db.ref("hearts").limitToLast(20).on("child_added", (snapshot) => {
+        const heartData = snapshot.val();
+        const heart = document.createElement('div');
+        heart.className = 'heart';
+        heart.innerText = '💖';
+        heart.style.left = `${heartData.x - 15}px`;
+        heart.style.top = `${heartData.y - 15}px`;
+        document.getElementById('hearts-container').appendChild(heart);
+        setTimeout(() => heart.remove(), 4000);
     });
     </script>
 </body>
