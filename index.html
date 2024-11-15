@@ -28,6 +28,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-database-compat.js"></script>
     <script>
+    // Variable to store the offensive words array
+
     const firebaseConfig = {
         apiKey: "AIzaSyBinhf3-PpbAeQaQKToNnLHBBBxVQeLbp4",
         authDomain: "yayy-93c45.firebaseapp.com",
@@ -62,47 +64,36 @@
         }, 300); // Match with animation duration
     });
 
-    // Submit wish only via form
-    // Submit wish only via form
+
+    // Show form when "Send a Wish" button is clicked
+    document.getElementById("wishButton").addEventListener("click", () => {
+        document.getElementById("wishFormContainer").style.display = "flex";
+    });
+
+    // Close form when "Close" button is clicked
+    document.getElementById("closeFormButton").addEventListener("click", () => {
+        document.getElementById("wishFormContainer").style.display = "none";
+    });
+
+    // Submit wish and close form
     document.getElementById("submitWishButton").addEventListener("click", () => {
         const name = document.getElementById("nameInput").value;
         const wish = document.getElementById("wishInput").value;
-    
+
         if (name && wish) {
             const wishData = {
                 name,
                 text: wish,
-                timestamp: Date.now(), // Add a timestamp for when the wish is created
-                position: {
-                    x: Math.random() * window.innerWidth,
-                    y: Math.random() * window.innerHeight
-                }
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * window.innerHeight
             };
-        
-            // Push the wish data to Firebase only through the form submission process
-            firebase.database().ref("wishes").push(wishData)
-                .then(() => {
-                    displayWish(wishData); // Show the wish on the screen
-                    document.getElementById("wishFormContainer").style.display = "none"; // Hide the form
-                    resetForm(); // Reset the form input fields for the next submission
-                })
-                .catch((error) => {
-                    console.error("Error submitting wish:", error);
-                });
+
+            db.ref("wishes").push(wishData);
+            displayWish(wishData); // Display the wish on the screen
+            document.getElementById("wishFormContainer").style.display = "none"; // Hide form
         } else {
             alert("Please enter both your name and your wish.");
         }
-    });
-    
-    // Function to reset the form inputs
-    function resetForm() {
-        document.getElementById("nameInput").value = "";
-        document.getElementById("wishInput").value = "";
-    }
-    
-    // Show form when "Send a Wish" button is clicked
-    document.getElementById("wishButton").addEventListener("click", () => {
-        document.getElementById("wishFormContainer").style.display = "flex"; // Show the form again
     });
 
     // Function to display the wish on the screen
