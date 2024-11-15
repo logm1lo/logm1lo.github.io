@@ -8,7 +8,7 @@
 </head>
 <body>
     <div class="poster-container">
-        <img id="poster" src="poster.jpg" alt="Teacher's Day Poster" loading="eager">
+        <img id="poster" src="poster.jpg" alt="Teacher's Day Poster">
         <div id="hearts-container"></div>
         <div id="wishes-container"></div>
     </div>
@@ -40,13 +40,13 @@
     };
 
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
 
+    // Firebase initialization (You should already have this part)
+    const db = firebase.database();
     const wishFormContainer = document.querySelector('.wish-form-container');
     const wishButton = document.getElementById('wishButton');
     const closeFormButton = document.getElementById('closeFormButton');
-
-    // Display the wish form
+    
     wishButton.addEventListener('click', () => {
         wishFormContainer.classList.remove('hide');
         wishFormContainer.classList.add('show');
@@ -55,30 +55,54 @@
     closeFormButton.addEventListener('click', () => {
         wishFormContainer.classList.remove('show');
         wishFormContainer.classList.add('hide');
+    
+        // Delay hiding the form after the animation completes
         setTimeout(() => {
             wishFormContainer.style.display = 'none';
-        }, 300);
+        }, 300); // Match with animation duration
     });
 
-    // Submit wish and close form
+    // Submit wish only via form
+    // Submit wish only via form
     document.getElementById("submitWishButton").addEventListener("click", () => {
         const name = document.getElementById("nameInput").value;
         const wish = document.getElementById("wishInput").value;
-
+    
         if (name && wish) {
             const wishData = {
                 name,
                 text: wish,
-                x: Math.random() * window.innerWidth,
-                y: Math.random() * window.innerHeight
+                timestamp: Date.now(), // Add a timestamp for when the wish is created
+                position: {
+                    x: Math.random() * window.innerWidth,
+                    y: Math.random() * window.innerHeight
+                }
             };
-
-            db.ref("wishes").push(wishData);
-            displayWish(wishData);
-            document.getElementById("wishFormContainer").style.display = "none";
+        
+            // Push the wish data to Firebase only through the form submission process
+            firebase.database().ref("wishes").push(wishData)
+                .then(() => {
+                    displayWish(wishData); // Show the wish on the screen
+                    document.getElementById("wishFormContainer").style.display = "none"; // Hide the form
+                    resetForm(); // Reset the form input fields for the next submission
+                })
+                .catch((error) => {
+                    console.error("Error submitting wish:", error);
+                });
         } else {
             alert("Please enter both your name and your wish.");
         }
+    });
+    
+    // Function to reset the form inputs
+    function resetForm() {
+        document.getElementById("nameInput").value = "";
+        document.getElementById("wishInput").value = "";
+    }
+    
+    // Show form when "Send a Wish" button is clicked
+    document.getElementById("wishButton").addEventListener("click", () => {
+        document.getElementById("wishFormContainer").style.display = "flex"; // Show the form again
     });
 
     // Function to display the wish on the screen
@@ -86,56 +110,54 @@
         const wishContainer = document.getElementById("wishes-container");
         const wishElement = document.createElement("div");
         wishElement.className = "wish";
-
+        
+        // Get poster dimensions and set an inner boundary
         const poster = document.getElementById("poster");
-        const padding = 20;
+        const padding = 20; // Adjust the padding value as needed
+        
         const posterWidth = poster.offsetWidth;
         const posterHeight = poster.offsetHeight;
+        
         const maxX = posterWidth - padding;
         const maxY = posterHeight - padding;
+        
         const posX = Math.random() * (maxX - padding * 2) + padding;
         const posY = Math.random() * (maxY - padding * 2) + padding;
-
+        
         wishElement.style.top = `${posY}px`;
         wishElement.style.left = `${posX}px`;
         wishElement.innerText = `${wishData.name}: ${wishData.text}`;
-
+        
         wishContainer.appendChild(wishElement);
     }
 
-    // Load last 50 wishes to avoid large payloads
-    db.ref("wishes").limitToLast(50).on("child_added", (snapshot) => {
+    // Listen for new wishes in Firebase and add them to the page
+    db.ref("wishes").on("child_added", (snapshot) => {
         const wishData = snapshot.val();
         displayWish(wishData);
     });
 
-    // Clean up old wishes to prevent payload issues
-    db.ref("wishes").on("value", (snapshot) => {
-        const numWishes = snapshot.numChildren();
-        if (numWishes > 50) {
-            const wishes = snapshot.val();
-            const keysToDelete = Object.keys(wishes).slice(0, numWishes - 50);
-            keysToDelete.forEach(key => db.ref(`wishes/${key}`).remove());
-        }
-    });
+    // Heart animation when clicking anywhere on the document
+    document.addEventListener('click', function(event) {
+        const poster = document.querySelector('.poster-container'); // Get the poster container element
+        const rect = poster.getBoundingClientRect(); // Get the position of the poster on the page
 
-    // Heart animation on click
-    document.addEventListener('click', (event) => {
-        const poster = document.querySelector('.poster-container');
-        const rect = poster.getBoundingClientRect();
+        // Calculate the position of the mouse relative to the poster container
         const mouseX = event.clientX - rect.left;
         const mouseY = event.clientY - rect.top;
 
         const heart = document.createElement('div');
         heart.className = 'heart';
         heart.innerText = '💖';
-        heart.style.left = `${mouseX - 15}px`;
-        heart.style.top = `${mouseY - 15}px`;
+        heart.style.left = `${mouseX - 15}px`; // Center the heart on the click point
+        heart.style.top = `${mouseY - 15}px`; // Center the heart on the click point
 
         document.getElementById('hearts-container').appendChild(heart);
+
+        // Remove heart after animation duration
         setTimeout(() => {
             heart.remove();
-        }, 4000);
+        }, 4000); // Matches heart animation duration
     });
     </script>
 </body>
