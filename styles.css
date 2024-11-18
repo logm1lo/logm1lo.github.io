@@ -14,17 +14,19 @@ body {
 
 /* Container for the poster and button */
 .poster-container {
-    position: relative; /* Important for absolute positioning of children */
+    position: relative;
     text-align: center;
     width: 100%;
-    max-width: 1000px; /* Max width for larger screens */
-    max-height: 100vh; /* Max height for larger screens */
-    overflow: hidden; /* Prevents overflow */
+    height: 100vh;
+    max-width: 1000px;
+    max-height: 90vh;
+    overflow: hidden;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 20px; /* Adds padding around the content */
-    box-sizing: border-box; /* Ensure padding doesn't overflow the container */
+    padding: 20px;
+    box-sizing: border-box;
+    margin: auto;
 }
 
 /* Wish Button */
@@ -57,11 +59,9 @@ body {
 /* Poster */
 #poster {
     width: 100%;
-    max-width: 100%; /* Ensure the poster takes up the available space */
-    height: auto;
-    max-height: 100%; /* Ensure the poster fits within the height of the container */
+    height: 100%;
+    object-fit: contain;
     border-radius: 10px;
-    object-fit: contain; /* Keeps aspect ratio intact */
 }
 
 #wishes-container, #hearts-container {
@@ -85,8 +85,9 @@ body {
     transition: all 0.8s ease;
     pointer-events: none;
     z-index: 100;
-    max-width: 200px;
+    max-width: min(200px, 40vw);
     word-wrap: break-word;
+    transform: translate(-50%, -50%);
 }
 
 .wish.show {
@@ -243,12 +244,12 @@ button:hover {
 @media (max-width: 768px) {
     .poster-container {
         padding: 10px;
+        height: 80vh;
     }
 
-    #poster {
-        width: 90%;
-        max-width: 90%; /* Fit the poster within smaller screen width */
-        margin: 10px;
+    .wish {
+        padding: 10px;
+        font-size: 14px;
     }
 
     #wishButton {
@@ -264,7 +265,13 @@ button:hover {
 
 @media (max-width: 480px) {
     .poster-container {
-        padding: 10px;
+        padding: 5px;
+        height: 70vh;
+    }
+
+    .wish {
+        padding: 8px;
+        font-size: 12px;
     }
 
     #wishButton {

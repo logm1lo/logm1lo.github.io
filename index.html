@@ -69,8 +69,8 @@
             const wishData = {
                 name,
                 text: wish,
-                x: Math.random() * (window.innerWidth * 0.8),
-                y: Math.random() * (window.innerHeight * 0.8),
+                xRatio: Math.random(),
+                yRatio: Math.random(),
                 timestamp: firebase.database.ServerValue.TIMESTAMP
             };
             
@@ -100,17 +100,16 @@
         const wishContainer = document.getElementById("wishes-container");
         const wishElement = document.createElement("div");
         wishElement.className = "wish";
-        wishElement.style.top = `${wishData.y}px`;
-        wishElement.style.left = `${wishData.x}px`;
+        
+        wishElement.style.top = `${wishData.yRatio * 100}%`;
+        wishElement.style.left = `${wishData.xRatio * 100}%`;
         wishElement.innerText = `${wishData.name}: ${wishData.text}`;
         wishContainer.appendChild(wishElement);
         
-        // Add show class after a small delay to trigger animation
         setTimeout(() => {
             wishElement.classList.add('show');
         }, 100);
 
-        // Remove the wish element after animation
         setTimeout(() => {
             wishElement.classList.add('fade-out');
             setTimeout(() => {
@@ -123,11 +122,15 @@
     document.querySelector('.poster-container').addEventListener('click', function(event) {
         const poster = this;
         const rect = poster.getBoundingClientRect();
-        const mouseX = event.clientX - rect.left;
-        const mouseY = event.clientY - rect.top;
+        
+        const relativeX = (event.clientX - rect.left) / rect.width;
+        const relativeY = (event.clientY - rect.top) / rect.height;
 
-        if (mouseX >= 0 && mouseX <= rect.width && mouseY >= 0 && mouseY <= rect.height) {
-            const heartData = { x: mouseX, y: mouseY };
+        if (relativeX >= 0 && relativeX <= 1 && relativeY >= 0 && relativeY <= 1) {
+            const heartData = { 
+                xRatio: relativeX,
+                yRatio: relativeY 
+            };
             heartsRef.push(heartData)
                 .catch(error => {
                     console.error("Error saving heart:", error);
@@ -137,17 +140,19 @@
 
     heartsRef.on("child_added", (snapshot) => {
         const heartData = snapshot.val();
-        displayHeart(heartData.x, heartData.y);
+        displayHeart(heartData.xRatio, heartData.yRatio);
     });
 
-    function displayHeart(x, y) {
+    function displayHeart(xRatio, yRatio) {
+        const container = document.getElementById('hearts-container');
         const heart = document.createElement('div');
         heart.className = 'heart';
         heart.innerText = '💖';
-        heart.style.left = `${x}px`;
-        heart.style.top = `${y}px`;
+        
+        heart.style.left = `${xRatio * 100}%`;
+        heart.style.top = `${yRatio * 100}%`;
 
-        document.getElementById('hearts-container').appendChild(heart);
+        container.appendChild(heart);
         setTimeout(() => heart.remove(), 4000);
     }
 
