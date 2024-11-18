@@ -85,7 +85,10 @@ body {
     max-width: min(200px, 40vw);
     word-wrap: break-word;
     transform: translate(-50%, -50%);
-    transition: opacity 0.8s ease;
+    transition: all 0.8s ease;
+    left: 0;
+    top: 0;
+    will-change: transform, opacity;
 }
 
 .wish.show {
@@ -161,7 +164,7 @@ button:hover {
     background-color: #e60000;
 }
 
-/* Form Container Styling */
+/* Update Form Container Styling */
 .wish-form-container {
     position: fixed;
     top: 50%;
@@ -177,6 +180,10 @@ button:hover {
     visibility: hidden;
     opacity: 0;
     transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+    margin: 0;
+    left: 50% !important;
+    right: auto !important;
+    -webkit-transform: translate(-50%, -50%);
 }
 
 .wish-form-container.show {
@@ -265,8 +272,9 @@ button:hover {
     }
 
     .wish-form-container {
-        width: 90%;
-        max-width: 350px;
+        width: 85%;
+        max-width: 320px;
+        padding: 15px;
     }
 }
 

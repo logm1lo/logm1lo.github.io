@@ -66,8 +66,8 @@
         const name = document.getElementById("nameInput").value;
         const wish = document.getElementById("wishInput").value;
         if (name && wish) {
-            // Set margin from edges (20% from each edge)
-            const margin = 0.2;
+            // Set margin from edges (15% from each edge)
+            const margin = 0.15;
             const wishData = {
                 name,
                 text: wish,
@@ -104,21 +104,24 @@
         const wishElement = document.createElement("div");
         wishElement.className = "wish";
         
-        // Calculate position within the poster's boundaries
-        const posterRect = document.getElementById("poster").getBoundingClientRect();
-        const containerRect = wishContainer.getBoundingClientRect();
+        // Calculate actual pixel positions
+        const containerWidth = wishContainer.offsetWidth;
+        const containerHeight = wishContainer.offsetHeight;
         
-        // Set position using the ratio values
-        wishElement.style.left = `${wishData.xRatio * 100}%`;
-        wishElement.style.top = `${wishData.yRatio * 100}%`;
+        // Apply the position with transform
+        const xPos = (wishData.xRatio * containerWidth);
+        const yPos = (wishData.yRatio * containerHeight);
+        
+        wishElement.style.left = `${xPos}px`;
+        wishElement.style.top = `${yPos}px`;
         
         wishElement.innerText = `${wishData.name}: ${wishData.text}`;
         wishContainer.appendChild(wishElement);
         
         // Add show class for animation
-        setTimeout(() => {
+        requestAnimationFrame(() => {
             wishElement.classList.add('show');
-        }, 100);
+        });
 
         // Remove after animation
         setTimeout(() => {
