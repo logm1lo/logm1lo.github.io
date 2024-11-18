@@ -136,6 +136,17 @@
         document.getElementById('hearts-container').appendChild(heart);
         setTimeout(() => heart.remove(), 4000);
     }
+
+    // Add these event listeners
+    wishButton.addEventListener('click', () => {
+        wishFormContainer.style.visibility = 'visible';
+        wishFormContainer.classList.add('show');
+    });
+
+    closeFormButton.addEventListener('click', () => {
+        wishFormContainer.style.visibility = 'hidden';
+        wishFormContainer.classList.remove('show');
+    });
     </script>
 </body>
 </html>
