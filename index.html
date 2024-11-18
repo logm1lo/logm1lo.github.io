@@ -66,14 +66,14 @@
         const name = document.getElementById("nameInput").value;
         const wish = document.getElementById("wishInput").value;
         if (name && wish) {
-            // Add padding to keep wishes away from edges (10% from each edge)
-            const padding = 0.1;
+            // Set margin from edges (20% from each edge)
+            const margin = 0.2;
             const wishData = {
                 name,
                 text: wish,
-                // Random position between padding and (1-padding)
-                xRatio: padding + (Math.random() * (1 - 2 * padding)),
-                yRatio: padding + (Math.random() * (1 - 2 * padding)),
+                // Random position between margin and (1-margin)
+                xRatio: margin + (Math.random() * (1 - 2 * margin)),
+                yRatio: margin + (Math.random() * (1 - 2 * margin)),
                 timestamp: firebase.database.ServerValue.TIMESTAMP
             };
             
