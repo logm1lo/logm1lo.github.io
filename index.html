@@ -56,107 +56,136 @@
     liveUserRef.child(userKey).set(true);
     liveUserRef.child(userKey).onDisconnect().remove();
 
-    liveUserRef.on("value", (snapshot) => {
-        const liveUserCount = snapshot.numChildren();
-        document.getElementById("liveUserCount").textContent = liveUserCount;
-    });
+    // Add these variables at the top with other configurations
+    const MAX_HEARTS = 50;
+    const WISH_DISPLAY_TIME = 5000;
+    const HEART_DISPLAY_TIME = 3500;
+    const CLEANUP_INTERVAL = 60000;
 
-    // Wish submission
-    document.getElementById("submitWishButton").addEventListener("click", () => {
-        const name = document.getElementById("nameInput").value;
-        const wish = document.getElementById("wishInput").value;
-        if (name && wish) {
-            // Set margin from edges (15% from each edge)
-            const margin = 0.15;
-            const wishData = {
-                name,
-                text: wish,
-                // Random position between margin and (1-margin)
-                xRatio: margin + (Math.random() * (1 - 2 * margin)),
-                yRatio: margin + (Math.random() * (1 - 2 * margin)),
-                timestamp: firebase.database.ServerValue.TIMESTAMP
-            };
-            
-            db.ref("wishes").push(wishData)
-                .then(() => {
-                    wishFormContainer.style.visibility = 'hidden';
-                    wishFormContainer.classList.remove('show');
-                    document.getElementById("nameInput").value = '';
-                    document.getElementById("wishInput").value = '';
-                })
-                .catch(error => {
-                    console.error("Error saving wish:", error);
-                    alert("Failed to save your wish. Please try again.");
-                });
-        } else {
-            alert("Please enter both your name and your wish.");
-        }
-    });
+    // Optimize Firebase references
+    const wishesRef = db.ref("wishes");
+    const heartsRef = db.ref("hearts");
+    const liveUserRef = db.ref("liveUsers");
 
-    // Single listener for wishes
-    db.ref("wishes").on("child_added", (snapshot) => {
-        const wishData = snapshot.val();
-        displayWish(wishData);
-    });
+    // Optimize listeners with single reference
+    let wishesListener = null;
+    let heartsListener = null;
+    let liveUserListener = null;
 
-    function displayWish(wishData) {
-        const wishContainer = document.getElementById("wishes-container");
-        const wishElement = document.createElement("div");
-        wishElement.className = "wish";
-        
-        // Calculate actual pixel positions
-        const containerWidth = wishContainer.offsetWidth;
-        const containerHeight = wishContainer.offsetHeight;
-        
-        // Apply the position with transform
-        const xPos = (wishData.xRatio * containerWidth);
-        const yPos = (wishData.yRatio * containerHeight);
-        
-        wishElement.style.left = `${xPos}px`;
-        wishElement.style.top = `${yPos}px`;
-        
-        wishElement.innerText = `${wishData.name}: ${wishData.text}`;
-        wishContainer.appendChild(wishElement);
-        
-        // Add show class for animation
-        requestAnimationFrame(() => {
-            wishElement.classList.add('show');
+    // Initialize listeners
+    function initializeListeners() {
+        // Live users listener
+        liveUserListener = liveUserRef.on("value", (snapshot) => {
+            document.getElementById("liveUserCount").textContent = snapshot.numChildren();
         });
 
-        // Remove after animation
-        setTimeout(() => {
-            wishElement.classList.add('fade-out');
-            setTimeout(() => {
-                wishElement.remove();
-            }, 1000);
-        }, 5000);
+        // Wishes listener with throttling
+        wishesListener = wishesRef.on("child_added", (snapshot) => {
+            requestAnimationFrame(() => displayWish(snapshot.val()));
+        });
+
+        // Hearts listener with throttling
+        heartsListener = heartsRef.on("child_added", (snapshot) => {
+            const heartData = snapshot.val();
+            requestAnimationFrame(() => displayHeart(heartData.xRatio, heartData.yRatio));
+        });
     }
 
-    // Live hearts feature
-    document.querySelector('.poster-container').addEventListener('click', function(event) {
-        const poster = this;
-        const rect = poster.getBoundingClientRect();
+    // Cleanup function
+    function cleanup() {
+        if (wishesListener) wishesRef.off('child_added', wishesListener);
+        if (heartsListener) heartsRef.off('child_added', heartsListener);
+        if (liveUserListener) liveUserRef.off('value', liveUserListener);
+        liveUserRef.child(userKey).remove();
+    }
+
+    // Initialize listeners
+    initializeListeners();
+
+    // Add cleanup on page unload
+    window.addEventListener('unload', cleanup);
+
+    // Optimize wish form handling
+    const wishForm = {
+        container: document.getElementById('wishFormContainer'),
+        nameInput: document.getElementById('nameInput'),
+        wishInput: document.getElementById('wishInput'),
         
-        const relativeX = (event.clientX - rect.left) / rect.width;
-        const relativeY = (event.clientY - rect.top) / rect.height;
-
-        if (relativeX >= 0 && relativeX <= 1 && relativeY >= 0 && relativeY <= 1) {
-            const heartData = { 
-                xRatio: relativeX,
-                yRatio: relativeY 
-            };
-            heartsRef.push(heartData)
-                .catch(error => {
-                    console.error("Error saving heart:", error);
-                });
+        show() {
+            this.container.style.visibility = 'visible';
+            requestAnimationFrame(() => this.container.classList.add('show'));
+        },
+        
+        hide() {
+            this.container.style.visibility = 'hidden';
+            this.container.classList.remove('show');
+            this.nameInput.value = '';
+            this.wishInput.value = '';
+        },
+        
+        async submitWish() {
+            const name = this.nameInput.value.trim();
+            const wish = this.wishInput.value.trim();
+            
+            if (!name || !wish) {
+                alert("Please enter both your name and your wish.");
+                return;
+            }
+            
+            try {
+                const margin = 0.15;
+                const wishData = {
+                    name,
+                    text: wish,
+                    xRatio: margin + (Math.random() * (1 - 2 * margin)),
+                    yRatio: margin + (Math.random() * (1 - 2 * margin)),
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                };
+                
+                await wishesRef.push(wishData);
+                this.hide();
+            } catch (error) {
+                console.error("Error saving wish:", error);
+                alert("Failed to save your wish. Please try again.");
+            }
         }
-    });
+    };
 
-    heartsRef.on("child_added", (snapshot) => {
-        const heartData = snapshot.val();
-        displayHeart(heartData.xRatio, heartData.yRatio);
-    });
+    // Optimize element creation
+    const elementCache = new Map();
+    function createElement(className) {
+        if (!elementCache.has(className)) {
+            elementCache.set(className, document.createElement('div'));
+        }
+        return elementCache.get(className).cloneNode();
+    }
 
+    // Optimize wish display
+    function displayWish(wishData) {
+        const wishContainer = document.getElementById("wishes-container");
+        const wishElement = createElement('wish');
+        wishElement.className = 'wish';
+        
+        const xPos = (wishData.xRatio * wishContainer.offsetWidth);
+        const yPos = (wishData.yRatio * wishContainer.offsetHeight);
+        
+        wishElement.style.cssText = `
+            left: ${xPos}px;
+            top: ${yPos}px;
+        `;
+        
+        wishElement.textContent = `${wishData.name}: ${wishData.text}`;
+        wishContainer.appendChild(wishElement);
+        
+        requestAnimationFrame(() => wishElement.classList.add('show'));
+
+        setTimeout(() => {
+            wishElement.classList.add('fade-out');
+            setTimeout(() => wishElement.remove(), 1000);
+        }, WISH_DISPLAY_TIME);
+    }
+
+    // Update the heart display function to handle timestamps
     function displayHeart(xRatio, yRatio) {
         const container = document.getElementById('hearts-container');
         const heart = document.createElement('div');
@@ -167,26 +196,90 @@
         heart.style.top = `${yRatio * 100}%`;
 
         container.appendChild(heart);
-        setTimeout(() => heart.remove(), 4000);
+        
+        // Remove heart element after animation
+        setTimeout(() => {
+            heart.classList.add('fade-out');
+            setTimeout(() => heart.remove(), 500);
+        }, 3500);
     }
+
+    // Add cleanup for old hearts periodically
+    setInterval(() => {
+        heartsRef.once('value')
+            .then((snapshot) => {
+                const heartCount = snapshot.numChildren();
+                if (heartCount > MAX_HEARTS) {
+                    const deleteCount = heartCount - MAX_HEARTS;
+                    heartsRef.orderByChild('timestamp')
+                        .limitToFirst(deleteCount)
+                        .once('value')
+                        .then((oldSnapshot) => {
+                            const updates = {};
+                            oldSnapshot.forEach((child) => {
+                                updates[child.key] = null;
+                            });
+                            heartsRef.update(updates);
+                        });
+                }
+            });
+    }, 60000); // Check every minute
 
     // Add these event listeners
     wishButton.addEventListener('click', () => {
-        wishFormContainer.style.visibility = 'visible';
-        wishFormContainer.classList.add('show');
+        wishForm.show();
     });
 
     closeFormButton.addEventListener('click', () => {
-        wishFormContainer.style.visibility = 'hidden';
-        wishFormContainer.classList.remove('show');
+        wishForm.hide();
     });
 
-    // Cleanup only needs one reference
-    window.addEventListener('unload', () => {
-        db.ref("wishes").off();
-        heartsRef.off();
-        liveUserRef.off();
+    // Optimize heart creation with debouncing
+    let heartDebounceTimer;
+    document.querySelector('.poster-container').addEventListener('click', function(event) {
+        if (heartDebounceTimer) clearTimeout(heartDebounceTimer);
+        
+        heartDebounceTimer = setTimeout(() => {
+            const poster = this;
+            const rect = poster.getBoundingClientRect();
+            
+            const relativeX = (event.clientX - rect.left) / rect.width;
+            const relativeY = (event.clientY - rect.top) / rect.height;
+
+            if (relativeX >= 0 && relativeX <= 1 && relativeY >= 0 && relativeY <= 1) {
+                createHeart(relativeX, relativeY);
+            }
+        }, 50); // 50ms debounce
     });
+
+    // Optimize heart creation
+    async function createHeart(relativeX, relativeY) {
+        try {
+            const snapshot = await heartsRef.once('value');
+            const heartCount = snapshot.numChildren();
+            
+            if (heartCount >= MAX_HEARTS) {
+                const oldestSnapshot = await heartsRef.orderByChild('timestamp')
+                    .limitToFirst(1)
+                    .once('value');
+                
+                if (oldestSnapshot.exists()) {
+                    const oldestKey = Object.keys(oldestSnapshot.val())[0];
+                    await heartsRef.child(oldestKey).remove();
+                }
+            }
+            
+            const heartData = { 
+                xRatio: relativeX,
+                yRatio: relativeY,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+            
+            await heartsRef.push(heartData);
+        } catch (error) {
+            console.error("Error managing hearts:", error);
+        }
+    }
     </script>
 </body>
 </html>
