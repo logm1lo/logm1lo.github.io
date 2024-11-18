@@ -74,8 +74,7 @@
                 timestamp: firebase.database.ServerValue.TIMESTAMP
             };
             
-            const wishesRef = db.ref("wishes");
-            wishesRef.push(wishData)
+            db.ref("wishes").push(wishData)
                 .then(() => {
                     wishFormContainer.style.visibility = 'hidden';
                     wishFormContainer.classList.remove('show');
@@ -91,7 +90,7 @@
         }
     });
 
-    // Display wishes
+    // Single listener for wishes
     db.ref("wishes").on("child_added", (snapshot) => {
         const wishData = snapshot.val();
         displayWish(wishData);
@@ -163,22 +162,10 @@
         wishFormContainer.classList.remove('show');
     });
 
-    // Add cleanup for Firebase listeners
-    const wishesRef = db.ref("wishes");
-    const wishesListener = wishesRef.on("child_added", (snapshot) => {
-        const wishData = snapshot.val();
-        displayWish(wishData);
-    });
-
-    const heartsListener = heartsRef.on("child_added", (snapshot) => {
-        const heartData = snapshot.val();
-        displayHeart(heartData.x, heartData.y);
-    });
-
-    // Cleanup listeners when page unloads
+    // Cleanup only needs one reference
     window.addEventListener('unload', () => {
-        wishesRef.off('child_added', wishesListener);
-        heartsRef.off('child_added', heartsListener);
+        db.ref("wishes").off();
+        heartsRef.off();
         liveUserRef.off();
     });
     </script>
