@@ -106,9 +106,18 @@
         wishElement.innerText = `${wishData.name}: ${wishData.text}`;
         wishContainer.appendChild(wishElement);
         
+        // Add show class after a small delay to trigger animation
         setTimeout(() => {
-            wishElement.style.opacity = "1";
+            wishElement.classList.add('show');
         }, 100);
+
+        // Remove the wish element after animation
+        setTimeout(() => {
+            wishElement.classList.add('fade-out');
+            setTimeout(() => {
+                wishElement.remove();
+            }, 1000);
+        }, 5000);
     }
 
     // Live hearts feature
