@@ -45,8 +45,6 @@
     firebase.initializeApp(firebaseConfig);
 
     const db = firebase.database();
-    const liveUserRef = db.ref("liveUsers");
-    const heartsRef = db.ref("hearts");
     const wishFormContainer = document.querySelector('.wish-form-container');
     const wishButton = document.getElementById('wishButton');
     const closeFormButton = document.getElementById('closeFormButton');
