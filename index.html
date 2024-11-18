@@ -50,7 +50,7 @@
     const closeFormButton = document.getElementById('closeFormButton');
 
     // Add configuration constants
-    const MAX_HEARTS = 50;
+    const MAX_HEARTS = 20;
     const WISH_DISPLAY_TIME = 5000;
     const HEART_DISPLAY_TIME = 3500;
     const CLEANUP_INTERVAL = 60000;
@@ -70,9 +70,84 @@
     let heartsListener = null;
     let liveUserListener = null;
 
-    // Initialize listeners
+    // Add this after Firebase initialization and before other code
+    const MAX_RECONNECT_ATTEMPTS = 5;
+    let reconnectAttempts = 0;
+
+    // Connection state monitoring
+    const connectedRef = db.ref('.info/connected');
+    connectedRef.on('value', (snap) => {
+        if (snap.val() === true) {
+            console.log('Connected to Firebase');
+            reconnectAttempts = 0; // Reset attempts on successful connection
+        } else {
+            console.log('Disconnected from Firebase');
+            handleDisconnection();
+        }
+    });
+
+    // Handle disconnection with reconnection logic
+    function handleDisconnection() {
+        if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+            reconnectAttempts++;
+            console.log(`Attempting to reconnect... (Attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`);
+            
+            // Attempt to reconnect after a delay
+            setTimeout(() => {
+                reconnectToFirebase();
+            }, Math.min(1000 * Math.pow(2, reconnectAttempts), 10000)); // Exponential backoff
+        } else {
+            console.error('Max reconnection attempts reached');
+            alert('Connection lost. Please refresh the page.');
+        }
+    }
+
+    // Reconnection function
+    function reconnectToFirebase() {
+        cleanup(); // Clean up existing listeners
+        
+        // Reinitialize Firebase connection
+        try {
+            firebase.database().goOnline();
+            initializeListeners(); // Reinitialize listeners
+        } catch (error) {
+            console.error('Reconnection failed:', error);
+            handleDisconnection();
+        }
+    }
+
+    // Update cleanup function to handle connection state
+    function cleanup() {
+        if (wishesListener) wishesRef.off('child_added', wishesListener);
+        if (heartsListener) heartsRef.off('child_added', heartsListener);
+        if (liveUserListener) liveUserRef.off('value', liveUserListener);
+        if (userKey) liveUserRef.child(userKey).remove();
+        
+        // Disconnect gracefully
+        firebase.database().goOffline();
+    }
+
+    // Add offline persistence
+    firebase.database().setPersistenceEnabled(true).catch(error => {
+        console.warn('Persistence could not be enabled:', error);
+    });
+
+    // Update initializeListeners with connection handling
     function initializeListeners() {
         try {
+            // Add connection state listener
+            const connectedRef = firebase.database().ref('.info/connected');
+            connectedRef.on('value', (snap) => {
+                const liveUserCount = document.getElementById("liveUserCount");
+                if (liveUserCount) {
+                    if (snap.val() === true) {
+                        liveUserCount.style.color = '#4CAF50'; // Green when connected
+                    } else {
+                        liveUserCount.style.color = '#f44336'; // Red when disconnected
+                    }
+                }
+            });
+
             // Live users listener
             liveUserListener = liveUserRef.on("value", (snapshot) => {
                 const liveUserCount = document.getElementById("liveUserCount");
@@ -99,15 +174,8 @@
             });
         } catch (error) {
             console.error("Error initializing listeners:", error);
+            handleDisconnection();
         }
-    }
-
-    // Cleanup function
-    function cleanup() {
-        if (wishesListener) wishesRef.off('child_added', wishesListener);
-        if (heartsListener) heartsRef.off('child_added', heartsListener);
-        if (liveUserListener) liveUserRef.off('value', liveUserListener);
-        liveUserRef.child(userKey).remove();
     }
 
     // Initialize listeners
@@ -307,6 +375,17 @@
             console.error("Error managing hearts:", error);
         }
     }
+
+    // Add window online/offline event handlers
+    window.addEventListener('online', () => {
+        console.log('Browser went online');
+        reconnectToFirebase();
+    });
+
+    window.addEventListener('offline', () => {
+        console.log('Browser went offline');
+        cleanup();
+    });
     </script>
 </body>
 </html>
