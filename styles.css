@@ -147,6 +147,12 @@ body {
     opacity: 1;
 }
 
+.heart.fade-out {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+    transition: all 0.5s ease;
+}
+
 /* Styling for buttons */
 button {
     background-color: #ff4d4d;

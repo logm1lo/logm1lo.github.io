@@ -49,44 +49,57 @@
     const wishButton = document.getElementById('wishButton');
     const closeFormButton = document.getElementById('closeFormButton');
 
-    // Track live users
-    const userKey = liveUserRef.push().key;
-    liveUserRef.child(userKey).set(true);
-    liveUserRef.child(userKey).onDisconnect().remove();
-
-    // Add these variables at the top with other configurations
+    // Add configuration constants
     const MAX_HEARTS = 50;
     const WISH_DISPLAY_TIME = 5000;
     const HEART_DISPLAY_TIME = 3500;
     const CLEANUP_INTERVAL = 60000;
 
-    // Optimize Firebase references
+    // Initialize Firebase references first
     const wishesRef = db.ref("wishes");
     const heartsRef = db.ref("hearts");
     const liveUserRef = db.ref("liveUsers");
 
-    // Optimize listeners with single reference
+    // Now initialize live user tracking
+    const userKey = liveUserRef.push().key;
+    liveUserRef.child(userKey).set(true);
+    liveUserRef.child(userKey).onDisconnect().remove();
+
+    // Initialize listener variables
     let wishesListener = null;
     let heartsListener = null;
     let liveUserListener = null;
 
     // Initialize listeners
     function initializeListeners() {
-        // Live users listener
-        liveUserListener = liveUserRef.on("value", (snapshot) => {
-            document.getElementById("liveUserCount").textContent = snapshot.numChildren();
-        });
+        try {
+            // Live users listener
+            liveUserListener = liveUserRef.on("value", (snapshot) => {
+                const liveUserCount = document.getElementById("liveUserCount");
+                if (liveUserCount) {
+                    liveUserCount.textContent = snapshot.numChildren();
+                }
+            }, (error) => {
+                console.error("Error in live user listener:", error);
+            });
 
-        // Wishes listener with throttling
-        wishesListener = wishesRef.on("child_added", (snapshot) => {
-            requestAnimationFrame(() => displayWish(snapshot.val()));
-        });
+            // Wishes listener with throttling
+            wishesListener = wishesRef.on("child_added", (snapshot) => {
+                requestAnimationFrame(() => displayWish(snapshot.val()));
+            }, (error) => {
+                console.error("Error in wishes listener:", error);
+            });
 
-        // Hearts listener with throttling
-        heartsListener = heartsRef.on("child_added", (snapshot) => {
-            const heartData = snapshot.val();
-            requestAnimationFrame(() => displayHeart(heartData.xRatio, heartData.yRatio));
-        });
+            // Hearts listener with throttling
+            heartsListener = heartsRef.on("child_added", (snapshot) => {
+                const heartData = snapshot.val();
+                requestAnimationFrame(() => displayHeart(heartData.xRatio, heartData.yRatio));
+            }, (error) => {
+                console.error("Error in hearts listener:", error);
+            });
+        } catch (error) {
+            console.error("Error initializing listeners:", error);
+        }
     }
 
     // Cleanup function
@@ -109,12 +122,22 @@
         nameInput: document.getElementById('nameInput'),
         wishInput: document.getElementById('wishInput'),
         
+        init() {
+            if (!this.container || !this.nameInput || !this.wishInput) {
+                console.error('Required form elements not found');
+                return false;
+            }
+            return true;
+        },
+        
         show() {
+            if (!this.init()) return;
             this.container.style.visibility = 'visible';
             requestAnimationFrame(() => this.container.classList.add('show'));
         },
         
         hide() {
+            if (!this.init()) return;
             this.container.style.visibility = 'hidden';
             this.container.classList.remove('show');
             this.nameInput.value = '';
@@ -122,6 +145,7 @@
         },
         
         async submitWish() {
+            if (!this.init()) return;
             const name = this.nameInput.value.trim();
             const wish = this.wishInput.value.trim();
             
@@ -148,6 +172,11 @@
             }
         }
     };
+
+    // Add this after the wishForm object definition
+    document.getElementById("submitWishButton").addEventListener("click", () => {
+        wishForm.submitWish();
+    });
 
     // Optimize element creation
     const elementCache = new Map();
