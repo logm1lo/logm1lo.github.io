@@ -63,25 +63,37 @@
 
     // Wish submission
     document.getElementById("submitWishButton").addEventListener("click", () => {
-        const name = document.getElementById("nameInput").value;
-        const wish = document.getElementById("wishInput").value;
+            const name = document.getElementById("nameInput").value;
+            const wish = document.getElementById("wishInput").value;
 
-        if (name && wish) {
-            const wishData = {
-                name,
-                text: wish,
-                x: Math.random() * window.innerWidth,
-                y: Math.random() * window.innerHeight
-            };
+            if (name && wish) {
+                const wishData = {
+                    name,
+                    text: wish,
+                    x: Math.random() * window.innerWidth,
+                    y: Math.random() * window.innerHeight
+                };
 
-            db.ref("wishes").push(wishData);
-            displayWish(wishData);
-            document.getElementById("wishFormContainer").style.display = "none";
-        } else {
-            alert("Please enter both your name and your wish.");
-        }
-    });
+                db.ref("wishes").push(wishData)
+                    .then(() => {
+                        // Display the wish on the screen
+                        displayWish(wishData);
 
+                        // Hide form after successful submission
+                        wishFormContainer.style.display = "none";
+
+                        // Reset input fields for new input
+                        document.getElementById("nameInput").value = "";
+                        document.getElementById("wishInput").value = "";
+                    })
+                    .catch((error) => {
+                        console.error("Error submitting wish:", error);
+                        alert("Failed to submit your wish. Please try again.");
+                    });
+            } else {
+                alert("Please enter both your name and your wish.");
+            }
+        });
     // Display wishes
     db.ref("wishes").on("child_added", (snapshot) => {
         const wishData = snapshot.val();
