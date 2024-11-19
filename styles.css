@@ -208,6 +208,8 @@ body {
     transition: background-color 0.2s ease;
     width: 100%;
     box-sizing: border-box;
+    position: relative;
+    gap: 8px;
 }
 
 .player-rank {
@@ -381,4 +383,285 @@ body {
     color: #ff4d4d;
     font-size: 0.9em;
     font-style: italic;
+}
+
+/* CPS Battle Styles */
+.challenge-button {
+    display: none;
+    background: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.score-item:hover .challenge-button {
+    display: block;
+}
+
+.challenge-button:hover {
+    background: #ff3333;
+    transform: scale(1.05);
+}
+
+.challenge-button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.cps-battle-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    z-index: 2002;
+    width: 600px;
+    display: none;
+}
+
+.battle-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.player-box {
+    flex: 1;
+    text-align: center;
+    padding: 20px;
+    border-radius: 10px;
+    background: #f5f5f5;
+}
+
+.player-box.challenger { background: rgba(255, 77, 77, 0.1); }
+.player-box.challenged { background: rgba(77, 255, 77, 0.1); }
+
+.battle-score {
+    font-size: 48px;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.click-area {
+    width: 200px;
+    height: 200px;
+    margin: 20px auto;
+    background: #fff;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.1s;
+}
+
+.click-area:active {
+    transform: scale(0.98);
+    background: #f0f0f0;
+}
+
+.battle-timer {
+    text-align: center;
+    font-size: 24px;
+    margin: 20px 0;
+}
+
+.battle-countdown {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 72px;
+    font-weight: bold;
+    color: #ff4d4d;
+    display: none;
+}
+
+.challenge-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    z-index: 2003;
+    display: none;
+}
+
+.challenge-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.challenge-buttons button {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.accept-button {
+    background: #4CAF50;
+    color: white;
+}
+
+.refuse-button {
+    background: #ff4d4d;
+    color: white;
+}
+
+/* Add these styles */
+.waiting-modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    z-index: 2002;
+    text-align: center;
+    min-width: 300px;
+}
+
+.waiting-content h3 {
+    margin: 0 0 20px 0;
+    color: #333;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #ff4d4d;
+    border-radius: 50%;
+    margin: 20px auto;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.cancel-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background: #ff4d4d;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.cancel-button:hover {
+    background: #ff3333;
+}
+
+/* Update Popup Styles */
+.update-popup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.2);
+    z-index: 2005;
+    max-width: 500px;
+    width: 90%;
+    animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translate(-50%, -40%);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-50%, -50%);
+        opacity: 1;
+    }
+}
+
+.update-content {
+    text-align: center;
+}
+
+.update-content h2 {
+    color: #ff4d4d;
+    margin: 0 0 20px 0;
+    font-size: 24px;
+}
+
+.update-content h3 {
+    color: #333;
+    margin: 0 0 25px 0;
+    font-size: 18px;
+}
+
+.feature-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px;
+    background: #f8f8f8;
+    border-radius: 10px;
+    text-align: left;
+}
+
+.feature-icon {
+    font-size: 24px;
+    min-width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.feature-item p {
+    margin: 0;
+    font-size: 16px;
+    color: #444;
+}
+
+.close-update-btn {
+    margin-top: 20px;
+    padding: 12px 30px;
+    background: #ff4d4d;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.close-update-btn:hover {
+    background: #ff3333;
 }

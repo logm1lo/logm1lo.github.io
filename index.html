@@ -64,6 +64,10 @@
     </style>
 </head>
 <body>
+    <audio id="challengeNotificationSound" preload="auto">
+        <source src="notificationsound.mp3" type="audio/mp3">
+    </audio>
+    
     <div class="cps-counter">
         <div class="cps-current">Current CPS: <span id="currentCPS">0</span></div>
         <div class="cps-peak">Peak CPS: <span id="peakCPS">0</span></div>
@@ -102,6 +106,82 @@
             <input type="text" id="wishInput" placeholder="Your Wish" required>
             <button id="submitWishButton">Submit Wish</button>
             <button id="closeFormButton">Close</button>
+        </div>
+    </div>
+
+    <div id="cpsBattleModal" class="cps-battle-modal">
+        <div class="battle-timer">Time: <span id="battleTimer">20</span>s</div>
+        <div class="battle-container">
+            <div class="player-box challenger">
+                <h3 id="challengerName"></h3>
+                <div class="battle-score" id="challengerScore">0</div>
+                <div class="click-area" id="challengerClickArea"></div>
+            </div>
+            <div class="player-box challenged">
+                <h3 id="challengedName"></h3>
+                <div class="battle-score" id="challengedScore">0</div>
+                <div class="click-area" id="challengedClickArea"></div>
+            </div>
+        </div>
+        <div class="battle-countdown" id="battleCountdown">5</div>
+    </div>
+
+    <div id="challengeNotification" class="challenge-notification">
+        <p><span id="challengerNotifName"></span> has challenged you!</p>
+        <div class="challenge-buttons">
+            <button class="accept-button" id="acceptChallenge">Accept</button>
+            <button class="refuse-button" id="refuseChallenge">Refuse</button>
+        </div>
+    </div>
+
+    <!-- Add this after your other modals -->
+    <div id="waitingModal" class="waiting-modal">
+        <div class="waiting-content">
+            <h3>Waiting for Response</h3>
+            <div class="loading-spinner"></div>
+            <p>Waiting for <span id="challengedPlayerName"></span> to respond...</p>
+            <button id="cancelChallenge" class="cancel-button">Cancel Challenge</button>
+        </div>
+    </div>
+
+    <!-- Add this after your other modals -->
+    <div id="updatePopup" class="update-popup">
+        <div class="update-content">
+            <h2>🎮 New Feature: CPS Battle! 🎮</h2>
+            <div class="update-details">
+                <h3>Challenge other players to a CPS Battle!</h3>
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <span class="feature-icon">⚔️</span>
+                        <p>Challenge any player from the scoreboard</p>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">⏱️</span>
+                        <p>20-second intense clicking battle</p>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🏆</span>
+                        <p><strong>If you win as challenger:</strong> Get 40% of opponent's hearts!</p>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">💔</span>
+                        <p><strong>If you lose as challenger:</strong> Lose 60% of your hearts!</p>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🛡️</span>
+                        <p><strong>If you win when challenged:</strong> Get 60% of challenger's hearts!</p>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">⚡</span>
+                        <p><strong>If you lose when challenged:</strong> Lose 40% of your hearts!</p>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🎯</span>
+                        <p>Hover over players to see the Challenge button</p>
+                    </div>
+                </div>
+            </div>
+            <button id="closeUpdatePopup" class="close-update-btn">Let's Battle!</button>
         </div>
     </div>
 
@@ -168,6 +248,16 @@
         99999: "👑 MAXIMUM POWER! 99,999 hearts!"
     };
 
+    // Global variables for CPS Battle
+    let activeBattle = null;
+    let battleClickTimes = [];
+    let battleInterval = null;
+    let battleTimeout = null;
+    let challengedPlayer = null;
+
+    // Add this near the top of your script with other global variables
+    let challengeListeners = [];
+
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize live user tracking
         liveUserRef.child(userKey).set(true);
@@ -219,8 +309,25 @@
                         timestamp: firebase.database.ServerValue.TIMESTAMP
                     });
 
-                    // Hide name prompt and initialize game
+                    // Hide name prompt
                     document.getElementById('namePromptContainer').style.display = 'none';
+                    
+                    // Show update popup after name submission
+                    const hasSeenUpdate = localStorage.getItem('hasSeenCPSBattleUpdate');
+                    if (!hasSeenUpdate) {
+                        const updatePopup = document.getElementById('updatePopup');
+                        if (updatePopup) {
+                            updatePopup.style.display = 'block';
+                            
+                            // Add click handler for close button
+                            document.getElementById('closeUpdatePopup').onclick = () => {
+                                updatePopup.style.display = 'none';
+                                localStorage.setItem('hasSeenCPSBattleUpdate', 'true');
+                            };
+                        }
+                    }
+                    
+                    // Initialize game
                     initializeGame();
                     
                     console.log('Player registered successfully'); // Debug log
@@ -232,8 +339,24 @@
                         timestamp: firebase.database.ServerValue.TIMESTAMP
                     });
 
-                    // Hide name prompt and initialize game
+                    // Hide name prompt and show update popup
                     document.getElementById('namePromptContainer').style.display = 'none';
+                    
+                    // Show update popup after name submission
+                    const hasSeenUpdate = localStorage.getItem('hasSeenCPSBattleUpdate');
+                    if (!hasSeenUpdate) {
+                        const updatePopup = document.getElementById('updatePopup');
+                        if (updatePopup) {
+                            updatePopup.style.display = 'block';
+                            
+                            // Add click handler for close button
+                            document.getElementById('closeUpdatePopup').onclick = () => {
+                                updatePopup.style.display = 'none';
+                                localStorage.setItem('hasSeenCPSBattleUpdate', 'true');
+                            };
+                        }
+                    }
+                    
                     initializeGame();
                 }
             } catch (error) {
@@ -282,6 +405,34 @@
                 return false;
             });
         });
+
+        // Function to show update popup
+        function showUpdatePopup() {
+            const hasSeenUpdate = localStorage.getItem('hasSeenCPSBattleUpdate');
+            
+            if (!hasSeenUpdate) {
+                // Show update popup after a short delay
+                setTimeout(() => {
+                    const updatePopup = document.getElementById('updatePopup');
+                    if (updatePopup) {
+                        updatePopup.style.display = 'block';
+                        console.log('Showing update popup'); // Debug log
+                    }
+                }, 1000);
+            }
+        }
+
+        // Handle close button for update popup
+        const closeUpdateBtn = document.getElementById('closeUpdatePopup');
+        if (closeUpdateBtn) {
+            closeUpdateBtn.addEventListener('click', () => {
+                document.getElementById('updatePopup').style.display = 'none';
+                localStorage.setItem('hasSeenCPSBattleUpdate', 'true');
+            });
+        }
+
+        // Show the popup
+        showUpdatePopup();
     });
 
     // Initialize game function with error handling
@@ -301,6 +452,9 @@
         
         // Start CPS counter
         startCPSUpdater();
+        
+        // Set up challenge listeners
+        setupChallengeListeners();
         
         console.log('Game initialized successfully');
     }
@@ -419,7 +573,7 @@
         }
     }
 
-    function updateScoreboard(snapshot) {
+    async function updateScoreboard(snapshot) {
         const scoreList = document.getElementById('scoreList');
         const scores = [];
         
@@ -429,14 +583,15 @@
                 scores.push({
                     key: child.key,
                     name: data.name,
-                    hearts: data.hearts
+                    hearts: data.hearts,
+                    inBattle: data.inBattle || false
                 });
             }
         });
         
         scores.sort((a, b) => b.hearts - a.hearts);
         
-        scoreList.innerHTML = scores.map((score, index) => {
+        const scoreListHTML = await Promise.all(scores.map(async (score, index) => {
             let rankDisplay;
             if (index === 0) rankDisplay = '🥇';
             else if (index === 1) rankDisplay = '🥈';
@@ -444,6 +599,7 @@
             else rankDisplay = `${index + 1}.`;
             
             const isCurrentPlayer = score.key === userKey;
+            const canChallengePlayer = await canChallenge(score.key);
             
             return `
                 <div class="score-item ${index < 3 ? 'top-three' : ''}" 
@@ -452,9 +608,18 @@
                     <span class="player-rank">${rankDisplay}</span>
                     <span class="player-name">${score.name}</span>
                     <span class="player-score">${score.hearts} 💖</span>
+                    ${canChallengePlayer ? `
+                        <button class="challenge-button" 
+                                onclick="initiateChallenge('${score.key}', '${score.name}')"
+                                ${score.inBattle ? 'disabled' : ''}>
+                            Battle
+                        </button>
+                    ` : ''}
                 </div>
             `;
-        }).join('');
+        }));
+        
+        scoreList.innerHTML = scoreListHTML.join('');
     }
 
     async function submitWish(event) {
@@ -569,8 +734,19 @@
         if (cpsUpdateFrame) {
             cancelAnimationFrame(cpsUpdateFrame);
         }
-        wishesRef.off(); // Remove all wish listeners
+        
+        // Clean up challenge listeners
+        challengeListeners.forEach(listener => listener.off());
+        challengeListeners = [];
+        
+        wishesRef.off();
         liveUserRef.off();
+        
+        // Remove update popup if it exists
+        const updatePopup = document.getElementById('updatePopup');
+        if (updatePopup) {
+            updatePopup.style.display = 'none';
+        }
     }
 
     window.addEventListener('beforeunload', cleanup);
@@ -589,6 +765,446 @@
         } catch (error) {
             console.error('Error registering player:', error);
         }
+    }
+
+    async function initiateChallenge(targetKey, targetName) {
+        if (!playerName || !userKey) {
+            alert('Please enter your name first!');
+            return;
+        }
+        
+        if (activeBattle) {
+            alert('You are already in a battle!');
+            return;
+        }
+
+        try {
+            // Check if target player is still available
+            const targetSnapshot = await playersRef.child(targetKey).once('value');
+            const targetData = targetSnapshot.val();
+            
+            if (!targetData || targetData.inBattle) {
+                alert('This player is no longer available for battle.');
+                return;
+            }
+
+            // Show waiting modal
+            const waitingModal = document.getElementById('waitingModal');
+            const challengedPlayerName = document.getElementById('challengedPlayerName');
+            challengedPlayerName.textContent = targetName;
+            waitingModal.style.display = 'block';
+
+            // Update challenger status
+            await playersRef.child(userKey).update({ inBattle: true });
+            
+            // Create challenge
+            const newChallengeRef = db.ref('challenges').push();
+            const challengeData = {
+                id: newChallengeRef.key,
+                challenger: {
+                    key: userKey,
+                    name: playerName
+                },
+                challenged: {
+                    key: targetKey,
+                    name: targetName
+                },
+                status: 'pending',
+                timestamp: Date.now()
+            };
+
+            await newChallengeRef.set(challengeData);
+            
+            // Setup cancel button
+            const cancelButton = document.getElementById('cancelChallenge');
+            const cancelHandler = async () => {
+                try {
+                    await newChallengeRef.remove();
+                    await playersRef.child(userKey).update({ inBattle: false });
+                    waitingModal.style.display = 'none';
+                    activeBattle = null;
+                    cancelButton.removeEventListener('click', cancelHandler);
+                } catch (error) {
+                    console.error('Error canceling challenge:', error);
+                }
+            };
+            
+            cancelButton.addEventListener('click', cancelHandler);
+            
+            // Set timeout for challenge response
+            const timeoutId = setTimeout(async () => {
+                const snapshot = await newChallengeRef.once('value');
+                if (snapshot.val()?.status === 'pending') {
+                    await newChallengeRef.remove();
+                    await playersRef.child(userKey).update({ inBattle: false });
+                    waitingModal.style.display = 'none';
+                    alert('Challenge timed out');
+                    activeBattle = null;
+                    cancelButton.removeEventListener('click', cancelHandler);
+                }
+            }, 30000); // 30 seconds timeout
+
+            // Listen for response
+            newChallengeRef.on('value', async (snapshot) => {
+                const challenge = snapshot.val();
+                if (!challenge) {
+                    await playersRef.child(userKey).update({ inBattle: false });
+                    waitingModal.style.display = 'none';
+                    activeBattle = null;
+                    cancelButton.removeEventListener('click', cancelHandler);
+                    return;
+                }
+
+                if (challenge.status === 'accepted') {
+                    clearTimeout(timeoutId);
+                    waitingModal.style.display = 'none';
+                    activeBattle = challenge;
+                    cancelButton.removeEventListener('click', cancelHandler);
+                    startBattle(challenge);
+                } else if (challenge.status === 'refused') {
+                    clearTimeout(timeoutId);
+                    await playersRef.child(userKey).update({ inBattle: false });
+                    waitingModal.style.display = 'none';
+                    alert(`${targetName} refused your challenge`);
+                    newChallengeRef.off();
+                    await newChallengeRef.remove();
+                    activeBattle = null;
+                    cancelButton.removeEventListener('click', cancelHandler);
+                }
+            });
+
+        } catch (error) {
+            console.error('Error initiating challenge:', error);
+            document.getElementById('waitingModal').style.display = 'none';
+            await playersRef.child(userKey).update({ inBattle: false });
+            activeBattle = null;
+            alert('Failed to initiate challenge. Please try again.');
+        }
+    }
+
+    // Update the challenge listener setup
+    function setupChallengeListeners() {
+        // Clear any existing listeners
+        challengeListeners.forEach(listener => listener.off());
+        challengeListeners = [];
+
+        // Listen for challenges where user is challenged
+        const challengedListener = db.ref('challenges')
+            .orderByChild('challenged/key')
+            .equalTo(userKey)
+            .on('child_added', async (snapshot) => {
+                const challenge = snapshot.val();
+                if (!challenge) return;
+
+                if (challenge.status === 'pending') {
+                    // Play notification sound when receiving a challenge
+                    const notificationSound = document.getElementById('challengeNotificationSound');
+                    try {
+                        // Reset the audio to the start
+                        notificationSound.currentTime = 0;
+                        
+                        // Play the sound
+                        const playPromise = notificationSound.play();
+                        
+                        if (playPromise !== undefined) {
+                            playPromise.catch(error => {
+                                console.log("Audio play failed:", error);
+                            });
+                        }
+                    } catch (error) {
+                        console.error("Error playing notification sound:", error);
+                    }
+                    
+                    showChallengeNotification(challenge, snapshot.key);
+                } else if (challenge.status === 'accepted' && !activeBattle) {
+                    activeBattle = challenge;
+                    startBattle(challenge);
+                }
+            });
+
+        // Listen for challenges where user is challenger
+        const challengerListener = db.ref('challenges')
+            .orderByChild('challenger/key')
+            .equalTo(userKey)
+            .on('child_added', async (snapshot) => {
+                const challenge = snapshot.val();
+                if (!challenge) return;
+
+                if (challenge.status === 'accepted' && !activeBattle) {
+                    activeBattle = challenge;
+                    startBattle(challenge);
+                }
+            });
+
+        challengeListeners.push(
+            { ref: db.ref('challenges'), off: () => db.ref('challenges').off('child_added', challengedListener) },
+            { ref: db.ref('challenges'), off: () => db.ref('challenges').off('child_added', challengerListener) }
+        );
+    }
+
+    function showChallengeNotification(challenge, challengeId) {
+        const notification = document.getElementById('challengeNotification');
+        document.getElementById('challengerNotifName').textContent = challenge.challenger.name;
+        
+        document.getElementById('acceptChallenge').onclick = () => acceptChallenge(challengeId);
+        document.getElementById('refuseChallenge').onclick = () => refuseChallenge(challengeId);
+        
+        notification.style.display = 'block';
+    }
+
+    // Update the acceptChallenge function
+    async function acceptChallenge(challengeId) {
+        try {
+            const challengeRef = db.ref(`challenges/${challengeId}`);
+            const snapshot = await challengeRef.once('value');
+            const challenge = snapshot.val();
+
+            if (!challenge) {
+                alert('Challenge no longer exists');
+                return;
+            }
+
+            // Update both players' battle status
+            await Promise.all([
+                playersRef.child(challenge.challenger.key).update({ inBattle: true }),
+                playersRef.child(challenge.challenged.key).update({ inBattle: true })
+            ]);
+
+            // Update challenge status
+            await challengeRef.update({ status: 'accepted' });
+            
+            // Hide notification
+            document.getElementById('challengeNotification').style.display = 'none';
+            
+            // Start battle for challenged player
+            activeBattle = { ...challenge, id: challengeId };
+            startBattle(activeBattle);
+
+        } catch (error) {
+            console.error('Error accepting challenge:', error);
+            alert('Error accepting challenge. Please try again.');
+        }
+    }
+
+    async function refuseChallenge(challengeId) {
+        try {
+            await db.ref(`challenges/${challengeId}`).update({ status: 'refused' });
+            document.getElementById('challengeNotification').style.display = 'none';
+        } catch (error) {
+            console.error('Error refusing challenge:', error);
+        }
+    }
+
+    // Update the startBattle function to handle both players
+    function startBattle(challenge) {
+        const modal = document.getElementById('cpsBattleModal');
+        const countdown = document.getElementById('battleCountdown');
+        const challengerName = document.getElementById('challengerName');
+        const challengedName = document.getElementById('challengedName');
+        
+        // Reset scores
+        document.getElementById('challengerScore').textContent = '0';
+        document.getElementById('challengedScore').textContent = '0';
+        
+        // Set names
+        challengerName.textContent = challenge.challenger.name;
+        challengedName.textContent = challenge.challenged.name;
+        
+        // Show modal and countdown
+        modal.style.display = 'block';
+        countdown.style.display = 'block';
+        countdown.textContent = '5';
+        
+        // Disable the non-active click area
+        const isChallenger = challenge.challenger.key === userKey;
+        const opponentClickArea = document.getElementById(isChallenger ? 'challengedClickArea' : 'challengerClickArea');
+        opponentClickArea.style.pointerEvents = 'none';
+        opponentClickArea.style.opacity = '0.7';
+        
+        let count = 5;
+        const countInterval = setInterval(() => {
+            count--;
+            countdown.textContent = count;
+            
+            if (count <= 0) {
+                clearInterval(countInterval);
+                countdown.style.display = 'none';
+                initializeBattle(challenge);
+            }
+        }, 1000);
+    }
+
+    function initializeBattle(challenge) {
+        const isChallenger = challenge.challenger.key === userKey;
+        const clickArea = document.getElementById(isChallenger ? 'challengerClickArea' : 'challengedClickArea');
+        const scoreElement = document.getElementById(isChallenger ? 'challengerScore' : 'challengedScore');
+        
+        let clicks = 0;
+        battleClickTimes = [];
+        
+        const clickHandler = () => {
+            clicks++;
+            scoreElement.textContent = clicks;
+            battleClickTimes.push(Date.now());
+        };
+        
+        clickArea.addEventListener('click', clickHandler);
+        
+        let timeLeft = 20;
+        document.getElementById('battleTimer').textContent = timeLeft;
+        
+        battleInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById('battleTimer').textContent = timeLeft;
+            
+            if (timeLeft <= 0) {
+                clearInterval(battleInterval);
+                clickArea.removeEventListener('click', clickHandler);
+                endBattle(challenge, clicks);
+            }
+        }, 1000);
+    }
+
+    async function endBattle(challenge, finalScore) {
+        try {
+            const isChallenger = challenge.challenger.key === userKey;
+            const opponentScore = parseInt(document.getElementById(isChallenger ? 'challengedScore' : 'challengerScore').textContent);
+            
+            // Get current scores
+            const [challengerSnap, challengedSnap] = await Promise.all([
+                playersRef.child(challenge.challenger.key).once('value'),
+                playersRef.child(challenge.challenged.key).once('value')
+            ]);
+            
+            const challengerScore = challengerSnap.val()?.hearts || 0;
+            const challengedScore = challengedSnap.val()?.hearts || 0;
+            
+            // Calculate transfers based on who won and the specific rules
+            let challengerUpdate = { inBattle: false };
+            let challengedUpdate = { inBattle: false };
+            let transferAmount = 0;
+            
+            if (finalScore > opponentScore) {
+                // Current player won
+                if (isChallenger) {
+                    // Challenger won - gets 40% of challenged player's hearts
+                    transferAmount = Math.floor(challengedScore * 0.4);
+                    challengerUpdate.hearts = challengerScore + transferAmount;
+                    challengedUpdate.hearts = challengedScore - transferAmount;
+                    alert(`You won! You gained ${transferAmount} hearts (40% of opponent's hearts)!`);
+                } else {
+                    // Challenged player won - gets 60% of challenger's hearts
+                    transferAmount = Math.floor(challengerScore * 0.6);
+                    challengerUpdate.hearts = challengerScore - transferAmount;
+                    challengedUpdate.hearts = challengedScore + transferAmount;
+                    alert(`You won! You gained ${transferAmount} hearts (60% of challenger's hearts)!`);
+                }
+            } else if (finalScore < opponentScore) {
+                // Current player lost
+                if (isChallenger) {
+                    // Challenger lost - loses 60% of their hearts
+                    transferAmount = Math.floor(challengerScore * 0.6);
+                    challengerUpdate.hearts = challengerScore - transferAmount;
+                    challengedUpdate.hearts = challengedScore + transferAmount;
+                    alert(`You lost! You lost ${transferAmount} hearts (60% of your hearts)!`);
+                } else {
+                    // Challenged player lost - loses 40% of their hearts
+                    transferAmount = Math.floor(challengedScore * 0.4);
+                    challengerUpdate.hearts = challengerScore + transferAmount;
+                    challengedUpdate.hearts = challengedScore - transferAmount;
+                    alert(`You lost! You lost ${transferAmount} hearts (40% of your hearts)!`);
+                }
+            } else {
+                // It's a tie
+                alert("It's a tie! No hearts were exchanged.");
+            }
+            
+            // Update scores and reset battle states
+            await Promise.all([
+                playersRef.child(challenge.challenger.key).update(challengerUpdate),
+                playersRef.child(challenge.challenged.key).update(challengedUpdate)
+            ]);
+            
+            // Complete cleanup
+            const cleanupTasks = [
+                // Remove the challenge from database
+                db.ref(`challenges/${challenge.id}`).remove(),
+                
+                // Reset battle states explicitly for both players
+                playersRef.child(challenge.challenger.key).child('inBattle').set(false),
+                playersRef.child(challenge.challenged.key).child('inBattle').set(false)
+            ];
+            
+            await Promise.all(cleanupTasks);
+            
+            // Reset UI and states
+            const modal = document.getElementById('cpsBattleModal');
+            modal.style.display = 'none';
+            
+            // Reset click areas
+            document.getElementById('challengerClickArea').style.pointerEvents = 'auto';
+            document.getElementById('challengerClickArea').style.opacity = '1';
+            document.getElementById('challengedClickArea').style.pointerEvents = 'auto';
+            document.getElementById('challengedClickArea').style.opacity = '1';
+            
+            // Reset scores
+            document.getElementById('challengerScore').textContent = '0';
+            document.getElementById('challengedScore').textContent = '0';
+            
+            // Clear all intervals and timeouts
+            if (battleInterval) {
+                clearInterval(battleInterval);
+                battleInterval = null;
+            }
+            if (battleTimeout) {
+                clearTimeout(battleTimeout);
+                battleTimeout = null;
+            }
+            
+            // Reset all battle states
+            activeBattle = null;
+            battleClickTimes = [];
+            challengedPlayer = null;
+            
+            // Force a scoreboard update
+            const scoreSnapshot = await playersRef.orderByChild('hearts').once('value');
+            updateScoreboard(scoreSnapshot);
+            
+        } catch (error) {
+            console.error('Error ending battle:', error);
+            // Emergency cleanup in case of error
+            try {
+                await Promise.all([
+                    playersRef.child(challenge.challenger.key).update({ inBattle: false }),
+                    playersRef.child(challenge.challenged.key).update({ inBattle: false }),
+                    db.ref(`challenges/${challenge.id}`).remove()
+                ]);
+            } catch (cleanupError) {
+                console.error('Error during emergency cleanup:', cleanupError);
+            }
+            
+            // Reset UI and states even if there's an error
+            document.getElementById('cpsBattleModal').style.display = 'none';
+            activeBattle = null;
+            battleClickTimes = [];
+            challengedPlayer = null;
+            
+            alert('Error during battle end. States have been reset.');
+        }
+    }
+
+    // Add this helper function to check if a player can challenge
+    function canChallenge(playerKey) {
+        return new Promise(async (resolve) => {
+            try {
+                const snapshot = await playersRef.child(playerKey).once('value');
+                const playerData = snapshot.val();
+                resolve(!playerData.inBattle && playerKey !== userKey);
+            } catch (error) {
+                console.error('Error checking if player can challenge:', error);
+                resolve(false);
+            }
+        });
     }
     </script>
 </body>
