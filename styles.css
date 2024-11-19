@@ -306,26 +306,26 @@ button:hover {
     }
 }
 
-/* Update Scoreboard Styles */
+/* Update Scoreboard Styles - Make it even bigger */
 .scoreboard {
     background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    padding: 20px;
-    max-width: 400px; /* Increased from 300px */
-    margin: 20px;
+    border-radius: 15px;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+    padding: 25px;
+    max-width: 500px; /* Increased from 400px */
+    margin: 25px;
     position: fixed;
     top: 0;
     right: 0;
-    font-size: 16px; /* Increased base font size */
+    font-size: 18px; /* Increased base font size */
 }
 
 .scoreboard h2 {
-    margin: 0 0 15px 0;
-    padding-bottom: 12px;
-    border-bottom: 2px solid #eee;
+    margin: 0 0 20px 0;
+    padding-bottom: 15px;
+    border-bottom: 3px solid #eee;
     color: #333;
-    font-size: 1.5em; /* Increased from 1.2em */
+    font-size: 2em; /* Increased from 1.5em */
     text-align: center;
     font-weight: bold;
 }
@@ -360,29 +360,30 @@ button:hover {
 .score-item {
     display: flex;
     align-items: center;
-    padding: 12px 15px; /* Increased padding */
-    border-bottom: 1px solid #eee;
+    padding: 15px 20px; /* Increased padding */
+    border-bottom: 2px solid #eee;
     transition: background-color 0.2s ease;
 }
 
 .player-rank {
-    margin-right: 15px;
-    font-size: 1.2em; /* Larger rank numbers */
+    margin-right: 20px;
+    font-size: 1.4em; /* Larger rank numbers */
+    min-width: 30px;
 }
 
 .player-name {
     flex-grow: 1;
-    margin-right: 15px;
-    font-size: 1.1em; /* Larger names */
+    margin-right: 20px;
+    font-size: 1.3em; /* Larger names */
 }
 
 .player-score {
-    margin-right: 8px;
-    font-size: 1.1em; /* Larger scores */
+    margin-right: 12px;
+    font-size: 1.3em; /* Larger scores */
 }
 
 .online-indicator {
-    font-size: 14px; /* Slightly larger indicator */
+    font-size: 16px; /* Larger indicator */
 }
 
 .top-three {
@@ -411,7 +412,7 @@ button:hover {
     }
 }
 
-/* Update Name Prompt Styles */
+/* Update Name Prompt Styles - Make it even bigger */
 .name-prompt-container {
     position: fixed;
     top: 0;
@@ -428,41 +429,41 @@ button:hover {
 
 .name-prompt {
     background: white;
-    padding: 40px; /* Increased padding */
-    border-radius: 15px;
+    padding: 50px; /* Increased padding */
+    border-radius: 20px;
     text-align: center;
-    max-width: 500px; /* Increased from 400px */
+    max-width: 600px; /* Increased from 500px */
     width: 90%;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    box-shadow: 0 6px 25px rgba(0,0,0,0.25);
 }
 
 .name-prompt h2 {
-    font-size: 2em; /* Larger title */
-    margin-bottom: 20px;
+    font-size: 2.5em; /* Larger title */
+    margin-bottom: 30px;
     color: #333;
 }
 
 #playerNameInput {
     width: 100%;
-    padding: 15px;
-    font-size: 1.2em; /* Larger input text */
-    border: 2px solid #ddd;
-    border-radius: 8px;
-    margin-bottom: 15px;
+    padding: 20px;
+    font-size: 1.4em; /* Larger input text */
+    border: 3px solid #ddd;
+    border-radius: 12px;
+    margin-bottom: 20px;
     box-sizing: border-box;
 }
 
 #submitNameButton {
-    padding: 15px 30px;
-    font-size: 1.2em; /* Larger button text */
+    padding: 20px 40px;
+    font-size: 1.4em; /* Larger button text */
     background-color: #ff4d4d;
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
     cursor: pointer;
     transition: background-color 0.3s ease;
     width: 100%;
-    margin-top: 20px;
+    margin-top: 25px;
 }
 
 #submitNameButton:hover {
@@ -471,8 +472,8 @@ button:hover {
 
 .error-message {
     color: #f44336;
-    margin: 15px 0;
-    font-size: 1.1em; /* Larger error messages */
+    margin: 20px 0;
+    font-size: 1.2em; /* Larger error messages */
 }
 
 /* Update Mobile Responsiveness */
@@ -480,24 +481,26 @@ button:hover {
     .scoreboard {
         position: fixed;
         right: 10px;
-        max-width: 300px; /* Increased from 200px */
-        font-size: 14px;
+        max-width: 400px; /* Increased from 300px */
+        font-size: 16px;
+        padding: 20px;
     }
 
     .name-prompt {
         width: 95%;
-        padding: 30px;
+        padding: 40px;
     }
 }
 
 @media (max-width: 480px) {
     .scoreboard {
         right: 5px;
-        max-width: 250px; /* Increased from 150px */
+        max-width: 300px; /* Increased from 250px */
         padding: 15px;
+        font-size: 14px;
     }
 
     .name-prompt {
-        padding: 25px;
+        padding: 30px;
     }
 }
