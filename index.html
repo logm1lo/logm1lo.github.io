@@ -47,123 +47,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-database-compat.js"></script>
 
-    <!-- Obfuscated Core Logic -->
     <script>
-    // First define the array
-    const _0x1f4a=['cGxheWVycw==','YnJvYWRjYXN0','bG9ncw==','YWRtaW5z','aGVhcnRz','bGFzdFVwZGF0ZQ==','bmFtZQ==','YWN0aXZl','dGltZXN0YW1w','dHlwZQ==','U0NPUkVfVVBEQVRF','TUlMRVNUT05F','TE9HX0VSUk9S','QkFOTkVE','U0VTU0lPTl9JTlZBTElE','UkFURV9MSU1JVA==','bWlsZXN0b25lcw==','1f389','1f31f','1f3c6','1f4ab','1f3af','1f308','1f451','1f3aa','1f320','1f3ad','1f3f0','1f30c','26a1','1f525'];
-
-    // Then run the initialization function
-    (function(_0x2d8f05,_0x4f8a1f){
-        const _0x5c28d1=function(_0x2e8d3f){
-            while(--_0x2e8d3f){
-                _0x2d8f05['push'](_0x2d8f05['shift']());
-            }
-        };
-        _0x5c28d1(++_0x4f8a1f);
-    })(_0x1f4a,0x1d3);
-
-    const _0x2e3d=function(_0x4f8a1f){return atob(_0x1f4a[_0x4f8a1f]);};
-
-    const _0x3c4b={
-        _0x5d6e:_0x2e3d(0),
-        _0x6f7g:_0x2e3d(1),
-        _0x8h9i:_0x2e3d(2),
-        _0x9j0k:_0x2e3d(3)
-    };
-
-    const _0x4d5e={
-        [_0x2e3d(0)]:[_0x2e3d(4),_0x2e3d(5),_0x2e3d(6)],
-        [_0x2e3d(1)]:[_0x2e3d(7),_0x2e3d(8)],
-        [_0x2e3d(2)]:[_0x2e3d(8),_0x2e3d(9)]
-    };
-
-    const _0x5f6g=new Map([
-        [1000,{e:_0x1f4a[17],m:'Amazing! 1,000 hearts!'}],
-        [1500,{e:_0x1f4a[18],m:'Incredible! 1,500 hearts!'}],
-        [2000,{e:_0x1f4a[19],m:'Outstanding! 2,000 hearts!'}],
-        [2500,{e:_0x1f4a[20],m:'Phenomenal! 2,500 hearts!'}],
-        [3000,{e:_0x1f4a[21],m:'Spectacular! 3,000 hearts!'}],
-        [4000,{e:_0x1f4a[22],m:'Extraordinary! 4,000 hearts!'}],
-        [5000,{e:_0x1f4a[23],m:'Legendary! 5,000 hearts!'}],
-        [7500,{e:_0x1f4a[24],m:'Magnificent! 7,500 hearts!'}],
-        [10000,{e:_0x1f4a[25],m:'Celestial! 10,000 hearts!'}],
-        [15000,{e:_0x1f4a[26],m:'Mythical! 15,000 hearts!'}],
-        [20000,{e:_0x1f4a[27],m:'Epic! 20,000 hearts!'}],
-        [50000,{e:_0x1f4a[28],m:'Cosmic! 50,000 hearts!'}],
-        [75000,{e:_0x1f4a[29],m:'Godlike! 75,000 hearts!'}],
-        [99999,{e:_0x1f4a[30],m:'MAXIMUM POWER! 99,999 hearts!'}]
-    ]);
-
-    (function(){
-        const _0x7h8i=new WeakMap();
-        const _0x8i9j=new WeakMap();
-        
-        class _0xa1b2{
-            constructor(){
-                _0x7h8i.set(this,new Map());
-                this._0xb2c3=this._0xb2c3.bind(this);
-                this._0xc3d4=this._0xc3d4.bind(this);
-            }
-            
-            async _0xb2c3(_0xd4e5,_0xe5f6){
-                const _0xf6g7=Date.now();
-                const _0xg7h8=_0x7h8i.get(this);
-                if(!_0xg7h8.has(_0xd4e5))_0xg7h8.set(_0xd4e5,[]);
-                const _0xh8i9=_0xg7h8.get(_0xd4e5);
-                while(_0xh8i9.length>0&&_0xf6g7-_0xh8i9[0]>60000)_0xh8i9.shift();
-                if(_0xh8i9.length>=20)return false;
-                _0xh8i9.push(_0xf6g7);
-                return true;
-            }
-            
-            async _0xc3d4(_0xi9j0,_0xj0k1){
-                try{
-                    const _0xk1l2=await firebase.database().ref(_0x3c4b._0x5d6e).child(_0xi9j0).once('value');
-                    const _0xl2m3=_0xk1l2.val()||{hearts:0};
-                    if(_0xl2m3.hearts<_0xj0k1){
-                        const _0xm3n4=Array.from(_0x5f6g.entries()).find(([k])=>_0xl2m3.hearts<k&&_0xj0k1>=k);
-                        if(_0xm3n4){
-                            this._0xn4o5(_0xm3n4[1],_0xi9j0,_0xm3n4[0]);
-                        }
-                    }
-                }catch(_0xo5p6){
-                    console.error('Milestone check failed:',_0xo5p6);
-                }
-            }
-            
-            async _0xn4o5(_0xp6q7,_0xq7r8,_0xr8s9){
-                try{
-                    const _0xs9t0=document.createElement('div');
-                    _0xs9t0.className='milestone-popup';
-                    _0xs9t0.innerHTML=`<div class="milestone-content"><div class="emoji">${String.fromCodePoint(parseInt(_0xp6q7.e,16))}</div><div class="message">${_0xp6q7.m}</div></div>`;
-                    document.body.appendChild(_0xs9t0);
-                    await firebase.database().ref(_0x3c4b._0x5d6e).child(_0xq7r8).child(_0x2e3d(16)).push(_0xr8s9);
-                    setTimeout(()=>_0xs9t0.remove(),5000);
-                }catch(_0xt0u1){
-                    console.error('Milestone display failed:',_0xt0u1);
-                }
-            }
-        }
-        
-        const _0xu1v2=new _0xa1b2();
-        
-        Object.defineProperties(window,{
-            checkMilestone:{
-                value:_0xu1v2._0xc3d4,
-                enumerable:false,
-                configurable:false
-            },
-            rateLimiter:{
-                value:_0xu1v2._0xb2c3,
-                enumerable:false,
-                configurable:false
-            }
-        });
-    })();
-    </script>
-
-    <!-- Firebase Configuration -->
-    <script>
+    // Firebase Configuration
     const firebaseConfig = {
         apiKey: "AIzaSyBinhf3-PpbAeQaQKToNnLHBBBxVQeLbp4",
         authDomain: "yayy-93c45.firebaseapp.com",
@@ -173,22 +58,40 @@
         messagingSenderId: "281901593072",
         appId: "1:281901593072:web:614dff92e64d25669c6d35"
     };
-    firebase.initializeApp(firebaseConfig);
-    </script>
 
-    <!-- Add this after the Firebase Configuration script -->
-    <script>
-    // Initialize Firebase references
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const playersRef = db.ref('players');
-    const wishesRef = db.ref('wishes');
-    const liveUserRef = db.ref('liveUsers');
 
     // Game variables
     let playerName = '';
     let userKey = '';
     let clickTimes = [];
     let peakCPS = 0;
+
+    // Milestone definitions
+    const MILESTONES = {
+        1000: "🎉 Amazing! You've reached 1,000 hearts!",
+        1500: "🌟 Incredible! 1,500 hearts milestone!",
+        2000: "🏆 Outstanding! 2,000 hearts achieved!",
+        2500: "💫 Phenomenal! 2,500 hearts reached!",
+        3000: "🎯 Spectacular! 3,000 hearts milestone!",
+        4000: "🌈 Extraordinary! 4,000 hearts conquered!",
+        5000: "👑 Legendary! 5,000 hearts mastered!",
+        7500: "🎪 Magnificent! 7,500 hearts milestone!",
+        10000: "🌠 Celestial! 10,000 hearts achieved!",
+        15000: "🎭 Mythical! 15,000 hearts reached!",
+        20000: "🎪 Phenomenal! 20,000 hearts milestone!",
+        25000: "🏰 Epic! 25,000 hearts conquered!",
+        50000: "🌌 Cosmic! 50,000 hearts mastered!",
+        75000: "⚡ Godlike! 75,000 hearts achieved!",
+        99999: "🔥 MAXIMUM POWER! 99,999 hearts!"
+    };
+
+    // Initialize Firebase references
+    const playersRef = db.ref('players');
+    const wishesRef = db.ref('wishes');
+    const liveUserRef = db.ref('liveUsers');
 
     // Initialize live user tracking
     userKey = liveUserRef.push().key;
@@ -233,15 +136,13 @@
         }
     });
 
-    // Initialize click handling
+    // Initialize game
     function initializeGame() {
         const posterContainer = document.querySelector('.poster-container');
         posterContainer.addEventListener('click', handleClick);
         
-        // Initialize scoreboard
         playersRef.orderByChild('hearts').on('value', updateScoreboard);
         
-        // Initialize wish form
         document.getElementById('wishButton').addEventListener('click', () => {
             document.getElementById('wishFormContainer').style.visibility = 'visible';
         });
@@ -269,8 +170,6 @@
         }
         
         try {
-            if (!await rateLimiter(userKey, 'CLICK')) return;
-            
             const snapshot = await playersRef.child(userKey).once('value');
             const currentScore = (snapshot.val()?.hearts || 0) + 1;
             
@@ -280,7 +179,7 @@
             });
             
             displayHeart(event);
-            await checkMilestone(userKey, currentScore);
+            checkMilestone(currentScore);
         } catch (error) {
             console.error('Error updating score:', error);
         }
@@ -301,6 +200,20 @@
         
         document.getElementById('hearts-container').appendChild(heart);
         setTimeout(() => heart.remove(), 1000);
+    }
+
+    // Check and display milestones
+    function checkMilestone(score) {
+        Object.entries(MILESTONES).forEach(([milestone, message]) => {
+            milestone = parseInt(milestone);
+            if (score === milestone) {
+                const popup = document.createElement('div');
+                popup.className = 'milestone-popup';
+                popup.innerHTML = `<div class="milestone-content">${message}</div>`;
+                document.body.appendChild(popup);
+                setTimeout(() => popup.remove(), 5000);
+            }
+        });
     }
 
     // Update scoreboard
