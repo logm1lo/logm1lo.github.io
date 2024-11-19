@@ -995,7 +995,7 @@
         }
     }
 
-    // Update the startBattle function to handle both players
+    // Update the startBattle function to initialize click counters
     function startBattle(challenge) {
         const modal = document.getElementById('cpsBattleModal');
         const countdown = document.getElementById('battleCountdown');
@@ -1005,6 +1005,12 @@
         // Reset scores
         document.getElementById('challengerScore').textContent = '0';
         document.getElementById('challengedScore').textContent = '0';
+        
+        // Initialize battle clicks in Firebase
+        db.ref(`battles/${challenge.id}`).set({
+            challengerClicks: 0,
+            challengedClicks: 0
+        });
         
         // Set names
         challengerName.textContent = challenge.challenger.name;
@@ -1042,10 +1048,25 @@
         let clicks = 0;
         battleClickTimes = [];
         
+        // Create a reference for this battle's clicks
+        const battleClicksRef = db.ref(`battles/${challenge.id}`);
+        
+        // Set initial clicks for this player
+        battleClicksRef.child(isChallenger ? 'challengerClicks' : 'challengedClicks').set(0);
+        
+        // Listen to opponent's clicks
+        battleClicksRef.child(isChallenger ? 'challengedClicks' : 'challengerClicks').on('value', (snapshot) => {
+            const opponentClicks = snapshot.val() || 0;
+            document.getElementById(isChallenger ? 'challengedScore' : 'challengerScore').textContent = opponentClicks;
+        });
+        
         const clickHandler = () => {
             clicks++;
             scoreElement.textContent = clicks;
             battleClickTimes.push(Date.now());
+            
+            // Update clicks in Firebase
+            battleClicksRef.child(isChallenger ? 'challengerClicks' : 'challengedClicks').set(clicks);
         };
         
         clickArea.addEventListener('click', clickHandler);
@@ -1060,11 +1081,19 @@
             if (timeLeft <= 0) {
                 clearInterval(battleInterval);
                 clickArea.removeEventListener('click', clickHandler);
+                
+                // Clean up Firebase listeners
+                battleClicksRef.off();
+                
+                // Remove battle clicks data
+                battleClicksRef.remove();
+                
                 endBattle(challenge, clicks);
             }
         }, 1000);
     }
 
+    // Update the endBattle function to include cleanup of battle clicks
     async function endBattle(challenge, finalScore) {
         try {
             const isChallenger = challenge.challenger.key === userKey;
@@ -1169,6 +1198,9 @@
             // Force a scoreboard update
             const scoreSnapshot = await playersRef.orderByChild('hearts').once('value');
             updateScoreboard(scoreSnapshot);
+            
+            // Clean up battle clicks data
+            await db.ref(`battles/${challenge.id}`).remove();
             
         } catch (error) {
             console.error('Error ending battle:', error);
