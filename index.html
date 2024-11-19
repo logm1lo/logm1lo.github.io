@@ -59,11 +59,9 @@
     };
 
     firebase.initializeApp(firebaseConfig);
-
     const db = firebase.database();
-    const wishFormContainer = document.querySelector('.wish-form-container');
-    const wishButton = document.getElementById('wishButton');
-    const closeFormButton = document.getElementById('closeFormButton');
+    // Remove duplicate declarations since these are declared again later
+    const heartsRef = db.ref("hearts");
 
     // Configuration constants
     const MAX_HEARTS = 20;
@@ -71,12 +69,7 @@
     const HEART_DISPLAY_TIME = 3500;
     const CLEANUP_INTERVAL = 60000;
     const MAX_NAME_LENGTH = 12;
-    window.MAX_CLICKS_PER_INTERVAL = 30;
-    window.RATE_LIMIT_INTERVAL = 16; 
-    window.CLICK_BUFFER_SIZE = 50;
-    window.SCORE_CHANGE_THRESHOLD = 40;
-    const SUSPICIOUS_ACTIVITY_THRESHOLD = 3;
-    const SCORE_CHECK_INTERVAL = 2000;
+    // These values are now defined as window properties below
 
     // Game configuration constants
     window.MAX_CLICKS_PER_INTERVAL = 20;
