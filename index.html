@@ -42,6 +42,25 @@
         90% { opacity: 1; transform: translate(-50%, -50%); }
         100% { opacity: 0; transform: translate(-50%, -60%); }
     }
+
+    .poster-container {
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        position: relative;
+    }
+
+    .poster-container img {
+        pointer-events: none;
+        -webkit-user-drag: none;
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+    }
+
+    /* Prevent right-click context menu on poster container */
     </style>
 </head>
 <body>
@@ -248,6 +267,20 @@
         // Listen for new wishes
         wishesRef.orderByChild('timestamp').startAfter(Date.now()).on('child_added', (snapshot) => {
             displayWish(snapshot.val());
+        });
+
+        // Prevent right-click context menu
+        document.querySelector('.poster-container').addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            return false;
+        });
+
+        // Prevent dragging of images
+        document.querySelectorAll('img').forEach(img => {
+            img.addEventListener('dragstart', function(e) {
+                e.preventDefault();
+                return false;
+            });
         });
     });
 
