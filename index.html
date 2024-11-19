@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <div class="cps-counter">
+        <div class="cps-current">Current CPS: <span id="currentCPS">0</span></div>
+        <div class="cps-peak">Peak CPS: <span id="peakCPS">0</span></div>
+    </div>
     <div class="poster-container">
         <img id="poster" src="poster.jpg" alt="Teacher's Day Poster">
         <div id="hearts-container"></div>
@@ -104,7 +108,6 @@
 
     // Initialize Firebase references
     const wishesRef = db.ref("wishes");
-    const heartsRef = db.ref("hearts");
     const liveUserRef = db.ref("liveUsers");
     const playersRef = db.ref("players");
     const clicksRef = db.ref("clicks");
@@ -118,7 +121,6 @@
 
     // Initialize listener variables
     let wishesListener = null;
-    let heartsListener = null;
     let liveUserListener = null;
 
     // Add this after Firebase initialization and before other code
@@ -183,14 +185,12 @@
                 wishesRef.off('child_added', wishesListener);
                 wishesListener = null;
             }
-            if (heartsListener) {
-                heartsRef.off('child_added', heartsListener);
-                heartsListener = null;
-            }
             if (liveUserListener) {
                 liveUserRef.off('value', liveUserListener);
                 liveUserListener = null;
             }
+            clicksRef.off('child_added');
+            
             if (userKey && playerName) {
                 // Update last seen timestamp instead of removing the player
                 playersRef.child(userKey).update({
@@ -242,20 +242,6 @@
                 // Attempt to reconnect after error
                 setTimeout(() => {
                     if (wishesListener === null) {
-                        initializeListeners();
-                    }
-                }, 5000);
-            });
-
-            // Hearts listener with throttling
-            heartsListener = heartsRef.on("child_added", (snapshot) => {
-                const heartData = snapshot.val();
-                requestAnimationFrame(() => displayHeart(heartData.xRatio, heartData.yRatio));
-            }, (error) => {
-                console.error("Error in hearts listener:", error);
-                // Attempt to reconnect after error
-                setTimeout(() => {
-                    if (heartsListener === null) {
                         initializeListeners();
                     }
                 }, 5000);
@@ -464,10 +450,6 @@
             if (wishesListener) {
                 wishesRef.off('child_added', wishesListener);
                 wishesListener = null;
-            }
-            if (heartsListener) {
-                heartsRef.off('child_added', heartsListener);
-                heartsListener = null;
             }
             if (liveUserListener) {
                 liveUserRef.off('value', liveUserListener);
@@ -822,10 +804,6 @@
                 wishesRef.off('child_added', wishesListener);
                 wishesListener = null;
             }
-            if (heartsListener) {
-                heartsRef.off('child_added', heartsListener);
-                heartsListener = null;
-            }
             if (liveUserListener) {
                 liveUserRef.off('value', liveUserListener);
                 liveUserListener = null;
@@ -993,10 +971,10 @@
         const relativeY = (event.clientY - rect.top) / rect.height;
 
         if (relativeX >= 0 && relativeX <= 1 && relativeY >= 0 && relativeY <= 1) {
-            // Display heart immediately
+            // Only display heart locally
             displayHeart(relativeX, relativeY);
 
-            // Add to local buffer only
+            // Add to local buffer for scoring
             if (!window.playerClickBuffers) {
                 window.playerClickBuffers = new Map();
             }
@@ -1020,13 +998,15 @@
                 }, 16)); // Update every frame (60fps)
             }
 
-            // Broadcast heart visual to other players through Firebase
-            heartsRef.push({
-                player: playerName,
-                xRatio: relativeX,
-                yRatio: relativeY,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
-            });
+            // Update CPS counter
+            clickTimes.push(currentTime);
+            const currentCPS = clickTimes.filter(time => currentTime - time <= 1000).length;
+            document.getElementById('currentCPS').textContent = currentCPS.toFixed(1);
+            
+            if (currentCPS > peakCPS) {
+                peakCPS = currentCPS;
+                document.getElementById('peakCPS').textContent = peakCPS.toFixed(1);
+            }
         }
     }
 
@@ -1229,10 +1209,10 @@
         const relativeY = (event.clientY - rect.top) / rect.height;
 
         if (relativeX >= 0 && relativeX <= 1 && relativeY >= 0 && relativeY <= 1) {
-            // Display heart immediately
+            // Only display heart locally
             displayHeart(relativeX, relativeY);
 
-            // Add to local buffer only
+            // Add to local buffer for scoring
             if (!window.playerClickBuffers) {
                 window.playerClickBuffers = new Map();
             }
@@ -1256,13 +1236,15 @@
                 }, 16)); // Update every frame (60fps)
             }
 
-            // Broadcast heart visual to other players through Firebase
-            heartsRef.push({
-                player: playerName,
-                xRatio: relativeX,
-                yRatio: relativeY,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
-            });
+            // Update CPS counter
+            clickTimes.push(currentTime);
+            const currentCPS = clickTimes.filter(time => currentTime - time <= 1000).length;
+            document.getElementById('currentCPS').textContent = currentCPS.toFixed(1);
+            
+            if (currentCPS > peakCPS) {
+                peakCPS = currentCPS;
+                document.getElementById('peakCPS').textContent = peakCPS.toFixed(1);
+            }
         }
     }
 
@@ -1450,6 +1432,106 @@
                         console.error("Error updating score:", error);
                     });
                 }
+            }
+        }
+
+        // Clear processed clicks
+        window.playerClickBuffers.set(playerKey, []);
+    }
+
+    // Add CPS tracking variables
+    let clickTimes = [];
+    let peakCPS = 0;
+
+    // Update the handlePosterClick function to track CPS
+    function handlePosterClick(event) {
+        if (!playerName) return;
+
+        const currentTime = Date.now();
+        // Add click time to array
+        clickTimes.push(currentTime);
+        // Remove clicks older than 1 second
+        clickTimes = clickTimes.filter(time => currentTime - time <= 1000);
+        
+        // Calculate and update CPS
+        const currentCPS = clickTimes.length;
+        document.getElementById('currentCPS').textContent = currentCPS.toFixed(1);
+        
+        // Update peak CPS if necessary
+        if (currentCPS > peakCPS) {
+            peakCPS = currentCPS;
+            document.getElementById('peakCPS').textContent = peakCPS.toFixed(1);
+        }
+
+        // Rest of the click handling code...
+    }
+
+    // Add this function to update CPS display periodically
+    function updateCPSDisplay() {
+        const currentTime = Date.now();
+        // Remove clicks older than 1 second
+        clickTimes = clickTimes.filter(time => currentTime - time <= 1000);
+        // Update current CPS
+        const currentCPS = clickTimes.length;
+        document.getElementById('currentCPS').textContent = currentCPS.toFixed(1);
+    }
+
+    // Start CPS update interval
+    setInterval(updateCPSDisplay, 100); // Update 10 times per second
+
+    // Add ban threshold constant
+    const BAN_THRESHOLD = 10000000; // 10 million clicks
+
+    // Add function to check and ban players
+    function checkAndBanPlayer(userKey, newScore) {
+        if (newScore >= BAN_THRESHOLD) {
+            // Ban the player
+            playersRef.child(userKey).update({
+                banned: true,
+                banReason: 'Exceeded maximum allowed clicks',
+                banTimestamp: firebase.database.ServerValue.TIMESTAMP
+            }).then(() => {
+                alert('Your account has been banned for excessive clicking.');
+                localStorage.clear(); // Clear local storage
+                window.location.reload(); // Reload the page
+            });
+            return true;
+        }
+        return false;
+    }
+
+    // Update the processPlayerClickBuffer function to include ban check
+    function processPlayerClickBuffer(playerKey) {
+        if (!window.playerClickBuffers?.has(playerKey)) {
+            if (window.playerProcessingIntervals?.has(playerKey)) {
+                clearInterval(window.playerProcessingIntervals.get(playerKey));
+                window.playerProcessingIntervals.delete(playerKey);
+            }
+            return;
+        }
+
+        const buffer = window.playerClickBuffers.get(playerKey);
+        if (buffer.length === 0) return;
+
+        const currentTime = Date.now();
+        const validClicks = buffer.filter(click => 
+            currentTime - click.timestamp <= 5000
+        );
+
+        if (validClicks.length > 0) {
+            const scoreElement = document.querySelector(`.score-item[data-player="${playerName}"]`);
+            if (scoreElement) {
+                const scoreDisplay = scoreElement.querySelector('.player-score');
+                const currentScore = parseInt(scoreDisplay.getAttribute('data-score') || '0');
+                const increment = validClicks.length;
+                const newScore = currentScore + increment;
+
+                // Check for ban before updating
+                if (checkAndBanPlayer(playerKey, newScore)) {
+                    return;
+                }
+
+                // Rest of the function remains the same...
             }
         }
 
