@@ -996,14 +996,7 @@
             // Display heart immediately
             displayHeart(relativeX, relativeY);
 
-            // Only store essential data
-            const playerClick = {
-                timestamp: currentTime,
-                player: playerName,
-                userKey: userKey
-            };
-
-            // Add to player-specific buffer
+            // Add to local buffer only
             if (!window.playerClickBuffers) {
                 window.playerClickBuffers = new Map();
             }
@@ -1012,9 +1005,11 @@
                 window.playerClickBuffers.set(userKey, []);
             }
             
-            window.playerClickBuffers.get(userKey).push(playerClick);
+            window.playerClickBuffers.get(userKey).push({
+                timestamp: currentTime
+            });
 
-            // Batch process clicks
+            // Process clicks in batches
             if (!window.playerProcessingIntervals) {
                 window.playerProcessingIntervals = new Map();
             }
@@ -1022,208 +1017,21 @@
             if (!window.playerProcessingIntervals.has(userKey)) {
                 window.playerProcessingIntervals.set(userKey, setInterval(() => {
                     processPlayerClickBuffer(userKey);
-                }, RATE_LIMIT_INTERVAL));
+                }, 16)); // Update every frame (60fps)
             }
 
-            // Only broadcast click to other players through WebSocket
-            if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({
-                    type: 'heart_click',
-                    data: {
-                        player: playerName,
-                        xRatio: relativeX,
-                        yRatio: relativeY
-                    }
-                }));
-            }
+            // Broadcast heart visual to other players through Firebase
+            heartsRef.push({
+                player: playerName,
+                xRatio: relativeX,
+                yRatio: relativeY,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
         }
     }
 
     // Make sure to call initializeScoring at the end
     initializeScoring();
-
-    // Add this after Firebase initialization
-
-    // WebSocket setup
-    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${wsProtocol}//${window.location.hostname}:8080`;
-    let ws;
-    let wsReconnectAttempts = 0;
-    const MAX_WS_RECONNECT_ATTEMPTS = 5;
-
-    function initializeWebSocket() {
-        try {
-            // Only try to connect WebSocket if we're not in local development
-            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                console.log('Skipping WebSocket in local development');
-                return;
-            }
-
-            ws = new WebSocket(wsUrl);
-
-            ws.onopen = () => {
-                console.log('WebSocket Connected');
-                wsReconnectAttempts = 0;
-            };
-
-            ws.onclose = () => {
-                console.log('WebSocket Disconnected');
-                handleWebSocketDisconnection();
-            };
-
-            ws.onerror = (error) => {
-                console.error('WebSocket Error:', error);
-                // Don't try to reconnect on local development
-                if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-                    handleWebSocketDisconnection();
-                }
-            };
-        } catch (error) {
-            console.error('Error initializing WebSocket:', error);
-        }
-    }
-
-    function handleWebSocketMessage(message) {
-        switch (message.type) {
-            case 'heart_click':
-                if (message.data.player !== playerName) {
-                    displayHeart(message.data.xRatio, message.data.yRatio);
-                }
-                break;
-                
-            case 'score_update':
-                updatePlayerScore(message.data);
-                break;
-                
-            case 'player_join':
-                handlePlayerJoin(message.data);
-                break;
-                
-            case 'player_leave':
-                handlePlayerLeave(message.data);
-                break;
-                
-            case 'wish':
-                displayWish(message.data);
-                break;
-        }
-    }
-
-    function handleWebSocketDisconnection() {
-        if (wsReconnectAttempts >= MAX_WS_RECONNECT_ATTEMPTS) {
-            console.error('Max WebSocket reconnection attempts reached');
-            alert('Connection lost. Please refresh the page.');
-            return;
-        }
-
-        wsReconnectAttempts++;
-        const delay = Math.min(1000 * Math.pow(2, wsReconnectAttempts), 10000);
-        
-        console.log(`Attempting to reconnect WebSocket in ${delay}ms... (Attempt ${wsReconnectAttempts})`);
-        setTimeout(initializeWebSocket, delay);
-    }
-
-    // Update the click handler to use WebSocket
-    function handlePosterClick(event) {
-        if (!playerName || !ws || ws.readyState !== WebSocket.OPEN) return;
-
-        const currentTime = Date.now();
-        const rect = this.getBoundingClientRect();
-        const relativeX = (event.clientX - rect.left) / rect.width;
-        const relativeY = (event.clientY - rect.top) / rect.height;
-
-        if (relativeX >= 0 && relativeX <= 1 && relativeY >= 0 && relativeY <= 1) {
-            // Send click via WebSocket
-            ws.send(JSON.stringify({
-                type: 'heart_click',
-                data: {
-                    player: playerName,
-                    userKey: userKey,
-                    xRatio: relativeX,
-                    yRatio: relativeY,
-                    timestamp: currentTime
-                }
-            }));
-
-            // Display heart immediately for responsive feedback
-            displayHeart(relativeX, relativeY);
-
-            // Add to local buffer for scoring
-            clickBuffer.push({
-                xRatio: relativeX,
-                yRatio: relativeY,
-                timestamp: currentTime
-            });
-
-            if (!clickProcessingInterval) {
-                clickProcessingInterval = setInterval(processClickBuffer, RATE_LIMIT_INTERVAL);
-            }
-        }
-    }
-
-    // Update wish submission to use WebSocket
-    wishForm.submitWish = async function() {
-        if (!this.init() || !ws || ws.readyState !== WebSocket.OPEN) return;
-        
-        const name = this.nameInput.value.trim();
-        const wish = this.wishInput.value.trim();
-        
-        if (!name || !wish) {
-            alert("Please enter both your name and your wish.");
-            return;
-        }
-        
-        try {
-            const margin = 0.15;
-            const wishData = {
-                name,
-                text: wish,
-                xRatio: margin + (Math.random() * (1 - 2 * margin)),
-                yRatio: margin + (Math.random() * (1 - 2 * margin)),
-                timestamp: Date.now()
-            };
-            
-            ws.send(JSON.stringify({
-                type: 'wish',
-                data: wishData
-            }));
-            
-            this.hide();
-        } catch (error) {
-            console.error("Error sending wish:", error);
-            alert("Failed to send your wish. Please try again.");
-        }
-    };
-
-    // Initialize WebSocket when player is ready
-    function initializeClickHandling() {
-        const posterContainer = document.querySelector('.poster-container');
-        posterContainer.removeEventListener('click', handlePosterClick);
-        posterContainer.addEventListener('click', handlePosterClick);
-        
-        // Initialize WebSocket connection
-        initializeWebSocket();
-    }
-
-    // Update cleanup to handle WebSocket
-    function cleanup() {
-        try {
-            if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({
-                    type: 'player_disconnect',
-                    data: {
-                        userKey: userKey,
-                        name: playerName
-                    }
-                }));
-                ws.close();
-            }
-            
-            // ... rest of cleanup code ...
-        } catch (error) {
-            console.error('Error during cleanup:', error);
-        }
-    }
 
     // Add this after Firebase initialization
     const MILESTONES = [100, 200, 300, 500, 700, 1000];
@@ -1424,14 +1232,7 @@
             // Display heart immediately
             displayHeart(relativeX, relativeY);
 
-            // Only store essential data
-            const playerClick = {
-                timestamp: currentTime,
-                player: playerName,
-                userKey: userKey
-            };
-
-            // Add to player-specific buffer
+            // Add to local buffer only
             if (!window.playerClickBuffers) {
                 window.playerClickBuffers = new Map();
             }
@@ -1440,9 +1241,11 @@
                 window.playerClickBuffers.set(userKey, []);
             }
             
-            window.playerClickBuffers.get(userKey).push(playerClick);
+            window.playerClickBuffers.get(userKey).push({
+                timestamp: currentTime
+            });
 
-            // Batch process clicks
+            // Process clicks in batches
             if (!window.playerProcessingIntervals) {
                 window.playerProcessingIntervals = new Map();
             }
@@ -1450,20 +1253,16 @@
             if (!window.playerProcessingIntervals.has(userKey)) {
                 window.playerProcessingIntervals.set(userKey, setInterval(() => {
                     processPlayerClickBuffer(userKey);
-                }, RATE_LIMIT_INTERVAL));
+                }, 16)); // Update every frame (60fps)
             }
 
-            // Only broadcast click to other players through WebSocket
-            if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({
-                    type: 'heart_click',
-                    data: {
-                        player: playerName,
-                        xRatio: relativeX,
-                        yRatio: relativeY
-                    }
-                }));
-            }
+            // Broadcast heart visual to other players through Firebase
+            heartsRef.push({
+                player: playerName,
+                xRatio: relativeX,
+                yRatio: relativeY,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
         }
     }
 
@@ -1478,19 +1277,20 @@
         }
 
         const buffer = window.playerClickBuffers.get(playerKey);
+        if (buffer.length === 0) return;
+
         const currentTime = Date.now();
-        
-        // Process clicks in batches
         const validClicks = buffer.filter(click => 
-            currentTime - click.timestamp <= RATE_LIMIT_INTERVAL
-        ).slice(0, MAX_CLICKS_PER_INTERVAL);
+            currentTime - click.timestamp <= 5000 // Keep last 5 seconds of clicks
+        );
 
         if (validClicks.length > 0) {
             const scoreElement = document.querySelector(`.score-item[data-player="${playerName}"]`);
             if (scoreElement) {
                 const scoreDisplay = scoreElement.querySelector('.player-score');
                 const currentScore = parseInt(scoreDisplay.getAttribute('data-score') || '0');
-                const newScore = currentScore + validClicks.length;
+                const increment = validClicks.length;
+                const newScore = currentScore + increment;
 
                 // Update UI instantly
                 requestAnimationFrame(() => {
@@ -1502,28 +1302,19 @@
                 // Check for milestone
                 showMilestoneCelebration(newScore);
 
-                // Batch update to Firebase
+                // Batch update to Firebase with only essential data
                 playersRef.child(playerKey).update({
                     hearts: newScore,
                     lastUpdate: firebase.database.ServerValue.TIMESTAMP,
-                    clickCount: firebase.database.ServerValue.increment(validClicks.length)
+                    clickCount: firebase.database.ServerValue.increment(increment)
                 }).catch(error => {
                     console.error("Error updating score:", error);
                 });
             }
         }
 
-        // Clean up old clicks
-        window.playerClickBuffers.set(playerKey, 
-            buffer.filter(click => currentTime - click.timestamp <= RATE_LIMIT_INTERVAL)
-        );
-
-        // Clear interval if buffer is empty
-        if (window.playerClickBuffers.get(playerKey).length === 0) {
-            clearInterval(window.playerProcessingIntervals.get(playerKey));
-            window.playerProcessingIntervals.delete(playerKey);
-            window.playerClickBuffers.delete(playerKey);
-        }
+        // Clear processed clicks
+        window.playerClickBuffers.set(playerKey, []);
     }
 
     // Helper function to update scoreboard position
@@ -1564,10 +1355,106 @@
                 window.playerClickBuffers.clear();
             }
 
-            // Rest of the cleanup code...
+            // Update player status
+            if (userKey && playerName) {
+                playersRef.child(userKey).update({
+                    lastSeen: firebase.database.ServerValue.TIMESTAMP,
+                    online: false
+                });
+            }
         } catch (error) {
             console.error('Error during cleanup:', error);
         }
+    }
+
+    // Update the processPlayerClickBuffer function to be more efficient
+    function processPlayerClickBuffer(playerKey) {
+        if (!window.playerClickBuffers?.has(playerKey)) {
+            if (window.playerProcessingIntervals?.has(playerKey)) {
+                clearInterval(window.playerProcessingIntervals.get(playerKey));
+                window.playerProcessingIntervals.delete(playerKey);
+            }
+            return;
+        }
+
+        const buffer = window.playerClickBuffers.get(playerKey);
+        if (buffer.length === 0) return;
+
+        const currentTime = Date.now();
+        const validClicks = buffer.filter(click => 
+            currentTime - click.timestamp <= 5000
+        );
+
+        if (validClicks.length > 0) {
+            const scoreElement = document.querySelector(`.score-item[data-player="${playerName}"]`);
+            if (scoreElement) {
+                const scoreDisplay = scoreElement.querySelector('.player-score');
+                const currentScore = parseInt(scoreDisplay.getAttribute('data-score') || '0');
+                const increment = validClicks.length;
+                const newScore = currentScore + increment;
+
+                // Update UI only if score changed
+                if (increment > 0) {
+                    requestAnimationFrame(() => {
+                        // Update only the current player's score
+                        scoreDisplay.setAttribute('data-score', newScore);
+                        scoreDisplay.innerHTML = `${newScore} 💖`;
+
+                        // Get current position
+                        const scoreList = document.getElementById('scoreList');
+                        const items = Array.from(scoreList.children);
+                        const currentIndex = items.indexOf(scoreElement);
+                        
+                        // Find new position
+                        let newIndex = currentIndex;
+                        for (let i = currentIndex - 1; i >= 0; i--) {
+                            const score = parseInt(items[i].querySelector('.player-score').getAttribute('data-score')) || 0;
+                            if (newScore > score) {
+                                newIndex = i;
+                            } else {
+                                break;
+                            }
+                        }
+
+                        // Only move if position changed
+                        if (newIndex !== currentIndex) {
+                            scoreElement.remove();
+                            if (newIndex === 0) {
+                                scoreList.insertBefore(scoreElement, items[0]);
+                            } else {
+                                scoreList.insertBefore(scoreElement, items[newIndex]);
+                            }
+
+                            // Only update ranks that changed
+                            const startIndex = Math.min(currentIndex, newIndex);
+                            const endIndex = Math.max(currentIndex, newIndex);
+                            items.slice(startIndex, endIndex + 1).forEach((item, i) => {
+                                const rankElement = item.querySelector('.player-rank');
+                                const actualIndex = startIndex + i;
+                                const trophies = ['🥇', '🥈', '🥉'];
+                                rankElement.textContent = actualIndex < 3 ? trophies[actualIndex] : (actualIndex + 1);
+                                item.classList.toggle('top-three', actualIndex < 3);
+                            });
+                        }
+                    });
+
+                    // Check for milestone
+                    showMilestoneCelebration(newScore);
+
+                    // Update Firebase
+                    playersRef.child(playerKey).update({
+                        hearts: newScore,
+                        lastUpdate: firebase.database.ServerValue.TIMESTAMP,
+                        clickCount: firebase.database.ServerValue.increment(increment)
+                    }).catch(error => {
+                        console.error("Error updating score:", error);
+                    });
+                }
+            }
+        }
+
+        // Clear processed clicks
+        window.playerClickBuffers.set(playerKey, []);
     }
     </script>
 </body>
