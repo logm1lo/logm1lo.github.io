@@ -48,236 +48,288 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-database-compat.js"></script>
 
     <script>
-    // Firebase Configuration
-    const firebaseConfig = {
-        apiKey: "AIzaSyBinhf3-PpbAeQaQKToNnLHBBBxVQeLbp4",
-        authDomain: "yayy-93c45.firebaseapp.com",
-        databaseURL: "https://yayy-93c45-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "yayy-93c45",
-        storageBucket: "yayy-93c45.appspot.com",
-        messagingSenderId: "281901593072",
-        appId: "1:281901593072:web:614dff92e64d25669c6d35"
-    };
-
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    // Initialize all Firebase references
-    const playersRef = db.ref('players');
-    const wishesRef = db.ref('wishes');
-    const liveUserRef = db.ref('liveUsers');
-    const clicksRef = db.ref('clicks');
-
-    // Game variables
-    let playerName = '';
-    let userKey = liveUserRef.push().key;
-    let clickTimes = [];
-    let peakCPS = 0;
-
-    // Define constants
-    const MILESTONES = {
-        1000: "🎉 Amazing! You've reached 1,000 hearts!",
-        1500: "🌟 Incredible! 1,500 hearts milestone!",
-        2000: "🏆 Outstanding! 2,000 hearts achieved!",
-        2500: "💫 Phenomenal! 2,500 hearts reached!",
-        3000: "🎯 Spectacular! 3,000 hearts milestone!",
-        4000: "🌈 Extraordinary! 4,000 hearts conquered!",
-        5000: "👑 Legendary! 5,000 hearts mastered!",
-        7500: "🎪 Magnificent! 7,500 hearts milestone!",
-        10000: "🌠 Celestial! 10,000 hearts achieved!",
-        15000: "🎭 Mythical! 15,000 hearts reached!",
-        20000: "🎪 Phenomenal! 20,000 hearts milestone!",
-        25000: "🏰 Epic! 25,000 hearts conquered!",
-        50000: "🌌 Cosmic! 50,000 hearts mastered!",
-        75000: "⚡ Godlike! 75,000 hearts achieved!",
-        99999: "🔥 MAXIMUM POWER! 99,999 hearts!"
-    };
-
-    // Initialize live user tracking
-    liveUserRef.child(userKey).set(true);
-    liveUserRef.child(userKey).onDisconnect().remove();
-
-    // Update live user count
-    liveUserRef.on('value', (snapshot) => {
-        document.getElementById('liveUserCount').textContent = snapshot.numChildren();
-    });
-
-    // Handle name submission
-    document.getElementById('submitNameButton').addEventListener('click', async () => {
-        const nameInput = document.getElementById('playerNameInput');
-        const name = nameInput.value.trim();
-        const nameError = document.getElementById('nameError');
-        
-        if (!name) {
-            nameError.textContent = 'Please enter a name';
+    window.addEventListener('load', function() {
+        if (typeof firebase === 'undefined') {
+            console.error('Firebase SDK not loaded');
+            alert('Error loading Firebase. Please refresh the page.');
             return;
         }
-        
-        try {
-            const snapshot = await playersRef.orderByChild('name').equalTo(name).once('value');
-            if (snapshot.exists()) {
-                nameError.textContent = 'Name already taken';
-                return;
-            }
-            
-            playerName = name;
-            await playersRef.child(userKey).set({
-                name: playerName,
-                hearts: 0,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
-            });
-            
-            document.getElementById('namePromptContainer').style.display = 'none';
-            initializeGame();
-        } catch (error) {
-            console.error('Error setting name:', error);
-            nameError.textContent = 'Error saving name';
-        }
+        console.log('Firebase SDK loaded successfully');
     });
 
-    // Initialize game
-    function initializeGame() {
-        const posterContainer = document.querySelector('.poster-container');
-        posterContainer.addEventListener('click', handleClick);
-        
-        playersRef.orderByChild('hearts').on('value', updateScoreboard);
-        
-        document.getElementById('wishButton').addEventListener('click', () => {
-            document.getElementById('wishFormContainer').style.visibility = 'visible';
-        });
-        
-        document.getElementById('submitWishButton').addEventListener('click', submitWish);
-        document.getElementById('closeFormButton').addEventListener('click', () => {
-            document.getElementById('wishFormContainer').style.visibility = 'hidden';
-        });
-    }
+    document.addEventListener('DOMContentLoaded', function() {
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBinhf3-PpbAeQaQKToNnLHBBBxVQeLbp4",
+            authDomain: "yayy-93c45.firebaseapp.com",
+            databaseURL: "https://yayy-93c45-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "yayy-93c45",
+            storageBucket: "yayy-93c45.appspot.com",
+            messagingSenderId: "281901593072",
+            appId: "1:281901593072:web:614dff92e64d25669c6d35"
+        };
 
-    // Handle clicks
-    async function handleClick(event) {
-        if (!playerName) return;
-        
-        const currentTime = Date.now();
-        clickTimes.push(currentTime);
-        clickTimes = clickTimes.filter(time => currentTime - time <= 1000);
-        
-        const currentCPS = clickTimes.length;
-        document.getElementById('currentCPS').textContent = currentCPS.toFixed(1);
-        
-        if (currentCPS > peakCPS) {
-            peakCPS = currentCPS;
-            document.getElementById('peakCPS').textContent = peakCPS.toFixed(1);
-        }
-        
         try {
-            const snapshot = await playersRef.child(userKey).once('value');
-            const currentScore = (snapshot.val()?.hearts || 0) + 1;
-            
-            await playersRef.child(userKey).update({
-                hearts: currentScore,
-                lastUpdate: firebase.database.ServerValue.TIMESTAMP
+            // Initialize Firebase
+            firebase.initializeApp(firebaseConfig);
+            console.log('1. Firebase initialized');
+
+            const db = firebase.database();
+            console.log('2. Database initialized');
+
+            // Test database connection
+            db.ref('.info/connected').on('value', (snap) => {
+                if (snap.val() === true) {
+                    console.log('Connected to Firebase');
+                } else {
+                    console.log('Disconnected from Firebase');
+                }
             });
-            
-            displayHeart(event);
-            checkMilestone(currentScore);
-        } catch (error) {
-            console.error('Error updating score:', error);
-        }
-    }
 
-    // Display heart animation
-    function displayHeart(event) {
-        const heart = document.createElement('div');
-        heart.className = 'heart';
-        heart.innerHTML = '💖';
-        
-        const rect = event.target.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-        
-        heart.style.left = `${x}px`;
-        heart.style.top = `${y}px`;
-        
-        document.getElementById('hearts-container').appendChild(heart);
-        setTimeout(() => heart.remove(), 1000);
-    }
+            // Initialize all Firebase references
+            const playersRef = db.ref('players');
+            const wishesRef = db.ref('wishes');
+            const liveUserRef = db.ref('liveUsers');
+            const clicksRef = db.ref('clicks');
+            console.log('3. References created');
 
-    // Check and display milestones
-    function checkMilestone(score) {
-        Object.entries(MILESTONES).forEach(([milestone, message]) => {
-            milestone = parseInt(milestone);
-            if (score === milestone) {
-                const popup = document.createElement('div');
-                popup.className = 'milestone-popup';
-                popup.innerHTML = `<div class="milestone-content">${message}</div>`;
-                document.body.appendChild(popup);
-                setTimeout(() => popup.remove(), 5000);
-            }
-        });
-    }
+            // Game variables
+            let playerName = '';
+            let userKey = liveUserRef.push().key;
+            let clickTimes = [];
+            let peakCPS = 0;
 
-    // Update scoreboard
-    function updateScoreboard(snapshot) {
-        const scoreList = document.getElementById('scoreList');
-        const scores = [];
-        
-        snapshot.forEach((child) => {
-            const data = child.val();
-            if (data.name && typeof data.hearts === 'number') {
-                scores.push({
-                    name: data.name,
-                    hearts: data.hearts
+            // Define constants
+            const MILESTONES = {
+                1000: "🎉 Amazing! You've reached 1,000 hearts!",
+                1500: "🌟 Incredible! 1,500 hearts milestone!",
+                2000: "🏆 Outstanding! 2,000 hearts achieved!",
+                2500: "💫 Phenomenal! 2,500 hearts reached!",
+                3000: "🎯 Spectacular! 3,000 hearts milestone!",
+                4000: "🌈 Extraordinary! 4,000 hearts conquered!",
+                5000: "👑 Legendary! 5,000 hearts mastered!",
+                7500: "🎪 Magnificent! 7,500 hearts milestone!",
+                10000: "🌠 Celestial! 10,000 hearts achieved!",
+                15000: "🎭 Mythical! 15,000 hearts reached!",
+                20000: "🎪 Phenomenal! 20,000 hearts milestone!",
+                25000: "🏰 Epic! 25,000 hearts conquered!",
+                50000: "🌌 Cosmic! 50,000 hearts mastered!",
+                75000: "⚡ Godlike! 75,000 hearts achieved!",
+                99999: "🔥 MAXIMUM POWER! 99,999 hearts!"
+            };
+
+            // Initialize live user tracking
+            liveUserRef.child(userKey).set(true);
+            liveUserRef.child(userKey).onDisconnect().remove();
+
+            // Update live user count
+            liveUserRef.on('value', (snapshot) => {
+                document.getElementById('liveUserCount').textContent = snapshot.numChildren();
+            });
+
+            // Handle name submission
+            const submitNameButton = document.getElementById('submitNameButton');
+            if (submitNameButton) {
+                submitNameButton.addEventListener('click', async () => {
+                    console.log('4. Name submit clicked');
+                    const nameInput = document.getElementById('playerNameInput');
+                    const name = nameInput.value.trim();
+                    const nameError = document.getElementById('nameError');
+                    
+                    if (!name) {
+                        nameError.textContent = 'Please enter a name';
+                        return;
+                    }
+                    
+                    try {
+                        const snapshot = await playersRef.orderByChild('name').equalTo(name).once('value');
+                        if (snapshot.exists()) {
+                            nameError.textContent = 'Name already taken';
+                            return;
+                        }
+                        
+                        playerName = name;
+                        await playersRef.child(userKey).set({
+                            name: playerName,
+                            hearts: 0,
+                            timestamp: firebase.database.ServerValue.TIMESTAMP
+                        });
+                        
+                        document.getElementById('namePromptContainer').style.display = 'none';
+                        initializeGame();
+                    } catch (error) {
+                        console.error('Error setting name:', error);
+                        nameError.textContent = 'Error saving name';
+                    }
                 });
             }
-        });
-        
-        scores.sort((a, b) => b.hearts - a.hearts);
-        
-        scoreList.innerHTML = scores.map((score, index) => `
-            <div class="score-item ${index < 3 ? 'top-three' : ''}" data-player="${score.name}">
-                <span class="player-rank">${index < 3 ? ['🥇','🥈','🥉'][index] : (index + 1)}</span>
-                <span class="player-name">${score.name}</span>
-                <span class="player-score">${score.hearts} 💖</span>
-            </div>
-        `).join('');
-    }
 
-    // Handle wish submission
-    async function submitWish() {
-        const nameInput = document.getElementById('nameInput');
-        const wishInput = document.getElementById('wishInput');
-        const name = nameInput.value.trim();
-        const wish = wishInput.value.trim();
-        
-        if (!name || !wish) {
-            alert('Please enter both name and wish');
-            return;
-        }
-        
-        try {
-            await wishesRef.push({
-                name,
-                text: wish,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
+            // Initialize game function
+            function initializeGame() {
+                const posterContainer = document.querySelector('.poster-container');
+                if (posterContainer) {
+                    posterContainer.addEventListener('click', handleClick);
+                }
+
+                playersRef.orderByChild('hearts').on('value', updateScoreboard);
+
+                const wishButton = document.getElementById('wishButton');
+                const submitWishButton = document.getElementById('submitWishButton');
+                const closeFormButton = document.getElementById('closeFormButton');
+
+                if (wishButton) {
+                    wishButton.addEventListener('click', () => {
+                        document.getElementById('wishFormContainer').style.visibility = 'visible';
+                    });
+                }
+
+                if (submitWishButton) {
+                    submitWishButton.addEventListener('click', submitWish);
+                }
+
+                if (closeFormButton) {
+                    closeFormButton.addEventListener('click', () => {
+                        document.getElementById('wishFormContainer').style.visibility = 'hidden';
+                    });
+                }
+            }
+
+            // Handle clicks
+            async function handleClick(event) {
+                console.log('5. Click handled');
+                if (!playerName) return;
+                
+                const currentTime = Date.now();
+                clickTimes.push(currentTime);
+                clickTimes = clickTimes.filter(time => currentTime - time <= 1000);
+                
+                const currentCPS = clickTimes.length;
+                document.getElementById('currentCPS').textContent = currentCPS.toFixed(1);
+                
+                if (currentCPS > peakCPS) {
+                    peakCPS = currentCPS;
+                    document.getElementById('peakCPS').textContent = peakCPS.toFixed(1);
+                }
+                
+                try {
+                    const snapshot = await playersRef.child(userKey).once('value');
+                    const currentScore = (snapshot.val()?.hearts || 0) + 1;
+                    
+                    await playersRef.child(userKey).update({
+                        hearts: currentScore,
+                        lastUpdate: firebase.database.ServerValue.TIMESTAMP
+                    });
+                    
+                    displayHeart(event);
+                    checkMilestone(currentScore);
+                } catch (error) {
+                    console.error('Error updating score:', error);
+                }
+            }
+
+            // Display heart animation
+            function displayHeart(event) {
+                const heart = document.createElement('div');
+                heart.className = 'heart';
+                heart.innerHTML = '💖';
+                
+                const rect = event.target.getBoundingClientRect();
+                const x = event.clientX - rect.left;
+                const y = event.clientY - rect.top;
+                
+                heart.style.left = `${x}px`;
+                heart.style.top = `${y}px`;
+                
+                document.getElementById('hearts-container').appendChild(heart);
+                setTimeout(() => heart.remove(), 1000);
+            }
+
+            // Check and display milestones
+            function checkMilestone(score) {
+                Object.entries(MILESTONES).forEach(([milestone, message]) => {
+                    milestone = parseInt(milestone);
+                    if (score === milestone) {
+                        const popup = document.createElement('div');
+                        popup.className = 'milestone-popup';
+                        popup.innerHTML = `<div class="milestone-content">${message}</div>`;
+                        document.body.appendChild(popup);
+                        setTimeout(() => popup.remove(), 5000);
+                    }
+                });
+            }
+
+            // Update scoreboard
+            function updateScoreboard(snapshot) {
+                console.log('6. Updating scoreboard');
+                const scoreList = document.getElementById('scoreList');
+                const scores = [];
+                
+                snapshot.forEach((child) => {
+                    const data = child.val();
+                    if (data.name && typeof data.hearts === 'number') {
+                        scores.push({
+                            name: data.name,
+                            hearts: data.hearts
+                        });
+                    }
+                });
+                
+                scores.sort((a, b) => b.hearts - a.hearts);
+                
+                scoreList.innerHTML = scores.map((score, index) => `
+                    <div class="score-item ${index < 3 ? 'top-three' : ''}" data-player="${score.name}">
+                        <span class="player-rank">${index < 3 ? ['🥇','🥈','🥉'][index] : (index + 1)}</span>
+                        <span class="player-name">${score.name}</span>
+                        <span class="player-score">${score.hearts} 💖</span>
+                    </div>
+                `).join('');
+            }
+
+            // Handle wish submission
+            async function submitWish() {
+                const nameInput = document.getElementById('nameInput');
+                const wishInput = document.getElementById('wishInput');
+                const name = nameInput.value.trim();
+                const wish = wishInput.value.trim();
+                
+                if (!name || !wish) {
+                    alert('Please enter both name and wish');
+                    return;
+                }
+                
+                try {
+                    await wishesRef.push({
+                        name,
+                        text: wish,
+                        timestamp: firebase.database.ServerValue.TIMESTAMP
+                    });
+                    
+                    nameInput.value = '';
+                    wishInput.value = '';
+                    document.getElementById('wishFormContainer').style.visibility = 'hidden';
+                } catch (error) {
+                    console.error('Error saving wish:', error);
+                    alert('Error saving wish');
+                }
+            }
+
+            // Initialize wishes display
+            wishesRef.on('child_added', (snapshot) => {
+                const wish = snapshot.val();
+                const wishElement = document.createElement('div');
+                wishElement.className = 'wish';
+                wishElement.textContent = `${wish.name}: ${wish.text}`;
+                const wishesContainer = document.getElementById('wishes-container');
+                if (wishesContainer) {
+                    wishesContainer.appendChild(wishElement);
+                    setTimeout(() => wishElement.remove(), 5000);
+                }
             });
-            
-            nameInput.value = '';
-            wishInput.value = '';
-            document.getElementById('wishFormContainer').style.visibility = 'hidden';
-        } catch (error) {
-            console.error('Error saving wish:', error);
-            alert('Error saving wish');
-        }
-    }
 
-    // Display wishes
-    wishesRef.on('child_added', (snapshot) => {
-        const wish = snapshot.val();
-        const wishElement = document.createElement('div');
-        wishElement.className = 'wish';
-        wishElement.textContent = `${wish.name}: ${wish.text}`;
-        document.getElementById('wishes-container').appendChild(wishElement);
-        setTimeout(() => wishElement.remove(), 5000);
+            console.log('Firebase initialized successfully');
+        } catch (error) {
+            console.error('Error initializing Firebase:', error);
+        }
     });
     </script>
 </body>
