@@ -66,6 +66,14 @@
     const WISH_DISPLAY_TIME = 5000;
     const HEART_DISPLAY_TIME = 3500;
     const CLEANUP_INTERVAL = 60000;
+    const MAX_NAME_LENGTH = 12;
+    window.MAX_CLICKS_PER_INTERVAL = 30;
+    window.RATE_LIMIT_INTERVAL = 16; 
+    window.CLICK_BUFFER_SIZE = 50;
+    window.SCORE_CHANGE_THRESHOLD = 40;
+    const SUSPICIOUS_ACTIVITY_THRESHOLD = 3;
+    const SCORE_CHECK_INTERVAL = 2000;
+
     // Game configuration constants
     window.MAX_CLICKS_PER_INTERVAL = 20;
     window.RATE_LIMIT_INTERVAL = 1000;
@@ -521,12 +529,11 @@
                 }
             });
     }, 6 * 60 * 1000); // Check every hour
-
-    // Replace the existing click tracking variables and constants with these optimized versions
-    const MAX_CLICKS_PER_INTERVAL = 20; // Increased from 12 to 20 clicks per interval
-    const RATE_LIMIT_INTERVAL = 1000; // Increased from 300ms to 1000ms for better averaging
-    const CLICK_BUFFER_SIZE = 25; // Increased from 15 to 25
-    const SCORE_CHANGE_THRESHOLD = 40; // Increased from 25 to 40
+    // Click tracking variables and constants with optimized values
+    let MAX_CLICKS_PER_INTERVAL = 20; // Increased from 12 to 20 clicks per interval
+    let RATE_LIMIT_INTERVAL = 1000; // Increased from 300ms to 1000ms for better averaging 
+    let CLICK_BUFFER_SIZE = 25; // Increased from 15 to 25
+    let SCORE_CHANGE_THRESHOLD = 40; // Increased from 25 to 40
 
     // Add these new variables for click tracking
     let clickBuffer = [];
@@ -567,7 +574,7 @@
         }
     });
 
-    // Update the processClickBuffer function with more lenient checks
+    // Replace all processClickBuffer functions with this single version
     function processClickBuffer() {
         if (!userKey || !playerName) {
             clearInterval(clickProcessingInterval);
@@ -582,51 +589,53 @@
         ).slice(0, MAX_CLICKS_PER_INTERVAL);
 
         if (validClicks.length > 0) {
-            // More lenient rapid clicking check
-            if (validClicks.length > MAX_CLICKS_PER_INTERVAL * 1.5 && // Only trigger if significantly over limit
-                currentTime - lastClickTime < 50) { // Keep minimum time check for extreme cases
-                handleSuspiciousActivity(userKey, 0, validClicks.length);
-                return;
-            }
+            const scoreElement = document.querySelector(`.score-item[data-player="${playerName}"]`);
+            if (scoreElement) {
+                const scoreDisplay = scoreElement.querySelector('.player-score');
+                const currentScore = parseInt(scoreDisplay.getAttribute('data-score') || '0');
+                const newScore = currentScore + validClicks.length;
 
-            const updates = {};
-            validClicks.forEach(click => {
-                const heartKey = heartsRef.push().key;
-                updates[`hearts/${heartKey}`] = {
-                    xRatio: click.xRatio,
-                    yRatio: click.yRatio,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP,
-                    player: playerName
-                };
-            });
-            
-            playersRef.child(userKey).child('hearts').once('value')
-                .then(snapshot => {
-                    const currentScore = snapshot.val() || 0;
-                    const increment = validClicks.length;
+                // Update UI instantly
+                requestAnimationFrame(() => {
+                    scoreDisplay.setAttribute('data-score', newScore);
+                    scoreDisplay.innerHTML = `${newScore} 💖`;
+
+                    // Resort scoreboard
+                    const scoreList = document.getElementById('scoreList');
+                    const items = Array.from(scoreList.children);
                     
-                    // More lenient suspicious activity check
-                    if (increment > SCORE_CHANGE_THRESHOLD * 1.5 || // Increased threshold
-                        clickBuffer.length > CLICK_BUFFER_SIZE * 3) { // More lenient buffer check
-                        handleSuspiciousActivity(userKey, currentScore, increment);
-                        return;
+                    // Update position
+                    for (let i = 0; i < items.length; i++) {
+                        const score = parseInt(items[i].querySelector('.player-score').getAttribute('data-score')) || 0;
+                        if (score < newScore && items[i] !== scoreElement) {
+                            scoreList.insertBefore(scoreElement, items[i]);
+                            break;
+                        }
                     }
-                    
-                    const newScore = currentScore + increment;
-                    updates[`players/${userKey}/hearts`] = newScore;
-                    updates[`players/${userKey}/lastUpdate`] = firebase.database.ServerValue.TIMESTAMP;
 
-                    localStorage.setItem('playerHearts', newScore);
-
-                    return db.ref().update(updates);
-                })
-                .catch(error => {
-                    console.error("Error updating hearts:", error);
+                    // Update ranks
+                    items.forEach((item, index) => {
+                        const rankElement = item.querySelector('.player-rank');
+                        const trophies = ['🥇', '🥈', '🥉'];
+                        rankElement.textContent = index < 3 ? trophies[index] : (index + 1);
+                        item.classList.toggle('top-three', index < 3);
+                    });
                 });
-            
-            lastClickTime = currentTime;
+
+                // Check for milestone
+                showMilestoneCelebration(newScore);
+
+                // Update Firebase
+                playersRef.child(userKey).update({
+                    hearts: newScore,
+                    lastUpdate: firebase.database.ServerValue.TIMESTAMP
+                }).catch(error => {
+                    console.error("Error updating score:", error);
+                });
+            }
         }
 
+        // Clean up old clicks
         clickBuffer = clickBuffer.filter(click => 
             currentTime - click.timestamp > RATE_LIMIT_INTERVAL
         );
@@ -661,19 +670,16 @@
         });
     }
 
-    // Update the updateScoreboard function to keep offline players
+    // Update the updateScoreboard function to include data attributes
     function updateScoreboard(snapshot) {
         const scoreList = document.getElementById('scoreList');
         const players = [];
         
         snapshot.forEach(child => {
             const playerData = child.val();
-            // Include all players with valid data, even if offline
             if (playerData && playerData.name && typeof playerData.hearts === 'number') {
-                // Calculate time since last seen
                 const lastSeen = playerData.lastSeen || playerData.timestamp || 0;
                 const timeSinceLastSeen = Date.now() - lastSeen;
-                // Keep players for 24 hours after their last activity
                 if (timeSinceLastSeen < 24 * 60 * 60 * 1000) {
                     players.push({
                         name: playerData.name,
@@ -690,17 +696,17 @@
         
         const trophies = ['🥇', '🥈', '🥉'];
         scoreList.innerHTML = players.map((player, index) => {
-            // Calculate time since last seen for display
             const timeSinceLastSeen = Date.now() - player.lastSeen;
-            const isRecent = timeSinceLastSeen < 5 * 60 * 1000; // 5 minutes
+            const isRecent = timeSinceLastSeen < 5 * 60 * 1000;
             
             return `
                 <div class="score-item ${index < 3 ? 'top-three' : ''}" 
+                     data-player="${player.name}"
                      title="${player.name}: ${player.hearts} hearts${!player.online ? '\nOffline' : ''}"
                      data-last-seen="${player.lastSeen}">
                     <span class="player-rank">${index < 3 ? trophies[index] : (index + 1)}</span>
                     <span class="player-name">${player.name}</span>
-                    <span class="player-score">${player.hearts} 💖</span>
+                    <span class="player-score" data-score="${player.hearts}">${player.hearts} 💖</span>
                     <span class="online-indicator" style="color: ${player.online ? '#4CAF50' : (isRecent ? '#FFA500' : '#ccc')}">●</span>
                 </div>
             `;
@@ -987,33 +993,582 @@
         const relativeY = (event.clientY - rect.top) / rect.height;
 
         if (relativeX >= 0 && relativeX <= 1 && relativeY >= 0 && relativeY <= 1) {
-            // Add click to real-time tracking
-            clicksRef.push({
-                player: playerName,
-                xRatio: relativeX,
-                yRatio: relativeY,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
-            });
-
-            // Add click to buffer for scoring
-            clickBuffer.push({
-                xRatio: relativeX,
-                yRatio: relativeY,
-                timestamp: currentTime
-            });
-
-            // Display heart immediately for responsive feedback
+            // Display heart immediately
             displayHeart(relativeX, relativeY);
 
-            // Start processing interval if not already started
-            if (!clickProcessingInterval) {
-                clickProcessingInterval = setInterval(processClickBuffer, RATE_LIMIT_INTERVAL);
+            // Only store essential data
+            const playerClick = {
+                timestamp: currentTime,
+                player: playerName,
+                userKey: userKey
+            };
+
+            // Add to player-specific buffer
+            if (!window.playerClickBuffers) {
+                window.playerClickBuffers = new Map();
+            }
+            
+            if (!window.playerClickBuffers.has(userKey)) {
+                window.playerClickBuffers.set(userKey, []);
+            }
+            
+            window.playerClickBuffers.get(userKey).push(playerClick);
+
+            // Batch process clicks
+            if (!window.playerProcessingIntervals) {
+                window.playerProcessingIntervals = new Map();
+            }
+
+            if (!window.playerProcessingIntervals.has(userKey)) {
+                window.playerProcessingIntervals.set(userKey, setInterval(() => {
+                    processPlayerClickBuffer(userKey);
+                }, RATE_LIMIT_INTERVAL));
+            }
+
+            // Only broadcast click to other players through WebSocket
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'heart_click',
+                    data: {
+                        player: playerName,
+                        xRatio: relativeX,
+                        yRatio: relativeY
+                    }
+                }));
             }
         }
     }
 
     // Make sure to call initializeScoring at the end
     initializeScoring();
+
+    // Add this after Firebase initialization
+
+    // WebSocket setup
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${wsProtocol}//${window.location.hostname}:8080`;
+    let ws;
+    let wsReconnectAttempts = 0;
+    const MAX_WS_RECONNECT_ATTEMPTS = 5;
+
+    function initializeWebSocket() {
+        try {
+            // Only try to connect WebSocket if we're not in local development
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                console.log('Skipping WebSocket in local development');
+                return;
+            }
+
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                console.log('WebSocket Connected');
+                wsReconnectAttempts = 0;
+            };
+
+            ws.onclose = () => {
+                console.log('WebSocket Disconnected');
+                handleWebSocketDisconnection();
+            };
+
+            ws.onerror = (error) => {
+                console.error('WebSocket Error:', error);
+                // Don't try to reconnect on local development
+                if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+                    handleWebSocketDisconnection();
+                }
+            };
+        } catch (error) {
+            console.error('Error initializing WebSocket:', error);
+        }
+    }
+
+    function handleWebSocketMessage(message) {
+        switch (message.type) {
+            case 'heart_click':
+                if (message.data.player !== playerName) {
+                    displayHeart(message.data.xRatio, message.data.yRatio);
+                }
+                break;
+                
+            case 'score_update':
+                updatePlayerScore(message.data);
+                break;
+                
+            case 'player_join':
+                handlePlayerJoin(message.data);
+                break;
+                
+            case 'player_leave':
+                handlePlayerLeave(message.data);
+                break;
+                
+            case 'wish':
+                displayWish(message.data);
+                break;
+        }
+    }
+
+    function handleWebSocketDisconnection() {
+        if (wsReconnectAttempts >= MAX_WS_RECONNECT_ATTEMPTS) {
+            console.error('Max WebSocket reconnection attempts reached');
+            alert('Connection lost. Please refresh the page.');
+            return;
+        }
+
+        wsReconnectAttempts++;
+        const delay = Math.min(1000 * Math.pow(2, wsReconnectAttempts), 10000);
+        
+        console.log(`Attempting to reconnect WebSocket in ${delay}ms... (Attempt ${wsReconnectAttempts})`);
+        setTimeout(initializeWebSocket, delay);
+    }
+
+    // Update the click handler to use WebSocket
+    function handlePosterClick(event) {
+        if (!playerName || !ws || ws.readyState !== WebSocket.OPEN) return;
+
+        const currentTime = Date.now();
+        const rect = this.getBoundingClientRect();
+        const relativeX = (event.clientX - rect.left) / rect.width;
+        const relativeY = (event.clientY - rect.top) / rect.height;
+
+        if (relativeX >= 0 && relativeX <= 1 && relativeY >= 0 && relativeY <= 1) {
+            // Send click via WebSocket
+            ws.send(JSON.stringify({
+                type: 'heart_click',
+                data: {
+                    player: playerName,
+                    userKey: userKey,
+                    xRatio: relativeX,
+                    yRatio: relativeY,
+                    timestamp: currentTime
+                }
+            }));
+
+            // Display heart immediately for responsive feedback
+            displayHeart(relativeX, relativeY);
+
+            // Add to local buffer for scoring
+            clickBuffer.push({
+                xRatio: relativeX,
+                yRatio: relativeY,
+                timestamp: currentTime
+            });
+
+            if (!clickProcessingInterval) {
+                clickProcessingInterval = setInterval(processClickBuffer, RATE_LIMIT_INTERVAL);
+            }
+        }
+    }
+
+    // Update wish submission to use WebSocket
+    wishForm.submitWish = async function() {
+        if (!this.init() || !ws || ws.readyState !== WebSocket.OPEN) return;
+        
+        const name = this.nameInput.value.trim();
+        const wish = this.wishInput.value.trim();
+        
+        if (!name || !wish) {
+            alert("Please enter both your name and your wish.");
+            return;
+        }
+        
+        try {
+            const margin = 0.15;
+            const wishData = {
+                name,
+                text: wish,
+                xRatio: margin + (Math.random() * (1 - 2 * margin)),
+                yRatio: margin + (Math.random() * (1 - 2 * margin)),
+                timestamp: Date.now()
+            };
+            
+            ws.send(JSON.stringify({
+                type: 'wish',
+                data: wishData
+            }));
+            
+            this.hide();
+        } catch (error) {
+            console.error("Error sending wish:", error);
+            alert("Failed to send your wish. Please try again.");
+        }
+    };
+
+    // Initialize WebSocket when player is ready
+    function initializeClickHandling() {
+        const posterContainer = document.querySelector('.poster-container');
+        posterContainer.removeEventListener('click', handlePosterClick);
+        posterContainer.addEventListener('click', handlePosterClick);
+        
+        // Initialize WebSocket connection
+        initializeWebSocket();
+    }
+
+    // Update cleanup to handle WebSocket
+    function cleanup() {
+        try {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'player_disconnect',
+                    data: {
+                        userKey: userKey,
+                        name: playerName
+                    }
+                }));
+                ws.close();
+            }
+            
+            // ... rest of cleanup code ...
+        } catch (error) {
+            console.error('Error during cleanup:', error);
+        }
+    }
+
+    // Add this after Firebase initialization
+    const MILESTONES = [100, 200, 300, 500, 700, 1000];
+    const FUNNY_QUOTES = [
+        "Your fingers must be on fire! 🔥",
+        "Click-tastic performance! 🌟",
+        "You're clicking faster than a caffeinated squirrel! ☕",
+        "Your mouse needs a vacation! 🏖️",
+        "Breaking the sound barrier with those clicks! 💨",
+        "Your clicks are creating a symphony! 🎵",
+        "Even Flash would be jealous of those clicks! ⚡",
+        "You're the Usain Bolt of clicking! 🏃‍♂️",
+        "Your mouse deserves a medal! 🏅",
+        "Clicking your way to stardom! ⭐",
+        "Your finger should be in the Olympics! 🎯",
+        "You're a clicking machine! 🤖",
+        "The Force is strong with your clicks! ✨",
+        "Clicking faster than light! 💫",
+        "Your mouse is begging for mercy! 🙏"
+    ];
+
+    // Add this function to show celebration popup
+    function showMilestoneCelebration(score) {
+        const milestone = MILESTONES.find(m => score >= m && score - 1 < m);
+        if (!milestone) return;
+
+        const randomQuote = FUNNY_QUOTES[Math.floor(Math.random() * FUNNY_QUOTES.length)];
+        
+        // Create celebration popup
+        const popup = document.createElement('div');
+        popup.className = 'milestone-popup';
+        popup.innerHTML = `
+            <div class="milestone-content">
+                <h2>🎉 Congratulations! 🎉</h2>
+                <p class="milestone-score">${milestone} Clicks!</p>
+                <p class="milestone-quote">${randomQuote}</p>
+            </div>
+        `;
+
+        document.body.appendChild(popup);
+
+        // Add show class after a small delay for animation
+        requestAnimationFrame(() => {
+            popup.classList.add('show');
+        });
+
+        // Remove popup after animation
+        setTimeout(() => {
+            popup.classList.add('hide');
+            setTimeout(() => popup.remove(), 500);
+        }, 3000);
+    }
+
+    // Update the processClickBuffer function to check for milestones
+    function processClickBuffer() {
+        if (!userKey || !playerName) {
+            clearInterval(clickProcessingInterval);
+            clickProcessingInterval = null;
+            clickBuffer = [];
+            return;
+        }
+
+        const currentTime = Date.now();
+        const validClicks = clickBuffer.filter(click => 
+            currentTime - click.timestamp <= RATE_LIMIT_INTERVAL
+        ).slice(0, MAX_CLICKS_PER_INTERVAL);
+
+        if (validClicks.length > 0) {
+            const scoreElement = document.querySelector(`.score-item[data-player="${playerName}"]`);
+            if (scoreElement) {
+                const scoreDisplay = scoreElement.querySelector('.player-score');
+                const currentScore = parseInt(scoreDisplay.getAttribute('data-score') || '0');
+                const newScore = currentScore + validClicks.length;
+
+                // Update UI instantly
+                requestAnimationFrame(() => {
+                    scoreDisplay.setAttribute('data-score', newScore);
+                    scoreDisplay.innerHTML = `${newScore} 💖`;
+
+                    // Resort scoreboard
+                    const scoreList = document.getElementById('scoreList');
+                    const items = Array.from(scoreList.children);
+                    
+                    // Update position
+                    for (let i = 0; i < items.length; i++) {
+                        const score = parseInt(items[i].querySelector('.player-score').getAttribute('data-score')) || 0;
+                        if (score < newScore && items[i] !== scoreElement) {
+                            scoreList.insertBefore(scoreElement, items[i]);
+                            break;
+                        }
+                    }
+
+                    // Update ranks
+                    items.forEach((item, index) => {
+                        const rankElement = item.querySelector('.player-rank');
+                        const trophies = ['🥇', '🥈', '🥉'];
+                        rankElement.textContent = index < 3 ? trophies[index] : (index + 1);
+                        item.classList.toggle('top-three', index < 3);
+                    });
+                });
+
+                // Check for milestone
+                showMilestoneCelebration(newScore);
+
+                // Update Firebase
+                playersRef.child(userKey).update({
+                    hearts: newScore,
+                    lastUpdate: firebase.database.ServerValue.TIMESTAMP
+                }).catch(error => {
+                    console.error("Error updating score:", error);
+                });
+            }
+        }
+
+        // Clean up old clicks
+        clickBuffer = clickBuffer.filter(click => 
+            currentTime - click.timestamp > RATE_LIMIT_INTERVAL
+        );
+    }
+
+    // Update the processClickBuffer function for millisecond updates
+    function processClickBuffer() {
+        if (!userKey || !playerName) {
+            clearInterval(clickProcessingInterval);
+            clickProcessingInterval = null;
+            clickBuffer = [];
+            return;
+        }
+
+        const currentTime = Date.now();
+        const validClicks = clickBuffer.filter(click => 
+            currentTime - click.timestamp <= RATE_LIMIT_INTERVAL
+        ).slice(0, MAX_CLICKS_PER_INTERVAL);
+
+        if (validClicks.length > 0) {
+            const scoreElement = document.querySelector(`.score-item[data-player="${playerName}"]`);
+            if (scoreElement) {
+                const scoreDisplay = scoreElement.querySelector('.player-score');
+                const currentScore = parseInt(scoreDisplay.getAttribute('data-score') || '0');
+                const newScore = currentScore + validClicks.length;
+
+                // Update UI instantly
+                requestAnimationFrame(() => {
+                    scoreDisplay.setAttribute('data-score', newScore);
+                    scoreDisplay.innerHTML = `${newScore} 💖`;
+
+                    // Resort scoreboard
+                    const scoreList = document.getElementById('scoreList');
+                    const items = Array.from(scoreList.children);
+                    
+                    // Update position
+                    for (let i = 0; i < items.length; i++) {
+                        const score = parseInt(items[i].querySelector('.player-score').getAttribute('data-score')) || 0;
+                        if (score < newScore && items[i] !== scoreElement) {
+                            scoreList.insertBefore(scoreElement, items[i]);
+                            break;
+                        }
+                    }
+
+                    // Update ranks
+                    items.forEach((item, index) => {
+                        const rankElement = item.querySelector('.player-rank');
+                        const trophies = ['🥇', '🥈', '🥉'];
+                        rankElement.textContent = index < 3 ? trophies[index] : (index + 1);
+                        item.classList.toggle('top-three', index < 3);
+                    });
+                });
+
+                // Check for milestone
+                showMilestoneCelebration(newScore);
+
+                // Update Firebase
+                playersRef.child(userKey).update({
+                    hearts: newScore,
+                    lastUpdate: firebase.database.ServerValue.TIMESTAMP
+                }).catch(error => {
+                    console.error("Error updating score:", error);
+                });
+            }
+        }
+
+        // Clean up old clicks
+        clickBuffer = clickBuffer.filter(click => 
+            currentTime - click.timestamp > RATE_LIMIT_INTERVAL
+        );
+    }
+
+    // Update the click handler to be player-specific
+    function handlePosterClick(event) {
+        if (!playerName) return;
+
+        const currentTime = Date.now();
+        const rect = this.getBoundingClientRect();
+        const relativeX = (event.clientX - rect.left) / rect.width;
+        const relativeY = (event.clientY - rect.top) / rect.height;
+
+        if (relativeX >= 0 && relativeX <= 1 && relativeY >= 0 && relativeY <= 1) {
+            // Display heart immediately
+            displayHeart(relativeX, relativeY);
+
+            // Only store essential data
+            const playerClick = {
+                timestamp: currentTime,
+                player: playerName,
+                userKey: userKey
+            };
+
+            // Add to player-specific buffer
+            if (!window.playerClickBuffers) {
+                window.playerClickBuffers = new Map();
+            }
+            
+            if (!window.playerClickBuffers.has(userKey)) {
+                window.playerClickBuffers.set(userKey, []);
+            }
+            
+            window.playerClickBuffers.get(userKey).push(playerClick);
+
+            // Batch process clicks
+            if (!window.playerProcessingIntervals) {
+                window.playerProcessingIntervals = new Map();
+            }
+
+            if (!window.playerProcessingIntervals.has(userKey)) {
+                window.playerProcessingIntervals.set(userKey, setInterval(() => {
+                    processPlayerClickBuffer(userKey);
+                }, RATE_LIMIT_INTERVAL));
+            }
+
+            // Only broadcast click to other players through WebSocket
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'heart_click',
+                    data: {
+                        player: playerName,
+                        xRatio: relativeX,
+                        yRatio: relativeY
+                    }
+                }));
+            }
+        }
+    }
+
+    // Add player-specific click processing
+    function processPlayerClickBuffer(playerKey) {
+        if (!window.playerClickBuffers?.has(playerKey)) {
+            if (window.playerProcessingIntervals?.has(playerKey)) {
+                clearInterval(window.playerProcessingIntervals.get(playerKey));
+                window.playerProcessingIntervals.delete(playerKey);
+            }
+            return;
+        }
+
+        const buffer = window.playerClickBuffers.get(playerKey);
+        const currentTime = Date.now();
+        
+        // Process clicks in batches
+        const validClicks = buffer.filter(click => 
+            currentTime - click.timestamp <= RATE_LIMIT_INTERVAL
+        ).slice(0, MAX_CLICKS_PER_INTERVAL);
+
+        if (validClicks.length > 0) {
+            const scoreElement = document.querySelector(`.score-item[data-player="${playerName}"]`);
+            if (scoreElement) {
+                const scoreDisplay = scoreElement.querySelector('.player-score');
+                const currentScore = parseInt(scoreDisplay.getAttribute('data-score') || '0');
+                const newScore = currentScore + validClicks.length;
+
+                // Update UI instantly
+                requestAnimationFrame(() => {
+                    scoreDisplay.setAttribute('data-score', newScore);
+                    scoreDisplay.innerHTML = `${newScore} 💖`;
+                    updateScoreboardPosition(scoreElement, newScore);
+                });
+
+                // Check for milestone
+                showMilestoneCelebration(newScore);
+
+                // Batch update to Firebase
+                playersRef.child(playerKey).update({
+                    hearts: newScore,
+                    lastUpdate: firebase.database.ServerValue.TIMESTAMP,
+                    clickCount: firebase.database.ServerValue.increment(validClicks.length)
+                }).catch(error => {
+                    console.error("Error updating score:", error);
+                });
+            }
+        }
+
+        // Clean up old clicks
+        window.playerClickBuffers.set(playerKey, 
+            buffer.filter(click => currentTime - click.timestamp <= RATE_LIMIT_INTERVAL)
+        );
+
+        // Clear interval if buffer is empty
+        if (window.playerClickBuffers.get(playerKey).length === 0) {
+            clearInterval(window.playerProcessingIntervals.get(playerKey));
+            window.playerProcessingIntervals.delete(playerKey);
+            window.playerClickBuffers.delete(playerKey);
+        }
+    }
+
+    // Helper function to update scoreboard position
+    function updateScoreboardPosition(scoreElement, newScore) {
+        const scoreList = document.getElementById('scoreList');
+        const items = Array.from(scoreList.children);
+        
+        for (let i = 0; i < items.length; i++) {
+            const score = parseInt(items[i].querySelector('.player-score').getAttribute('data-score')) || 0;
+            if (score < newScore && items[i] !== scoreElement) {
+                scoreList.insertBefore(scoreElement, items[i]);
+                break;
+            }
+        }
+
+        // Update ranks
+        items.forEach((item, index) => {
+            const rankElement = item.querySelector('.player-rank');
+            const trophies = ['🥇', '🥈', '🥉'];
+            rankElement.textContent = index < 3 ? trophies[index] : (index + 1);
+            item.classList.toggle('top-three', index < 3);
+        });
+    }
+
+    // Update cleanup function to handle player-specific intervals
+    function cleanup() {
+        try {
+            // Clear all player intervals
+            if (window.playerProcessingIntervals) {
+                for (const interval of window.playerProcessingIntervals.values()) {
+                    clearInterval(interval);
+                }
+                window.playerProcessingIntervals.clear();
+            }
+            
+            // Clear all player buffers
+            if (window.playerClickBuffers) {
+                window.playerClickBuffers.clear();
+            }
+
+            // Rest of the cleanup code...
+        } catch (error) {
+            console.error('Error during cleanup:', error);
+        }
+    }
     </script>
 </body>
 </html>

@@ -504,3 +504,183 @@ button:hover {
         padding: 30px;
     }
 }
+
+/* Add instant score update animation */
+.score-update {
+    animation: quickHighlight 0.15s ease-out;
+}
+
+@keyframes quickHighlight {
+    0% {
+        background-color: rgba(255, 77, 77, 0.3);
+    }
+    100% {
+        background-color: transparent;
+    }
+}
+
+/* Make score transitions smoother */
+.player-score {
+    transition: all 0.15s ease-out;
+}
+
+/* Optimize animations */
+.score-item {
+    will-change: transform, opacity, background-color;
+    transform: translateZ(0);
+}
+
+/* Optimize score updates */
+.score-item {
+    will-change: transform, opacity;
+    transform: translateZ(0);
+    transition: transform 0.1s ease-out;
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
+.player-score {
+    transition: none; /* Remove transition for instant updates */
+}
+
+/* Make highlight faster */
+@keyframes quickHighlight {
+    0%, 100% { background-color: transparent; }
+    50% { background-color: rgba(255, 77, 77, 0.2); }
+}
+
+.score-update {
+    animation: quickHighlight 0.1s ease-out;
+}
+
+/* Optimize performance */
+.scoreboard {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+    contain: content;
+}
+
+#scoreList {
+    contain: layout style;
+}
+
+/* Milestone Popup Styles */
+.milestone-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.5);
+    z-index: 2000;
+    opacity: 0;
+    transition: all 0.3s ease-out;
+}
+
+.milestone-popup.show {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+}
+
+.milestone-popup.hide {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 0;
+}
+
+.milestone-content {
+    background: linear-gradient(135deg, #ff6b6b, #ff4d4d);
+    padding: 30px 50px;
+    border-radius: 20px;
+    text-align: center;
+    color: white;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    animation: celebrateBackground 2s infinite;
+}
+
+.milestone-content h2 {
+    font-size: 2.5em;
+    margin: 0 0 15px 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+
+.milestone-score {
+    font-size: 3em;
+    font-weight: bold;
+    margin: 10px 0;
+    text-shadow: 3px 3px 6px rgba(0,0,0,0.2);
+}
+
+.milestone-quote {
+    font-size: 1.4em;
+    margin: 15px 0 0 0;
+    font-style: italic;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+}
+
+@keyframes celebrateBackground {
+    0%, 100% {
+        background: linear-gradient(135deg, #ff6b6b, #ff4d4d);
+    }
+    50% {
+        background: linear-gradient(135deg, #ff4d4d, #ff6b6b);
+    }
+}
+
+/* Add confetti animation */
+.milestone-popup::before,
+.milestone-popup::after {
+    content: '✨';
+    position: absolute;
+    font-size: 2em;
+    animation: confetti 1s ease-out infinite;
+}
+
+.milestone-popup::before {
+    left: -20px;
+    top: -20px;
+}
+
+.milestone-popup::after {
+    right: -20px;
+    bottom: -20px;
+}
+
+@keyframes confetti {
+    0% {
+        transform: translate(0, 0) rotate(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(10px, 10px) rotate(180deg);
+        opacity: 0;
+    }
+}
+
+/* Optimize score updates for millisecond changes */
+.score-item {
+    will-change: transform;
+    transform: translateZ(0);
+    transition: none !important;
+    backface-visibility: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+.player-score {
+    transition: none !important;
+}
+
+/* Remove animations that might slow down updates */
+.score-update {
+    animation: none !important;
+}
+
+/* Optimize rendering performance */
+.scoreboard {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    contain: content;
+    -webkit-font-smoothing: antialiased;
+}
+
+#scoreList {
+    contain: layout style;
+}
