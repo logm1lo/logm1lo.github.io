@@ -15,6 +15,18 @@
     <div class="live-collaboration">
         <p>Live Users: <span id="liveUserCount">0</span></p>
     </div>
+    <div class="scoreboard">
+        <h2>Top Clickers 🏆</h2>
+        <div id="scoreList"></div>
+    </div>
+    <div id="namePromptContainer" class="name-prompt-container">
+        <div class="name-prompt">
+            <h2>Enter Your Name</h2>
+            <input type="text" id="playerNameInput" placeholder="Your Name (max 12 chars)" maxlength="12" required>
+            <p id="nameError" class="error-message"></p>
+            <button id="submitNameButton">Start Clicking!</button>
+        </div>
+    </div>
     <button id="wishButton">Send a Wish</button>
 
     <!-- Popup form container -->
@@ -49,13 +61,29 @@
     const wishButton = document.getElementById('wishButton');
     const closeFormButton = document.getElementById('closeFormButton');
 
-    // Add configuration constants
+    // Configuration constants
     const MAX_HEARTS = 20;
     const WISH_DISPLAY_TIME = 5000;
     const HEART_DISPLAY_TIME = 3500;
     const CLEANUP_INTERVAL = 60000;
+    // Game configuration constants
+    window.MAX_CLICKS_PER_INTERVAL = 20;
+    window.RATE_LIMIT_INTERVAL = 1000;
+    window.CLICK_BUFFER_SIZE = 25;
+    window.SCORE_CHANGE_THRESHOLD = 40;
+    window.SUSPICIOUS_ACTIVITY_THRESHOLD = 3;
+    window.SCORE_CHECK_INTERVAL = 2000;
 
-    // Initialize element cache before it's used
+    // Global variables
+    let playerName = '';
+    window.lastClickTime = 0;
+    window.clickCount = 0;
+    window.clickBuffer = [];
+    window.clickProcessingInterval = null;
+    window.playerScores = new Map();
+    window.suspiciousActivity = new Map();
+
+    // Initialize element cache
     const elementCache = new Map();
 
     // Move createElement function before it's used
@@ -70,9 +98,13 @@
     const wishesRef = db.ref("wishes");
     const heartsRef = db.ref("hearts");
     const liveUserRef = db.ref("liveUsers");
+    const playersRef = db.ref("players");
+    const clicksRef = db.ref("clicks");
+
+    // Change this line from const to let
+    let userKey = liveUserRef.push().key;  // Make userKey reassignable
 
     // Now initialize live user tracking
-    const userKey = liveUserRef.push().key;
     liveUserRef.child(userKey).set(true);
     liveUserRef.child(userKey).onDisconnect().remove();
 
@@ -151,9 +183,18 @@
                 liveUserRef.off('value', liveUserListener);
                 liveUserListener = null;
             }
-            if (userKey) {
-                liveUserRef.child(userKey).remove();
+            if (userKey && playerName) {
+                // Update last seen timestamp instead of removing the player
+                playersRef.child(userKey).update({
+                    lastSeen: firebase.database.ServerValue.TIMESTAMP,
+                    online: false
+                });
             }
+            if (clickProcessingInterval) {
+                clearInterval(clickProcessingInterval);
+                clickProcessingInterval = null;
+            }
+            clickBuffer = [];
         } catch (error) {
             console.error('Error during cleanup:', error);
         }
@@ -190,6 +231,12 @@
                 requestAnimationFrame(() => displayWish(snapshot.val()));
             }, (error) => {
                 console.error("Error in wishes listener:", error);
+                // Attempt to reconnect after error
+                setTimeout(() => {
+                    if (wishesListener === null) {
+                        initializeListeners();
+                    }
+                }, 5000);
             });
 
             // Hearts listener with throttling
@@ -198,10 +245,16 @@
                 requestAnimationFrame(() => displayHeart(heartData.xRatio, heartData.yRatio));
             }, (error) => {
                 console.error("Error in hearts listener:", error);
+                // Attempt to reconnect after error
+                setTimeout(() => {
+                    if (heartsListener === null) {
+                        initializeListeners();
+                    }
+                }, 5000);
             });
         } catch (error) {
             console.error("Error initializing listeners:", error);
-            handleDisconnection();
+            setTimeout(initializeListeners, 5000);
         }
     }
 
@@ -298,28 +351,375 @@
         }, WISH_DISPLAY_TIME);
     }
 
-    // Replace the heart click handler and creation functions with these optimized versions
+    // Add this function to validate names
+    function validateName(name) {
+        const sanitizedName = name.trim();
+        if (!sanitizedName) return { valid: false, message: "Name cannot be empty" };
+        if (sanitizedName.length > 12) return { valid: false, message: "Name too long" };
+        if (!/^[a-zA-Z0-9\s-_]+$/.test(sanitizedName)) return { valid: false, message: "Only letters, numbers, spaces, - and _ allowed" };
+        return { valid: true, sanitizedName };
+    }
+
+    // Add these functions after Firebase initialization
+
+    // Function to load existing player data
+    function loadPlayerData() {
+        const savedUserKey = localStorage.getItem('userKey');
+        const savedPlayerName = localStorage.getItem('playerName');
+        const savedHearts = localStorage.getItem('playerHearts');
+        
+        if (savedUserKey && savedPlayerName) {
+            return playersRef.child(savedUserKey).once('value')
+                .then((snapshot) => {
+                    if (snapshot.exists() && snapshot.val().name === savedPlayerName) {
+                        // This is the same player, restore their session
+                        userKey = savedUserKey;
+                        playerName = savedPlayerName;
+                        
+                        return playersRef.child(userKey).update({
+                            lastSeen: firebase.database.ServerValue.TIMESTAMP,
+                            online: true,
+                            restored: true
+                        });
+                    } else {
+                        // Check if the name exists under a different key
+                        return playersRef.orderByChild('name').equalTo(savedPlayerName).once('value')
+                            .then((nameSnapshot) => {
+                                if (nameSnapshot.exists()) {
+                                    localStorage.removeItem('userKey');
+                                    localStorage.removeItem('playerName');
+                                    localStorage.removeItem('playerHearts');
+                                    return false;
+                                } else {
+                                    userKey = playersRef.push().key;  // Generate new key
+                                    playerName = savedPlayerName;
+                                    
+                                    return playersRef.child(userKey).set({
+                                        name: playerName,
+                                        hearts: parseInt(savedHearts) || 0,
+                                        timestamp: firebase.database.ServerValue.TIMESTAMP,
+                                        lastSeen: firebase.database.ServerValue.TIMESTAMP,
+                                        online: true,
+                                        restored: true
+                                    }).then(() => {
+                                        localStorage.setItem('userKey', userKey);
+                                        return true;
+                                    });
+                                }
+                            });
+                    }
+                })
+                .then((success) => {
+                    if (success) {
+                        playersRef.child(userKey).on('value', (snapshot) => {
+                            if (snapshot.exists()) {
+                                const data = snapshot.val();
+                                localStorage.setItem('playerHearts', data.hearts || 0);
+                            }
+                        });
+                    }
+                    return success;
+                })
+                .catch((error) => {
+                    console.error("Error loading player data:", error);
+                    localStorage.removeItem('userKey');
+                    localStorage.removeItem('playerName');
+                    localStorage.removeItem('playerHearts');
+                    return false;
+                });
+        }
+        return Promise.resolve(false);
+    }
+
+    // Add this function to handle session expiry
+    function checkSessionValidity() {
+        if (userKey && playerName) {
+            playersRef.child(userKey).once('value')
+                .then((snapshot) => {
+                    if (!snapshot.exists() || snapshot.val().name !== playerName) {
+                        // Session is invalid, clear it
+                        localStorage.removeItem('userKey');
+                        localStorage.removeItem('playerName');
+                        localStorage.removeItem('playerHearts');
+                        window.location.reload(); // Reload to show name prompt
+                    }
+                });
+        }
+    }
+
+    // Add periodic session check
+    setInterval(checkSessionValidity, 5 * 60 * 1000); // Check every 5 minutes
+
+    // Update the cleanup function to preserve session
+    function cleanup() {
+        try {
+            if (wishesListener) {
+                wishesRef.off('child_added', wishesListener);
+                wishesListener = null;
+            }
+            if (heartsListener) {
+                heartsRef.off('child_added', heartsListener);
+                heartsListener = null;
+            }
+            if (liveUserListener) {
+                liveUserRef.off('value', liveUserListener);
+                liveUserListener = null;
+            }
+            clicksRef.off('child_added');
+            
+            if (userKey && playerName) {
+                // Update last seen timestamp but keep the player data
+                playersRef.child(userKey).update({
+                    lastSeen: firebase.database.ServerValue.TIMESTAMP,
+                    online: false
+                }).catch(error => {
+                    console.error('Error updating player status:', error);
+                });
+            }
+            if (clickProcessingInterval) {
+                clearInterval(clickProcessingInterval);
+                clickProcessingInterval = null;
+            }
+            clickBuffer = [];
+        } catch (error) {
+            console.error('Error during cleanup:', error);
+        }
+    }
+
+    // Add window beforeunload handler to save state
+    window.addEventListener('beforeunload', () => {
+        if (userKey && playerName) {
+            // Sync final state to localStorage
+            playersRef.child(userKey).once('value')
+                .then(snapshot => {
+                    if (snapshot.exists()) {
+                        const data = snapshot.val();
+                        localStorage.setItem('playerHearts', data.hearts || 0);
+                    }
+                });
+        }
+    });
+
+    // Add periodic cleanup for very old players (optional)
+    setInterval(() => {
+        playersRef.once('value')
+            .then((snapshot) => {
+                const updates = {};
+                const twentyFourHoursAgo = Date.now() - (24 * 60 * 60 * 1000);
+                
+                snapshot.forEach((child) => {
+                    const playerData = child.val();
+                    const lastSeen = playerData.lastSeen || playerData.timestamp || 0;
+                    
+                    if (lastSeen < twentyFourHoursAgo) {
+                        updates[child.key] = null;
+                    }
+                });
+                
+                if (Object.keys(updates).length > 0) {
+                    playersRef.update(updates);
+                }
+            });
+    }, 6 * 60 * 1000); // Check every hour
+
+    // Replace the existing click tracking variables and constants with these optimized versions
+    const MAX_CLICKS_PER_INTERVAL = 20; // Increased from 12 to 20 clicks per interval
+    const RATE_LIMIT_INTERVAL = 1000; // Increased from 300ms to 1000ms for better averaging
+    const CLICK_BUFFER_SIZE = 25; // Increased from 15 to 25
+    const SCORE_CHANGE_THRESHOLD = 40; // Increased from 25 to 40
+
+    // Add these new variables for click tracking
+    let clickBuffer = [];
+    let clickProcessingInterval;
+
+    // Replace the existing click handler with this optimized version
     document.querySelector('.poster-container').addEventListener('click', function(event) {
+        if (!playerName) return; // Don't allow clicks without a name
+
+        const currentTime = Date.now();
         const rect = this.getBoundingClientRect();
         const relativeX = (event.clientX - rect.left) / rect.width;
         const relativeY = (event.clientY - rect.top) / rect.height;
 
         if (relativeX >= 0 && relativeX <= 1 && relativeY >= 0 && relativeY <= 1) {
-            // Display heart immediately
-            displayHeart(relativeX, relativeY);
-            
-            // Save to Firebase in background
-            const heartData = { 
+            // Add click to real-time tracking
+            clicksRef.push({
+                player: playerName,
                 xRatio: relativeX,
                 yRatio: relativeY,
                 timestamp: firebase.database.ServerValue.TIMESTAMP
-            };
-            
-            heartsRef.push(heartData).catch(error => {
-                console.error("Error saving heart:", error);
             });
+
+            // Add click to buffer for scoring
+            clickBuffer.push({
+                xRatio: relativeX,
+                yRatio: relativeY,
+                timestamp: currentTime
+            });
+
+            // Display heart immediately for responsive feedback
+            displayHeart(relativeX, relativeY);
+
+            // Start processing interval if not already started
+            if (!clickProcessingInterval) {
+                clickProcessingInterval = setInterval(processClickBuffer, RATE_LIMIT_INTERVAL);
+            }
         }
     });
+
+    // Update the processClickBuffer function with more lenient checks
+    function processClickBuffer() {
+        if (!userKey || !playerName) {
+            clearInterval(clickProcessingInterval);
+            clickProcessingInterval = null;
+            clickBuffer = [];
+            return;
+        }
+
+        const currentTime = Date.now();
+        const validClicks = clickBuffer.filter(click => 
+            currentTime - click.timestamp <= RATE_LIMIT_INTERVAL
+        ).slice(0, MAX_CLICKS_PER_INTERVAL);
+
+        if (validClicks.length > 0) {
+            // More lenient rapid clicking check
+            if (validClicks.length > MAX_CLICKS_PER_INTERVAL * 1.5 && // Only trigger if significantly over limit
+                currentTime - lastClickTime < 50) { // Keep minimum time check for extreme cases
+                handleSuspiciousActivity(userKey, 0, validClicks.length);
+                return;
+            }
+
+            const updates = {};
+            validClicks.forEach(click => {
+                const heartKey = heartsRef.push().key;
+                updates[`hearts/${heartKey}`] = {
+                    xRatio: click.xRatio,
+                    yRatio: click.yRatio,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP,
+                    player: playerName
+                };
+            });
+            
+            playersRef.child(userKey).child('hearts').once('value')
+                .then(snapshot => {
+                    const currentScore = snapshot.val() || 0;
+                    const increment = validClicks.length;
+                    
+                    // More lenient suspicious activity check
+                    if (increment > SCORE_CHANGE_THRESHOLD * 1.5 || // Increased threshold
+                        clickBuffer.length > CLICK_BUFFER_SIZE * 3) { // More lenient buffer check
+                        handleSuspiciousActivity(userKey, currentScore, increment);
+                        return;
+                    }
+                    
+                    const newScore = currentScore + increment;
+                    updates[`players/${userKey}/hearts`] = newScore;
+                    updates[`players/${userKey}/lastUpdate`] = firebase.database.ServerValue.TIMESTAMP;
+
+                    localStorage.setItem('playerHearts', newScore);
+
+                    return db.ref().update(updates);
+                })
+                .catch(error => {
+                    console.error("Error updating hearts:", error);
+                });
+            
+            lastClickTime = currentTime;
+        }
+
+        clickBuffer = clickBuffer.filter(click => 
+            currentTime - click.timestamp > RATE_LIMIT_INTERVAL
+        );
+    }
+
+    // Update the handleSuspiciousActivity function to be more strict
+    function handleSuspiciousActivity(userId, currentScore, increment) {
+        console.warn(`Suspicious activity detected for ${userId}: +${increment} points`);
+        
+        // Immediately remove the cheating player
+        const updates = {
+            [`players/${userId}`]: null,  // Delete the player
+            [`hearts`]: null  // Delete all their hearts
+        };
+        
+        // Remove from local tracking
+        playerScores.delete(userId);
+        suspiciousActivity.delete(userId);
+        
+        // If this is the current player, show message and reload
+        if (userId === userKey) {
+            alert('Suspicious activity detected. Your session has been terminated.');
+            window.location.reload();
+            return;
+        }
+        
+        // Execute the removal
+        db.ref().update(updates).then(() => {
+            console.log(`Player ${userId} has been removed for cheating`);
+        }).catch(error => {
+            console.error("Error removing cheater:", error);
+        });
+    }
+
+    // Update the updateScoreboard function to keep offline players
+    function updateScoreboard(snapshot) {
+        const scoreList = document.getElementById('scoreList');
+        const players = [];
+        
+        snapshot.forEach(child => {
+            const playerData = child.val();
+            // Include all players with valid data, even if offline
+            if (playerData && playerData.name && typeof playerData.hearts === 'number') {
+                // Calculate time since last seen
+                const lastSeen = playerData.lastSeen || playerData.timestamp || 0;
+                const timeSinceLastSeen = Date.now() - lastSeen;
+                // Keep players for 24 hours after their last activity
+                if (timeSinceLastSeen < 24 * 60 * 60 * 1000) {
+                    players.push({
+                        name: playerData.name,
+                        hearts: playerData.hearts,
+                        lastUpdate: playerData.lastUpdate || 0,
+                        online: playerData.online || false,
+                        lastSeen: lastSeen
+                    });
+                }
+            }
+        });
+        
+        players.sort((a, b) => b.hearts - a.hearts);
+        
+        const trophies = ['🥇', '🥈', '🥉'];
+        scoreList.innerHTML = players.map((player, index) => {
+            // Calculate time since last seen for display
+            const timeSinceLastSeen = Date.now() - player.lastSeen;
+            const isRecent = timeSinceLastSeen < 5 * 60 * 1000; // 5 minutes
+            
+            return `
+                <div class="score-item ${index < 3 ? 'top-three' : ''}" 
+                     title="${player.name}: ${player.hearts} hearts${!player.online ? '\nOffline' : ''}"
+                     data-last-seen="${player.lastSeen}">
+                    <span class="player-rank">${index < 3 ? trophies[index] : (index + 1)}</span>
+                    <span class="player-name">${player.name}</span>
+                    <span class="player-score">${player.hearts} 💖</span>
+                    <span class="online-indicator" style="color: ${player.online ? '#4CAF50' : (isRecent ? '#FFA500' : '#ccc')}">●</span>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Add this to initialize the scoring system
+    function initializeScoring() {
+        showNamePrompt();
+        
+        playersRef.on('value', (snapshot) => {
+            updateScoreboard(snapshot);
+        }, (error) => {
+            console.error("Error fetching scores:", error);
+        });
+    }
+
+    // Call this after Firebase initialization
+    initializeScoring();
 
     // Optimize the heart display function
     function displayHeart(xRatio, yRatio) {
@@ -382,6 +782,238 @@
         console.log('Browser went offline');
         cleanup();
     });
+
+    // Add real-time click listener
+    clicksRef.on('child_added', (snapshot) => {
+        const click = snapshot.val();
+        // Only display hearts from other players
+        if (click.player !== playerName) {
+            displayHeart(click.xRatio, click.yRatio);
+        }
+    });
+
+    // Add cleanup for old clicks
+    setInterval(() => {
+        const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
+        clicksRef.orderByChild('timestamp')
+            .endAt(fiveMinutesAgo)
+            .once('value')
+            .then((snapshot) => {
+                const updates = {};
+                snapshot.forEach((child) => {
+                    updates[child.key] = null;
+                });
+                if (Object.keys(updates).length > 0) {
+                    clicksRef.update(updates);
+                }
+            });
+    }, 60000); // Clean up every minute
+
+    // Update the cleanup function to not remove player data
+    function cleanup() {
+        try {
+            if (wishesListener) {
+                wishesRef.off('child_added', wishesListener);
+                wishesListener = null;
+            }
+            if (heartsListener) {
+                heartsRef.off('child_added', heartsListener);
+                heartsListener = null;
+            }
+            if (liveUserListener) {
+                liveUserRef.off('value', liveUserListener);
+                liveUserListener = null;
+            }
+            // Remove click listener
+            clicksRef.off('child_added');
+            
+            if (userKey && playerName) {
+                // Update last seen timestamp instead of removing the player
+                playersRef.child(userKey).update({
+                    lastSeen: firebase.database.ServerValue.TIMESTAMP,
+                    online: false
+                });
+            }
+            if (clickProcessingInterval) {
+                clearInterval(clickProcessingInterval);
+                clickProcessingInterval = null;
+            }
+            clickBuffer = [];
+        } catch (error) {
+            console.error('Error during cleanup:', error);
+        }
+    }
+
+    // Add window beforeunload handler to save state
+    window.addEventListener('beforeunload', () => {
+        if (userKey && playerName) {
+            // Sync final state to localStorage
+            playersRef.child(userKey).once('value')
+                .then(snapshot => {
+                    if (snapshot.exists()) {
+                        const data = snapshot.val();
+                        localStorage.setItem('playerHearts', data.hearts || 0);
+                    }
+                });
+        }
+    });
+
+    // Add periodic cleanup for very old players (optional)
+    setInterval(() => {
+        playersRef.once('value')
+            .then((snapshot) => {
+                const updates = {};
+                const twentyFourHoursAgo = Date.now() - (24 * 60 * 60 * 1000);
+                
+                snapshot.forEach((child) => {
+                    const playerData = child.val();
+                    const lastSeen = playerData.lastSeen || playerData.timestamp || 0;
+                    
+                    if (lastSeen < twentyFourHoursAgo) {
+                        updates[child.key] = null;
+                    }
+                });
+                
+                if (Object.keys(updates).length > 0) {
+                    playersRef.update(updates);
+                }
+            });
+    }, 6 * 60 * 1000); // Check every hour
+
+    // Update the showNamePrompt function
+    function showNamePrompt() {
+        const namePrompt = document.getElementById('namePromptContainer');
+        const playerNameInput = document.getElementById('playerNameInput');
+        const submitNameButton = document.getElementById('submitNameButton');
+        const nameError = document.getElementById('nameError');
+
+        // First try to load existing player data
+        loadPlayerData().then((playerLoaded) => {
+            if (playerLoaded) {
+                // Player was successfully loaded, hide the prompt
+                namePrompt.style.visibility = 'hidden';
+                return;
+            }
+
+            // Show the prompt if no existing player
+            namePrompt.style.visibility = 'visible';
+            namePrompt.classList.add('show');
+
+            // Remove any existing event listeners
+            submitNameButton.removeEventListener('click', handleNameSubmit);
+            
+            // Add the event listener
+            submitNameButton.addEventListener('click', handleNameSubmit);
+
+            function handleNameSubmit() {
+                const validation = validateName(playerNameInput.value);
+                if (!validation.valid) {
+                    nameError.textContent = validation.message;
+                    return;
+                }
+
+                // Check for existing names (case-insensitive)
+                playersRef.once('value')
+                    .then(snapshot => {
+                        let nameExists = false;
+                        snapshot.forEach(child => {
+                            const existingPlayer = child.val();
+                            if (existingPlayer && existingPlayer.name && 
+                                existingPlayer.name.toLowerCase() === validation.sanitizedName.toLowerCase()) {
+                                nameExists = true;
+                                return true; // Break the forEach loop
+                            }
+                        });
+
+                        if (nameExists) {
+                            nameError.textContent = "This name is already taken. Please choose another.";
+                            playerNameInput.value = ''; // Clear the input
+                            return Promise.reject('Name taken');
+                        }
+
+                        playerName = validation.sanitizedName;
+                        return playersRef.child(userKey).set({
+                            name: playerName,
+                            hearts: 0,
+                            timestamp: firebase.database.ServerValue.TIMESTAMP,
+                            lastSeen: firebase.database.ServerValue.TIMESTAMP,
+                            online: true
+                        });
+                    })
+                    .then(() => {
+                        if (playerName) {
+                            // Store player data locally
+                            localStorage.setItem('userKey', userKey);
+                            localStorage.setItem('playerName', playerName);
+                            localStorage.setItem('playerHearts', '0');
+                            
+                            // Hide the prompt
+                            namePrompt.classList.remove('show');
+                            setTimeout(() => {
+                                namePrompt.style.visibility = 'hidden';
+                            }, 300);
+
+                            // Initialize click handling
+                            initializeClickHandling();
+                        }
+                    })
+                    .catch(error => {
+                        if (error === 'Name taken') return; // Already handled
+                        console.error("Error setting player name:", error);
+                        nameError.textContent = "Error saving name. Please try again.";
+                    });
+            }
+        });
+    }
+
+    // Add this new function to initialize click handling
+    function initializeClickHandling() {
+        const posterContainer = document.querySelector('.poster-container');
+        
+        // Remove any existing click listeners
+        posterContainer.removeEventListener('click', handlePosterClick);
+        
+        // Add the click listener
+        posterContainer.addEventListener('click', handlePosterClick);
+    }
+
+    // Separate the click handler function
+    function handlePosterClick(event) {
+        if (!playerName) return; // Don't allow clicks without a name
+
+        const currentTime = Date.now();
+        const rect = this.getBoundingClientRect();
+        const relativeX = (event.clientX - rect.left) / rect.width;
+        const relativeY = (event.clientY - rect.top) / rect.height;
+
+        if (relativeX >= 0 && relativeX <= 1 && relativeY >= 0 && relativeY <= 1) {
+            // Add click to real-time tracking
+            clicksRef.push({
+                player: playerName,
+                xRatio: relativeX,
+                yRatio: relativeY,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+
+            // Add click to buffer for scoring
+            clickBuffer.push({
+                xRatio: relativeX,
+                yRatio: relativeY,
+                timestamp: currentTime
+            });
+
+            // Display heart immediately for responsive feedback
+            displayHeart(relativeX, relativeY);
+
+            // Start processing interval if not already started
+            if (!clickProcessingInterval) {
+                clickProcessingInterval = setInterval(processClickBuffer, RATE_LIMIT_INTERVAL);
+            }
+        }
+    }
+
+    // Make sure to call initializeScoring at the end
+    initializeScoring();
     </script>
 </body>
 </html>

@@ -305,3 +305,153 @@ button:hover {
         max-width: 95%; /* Ensure it's fully mobile-friendly */
     }
 }
+
+/* Scoreboard Styles */
+.scoreboard {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 12px;
+    max-width: 300px;
+    margin: 20px;
+    position: fixed;
+    top: 0;
+    right: 0;
+}
+
+.scoreboard h2 {
+    margin: 0 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #eee;
+    color: #333;
+    font-size: 1.2em;
+    text-align: center;
+}
+
+#scoreList {
+    max-height: 60vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #ff4d4d #f0f0f0;
+    padding-right: 10px;
+}
+
+/* Customize scrollbar for webkit browsers */
+#scoreList::-webkit-scrollbar {
+    width: 8px;
+}
+
+#scoreList::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 4px;
+}
+
+#scoreList::-webkit-scrollbar-thumb {
+    background: #ff4d4d;
+    border-radius: 4px;
+}
+
+#scoreList::-webkit-scrollbar-thumb:hover {
+    background: #e60000;
+}
+
+.score-item {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s ease;
+}
+
+.player-rank {
+    margin-right: 8px;
+}
+
+.player-name {
+    flex-grow: 1;
+    margin-right: 8px;
+}
+
+.player-score {
+    margin-right: 4px;
+}
+
+.online-indicator {
+    color: #4CAF50;
+    font-size: 12px;
+}
+
+.top-three {
+    background: rgba(255, 223, 186, 0.2);
+}
+
+.score-item:hover {
+    background-color: rgba(255, 77, 77, 0.1);
+}
+
+.score-item:last-child {
+    border-bottom: none;
+}
+
+/* Add smooth animation for score updates */
+.score-item {
+    animation: scoreUpdate 0.3s ease-out;
+}
+
+@keyframes scoreUpdate {
+    from {
+        background-color: rgba(255, 77, 77, 0.2);
+    }
+    to {
+        background-color: transparent;
+    }
+}
+
+/* Name Prompt Styles */
+.name-prompt-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    visibility: hidden;
+}
+
+.name-prompt {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+}
+
+.error-message {
+    color: #f44336;
+    margin: 10px 0;
+    font-size: 14px;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .scoreboard {
+        position: fixed;
+        right: 10px;
+        max-width: 200px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .scoreboard {
+        right: 5px;
+        max-width: 150px;
+        font-size: 12px;
+        padding: 10px;
+    }
+}
