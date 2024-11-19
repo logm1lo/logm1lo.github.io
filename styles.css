@@ -727,36 +727,3 @@ button:hover {
         font-size: 1em;
     }
 }
-
-/* Add broadcast styles */
-.broadcast-message {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(255, 77, 77, 0.95);
-    padding: 20px;
-    border-radius: 10px;
-    z-index: 10000;
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
-    max-width: 80%;
-    text-align: center;
-}
-
-.broadcast-content {
-    color: white;
-    font-size: 1.2em;
-}
-
-.broadcast-text {
-    margin-bottom: 15px;
-}
-
-.broadcast-message button {
-    background: white;
-    color: #ff4d4d;
-    border: none;
-    padding: 8px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-}

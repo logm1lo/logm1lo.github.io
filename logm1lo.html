@@ -5,39 +5,136 @@
     <title>404 Not Found</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-database-compat.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #111; color: #fff; font-family: Arial; }
-        #_a { padding: 20px; text-align: center; }
-        #_b { display: none; padding: 20px; max-width: 800px; margin: 0 auto; }
-        ._c { margin: 5px; padding: 10px; width: 100%; background: #333; color: #fff; border: 1px solid #444; border-radius: 4px; }
-        ._d { background: #f44; color: #fff; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
-        ._d:hover { background: #e33; }
-        ._e { margin-top: 20px; padding: 20px; background: #222; border-radius: 8px; }
-        h2, h3 { margin: 10px 0; color: #f44; }
-        .section { background: #222; padding: 20px; margin: 10px 0; border-radius: 8px; }
-        textarea { min-height: 100px; resize: vertical; }
-    </style>
+    <style>*{margin:0;padding:0;box-sizing:border-box}#_0x1{background:#111;padding:20px;text-align:center}#_0x2{display:none}._0x3{margin:5px}._0x4{background:#222;color:#fff;padding:10px;border:none}</style>
 </head>
 <body>
-<div id="_a">
-    <input type="password" id="_p" class="_c">
-    <button onclick="_x()" class="_d">•</button>
-</div>
-<div id="_b"></div>
+<div id="_0x1"><input type="password" id="_0x5" class="_0x3"><button onclick="_0x6()" class="_0x4">Verify</button></div>
+<div id="_0x2"></div>
 <script>
 (function(){
-    var _k=['QWRtaW5AMTIz'];
-    const _c={apiKey:"AIzaSyBinhf3-PpbAeQaQKToNnLHBBBxVQeLbp4",authDomain:"yayy-93c45.firebaseapp.com",databaseURL:"https://yayy-93c45-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"yayy-93c45",storageBucket:"yayy-93c45.appspot.com",messagingSenderId:"281901593072",appId:"1:281901593072:web:614dff92e64d25669c6d35"};
-    firebase.initializeApp(_c);
-    const _d=firebase.database(),_r=_d.ref('players'),_b=_d.ref('broadcast');
-    window._x=function(){const _v=document.getElementById('_p').value;if(_v===atob(_k[0])){document.getElementById('_a').style.display='none';document.getElementById('_b').style.display='block';document.getElementById('_b').innerHTML='<div class="section"><h2>System</h2><select id="_s" class="_c"></select><input type="number" id="_n" class="_c" placeholder="New Score"><button onclick="_u()" class="_d">Update</button><button onclick="_r()" class="_d">Remove</button><button onclick="_b()" class="_d">Block</button></div><div class="section"><h3>Remove by Name</h3><input type="text" id="_m" class="_c" placeholder="Name"><button onclick="_f()" class="_d">Remove All</button></div><div class="section"><h3>Broadcast</h3><textarea id="_t" class="_c" placeholder="Message"></textarea><button onclick="_s()" class="_d">Send</button></div>';_l();}};
-    function _l(){const _s=document.getElementById('_s');_s.innerHTML='<option value="">Select</option>';_r.once('value').then(_p=>{_p.forEach(_c=>{const _d=_c.val();if(_d&&_d.name){const _o=document.createElement('option');_o.value=_c.key;_o.textContent=`${_d.name} (${_d.hearts||0})`;_s.appendChild(_o);}});});}
-    window._u=function(){const _s=document.getElementById('_s'),_k=_s.value,_v=parseInt(document.getElementById('_n').value);if(_k&&!isNaN(_v)){_r.child(_k).update({hearts:_v,lastUpdate:firebase.database.ServerValue.TIMESTAMP}).then(()=>{alert('Updated');_l();});}};
-    window._r=function(){const _s=document.getElementById('_s'),_k=_s.value;if(_k&&confirm('Sure?')){_r.child(_k).remove().then(()=>{alert('Removed');_l();});}};
-    window._b=function(){const _s=document.getElementById('_s'),_k=_s.value;if(_k){_r.child(_k).update({banned:!0,banReason:'Blocked',banTimestamp:firebase.database.ServerValue.TIMESTAMP}).then(()=>{alert('Blocked');_l();});}};
-    window._f=function(){const _n=document.getElementById('_m').value.trim().toLowerCase();if(_n){if(confirm(`Remove all "${_n}"?`)){_r.once('value').then(_s=>{const _u={};let _c=0;_s.forEach(_p=>{const _d=_p.val();if(_d&&_d.name&&_d.name.toLowerCase()===_n){_u[_p.key]=null;_c++;}});if(_c===0){alert('None found');}else{_r.update(_u).then(()=>{alert(`Removed ${_c}`);document.getElementById('_m').value='';_l();});}});}}}
-    window._s=function(){const _m=document.getElementById('_t').value.trim();if(_m){_b.push({message:_m,timestamp:firebase.database.ServerValue.TIMESTAMP,active:!0}).then(()=>{alert('Sent');document.getElementById('_t').value='';});}};
+    var _0x4e8=['c3VwZXJzZWNyZXRhZG1pbnBhc3N3b3Jk','ZmlyZWJhc2VDb25maWc=','aW5pdGlhbGl6ZUFwcA==','ZGF0YWJhc2U=','cmVm','cGxheWVycw==','dmFsdWU=','Z2V0RWxlbWVudEJ5SWQ=','c3R5bGU=','ZGlzcGxheQ==','bm9uZQ==','YmxvY2s=','aW5uZXJIVE1M','PGgyPlN5c3RlbTwvaDI+PHNlbGVjdCBpZD0iXzB4NyIgY2xhc3M9Il8weDMiPjwvc2VsZWN0PjxpbnB1dCB0eXBlPSJudW1iZXIiIGlkPSJfMHg4IiBjbGFzcz0iXzB4MyI+PGJ1dHRvbiBvbmNsaWNrPSJfMHg5KCkiIGNsYXNzPSJfMHg0Ij5VcGRhdGU8L2J1dHRvbj48YnV0dG9uIG9uY2xpY2s9Il8weGEoKSIgY2xhc3M9Il8weDQiPlJlbW92ZTwvYnV0dG9uPjxidXR0b24gb25jbGljaz0iXzB4YigpIiBjbGFzcz0iXzB4NCI+QmxvY2s8L2J1dHRvbj4='];
+
+    const _0xf4a8={apiKey:"AIzaSyBinhf3-PpbAeQaQKToNnLHBBBxVQeLbp4",authDomain:"yayy-93c45.firebaseapp.com",databaseURL:"https://yayy-93c45-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"yayy-93c45",storageBucket:"yayy-93c45.appspot.com",messagingSenderId:"281901593072",appId:"1:281901593072:web:614dff92e64d25669c6d35"};
+
+    firebase.initializeApp(_0xf4a8);
+    const _0xdb = firebase.database();
+    const _0xpr = _0xdb.ref('players');
+
+    window._0x6 = function() {
+        const _0xp = document.getElementById('_0x5').value;
+        if(_0xp === atob('QWRtaW5AMTIz')) {
+            document.getElementById('_0x1').style.display = 'none';
+            document.getElementById('_0x2').style.display = 'block';
+            document.getElementById('_0x2').innerHTML = `
+                <h2>System Management</h2>
+                <select id="_0x7" class="_0x3"></select>
+                <input type="number" id="_0x8" class="_0x3" placeholder="New Score">
+                <button onclick="_0x9()" class="_0x4">Update Score</button>
+                <button onclick="_0xa()" class="_0x4">Remove Player</button>
+                <button onclick="_0xb()" class="_0x4">Block Player</button>
+                <div class="_rm">
+                    <h3>Remove by Name</h3>
+                    <input type="text" id="_0xc" class="_0x3" placeholder="Enter name">
+                    <button onclick="_0xd()" class="_0x4">Remove All with Name</button>
+                </div>
+            `;
+            _0xe();
+        }
+    };
+
+    function _0xe() {
+        const _s = document.getElementById('_0x7');
+        _s.innerHTML = '<option value="">Select Player</option>';
+        _0xpr.once('value').then(snap => {
+            snap.forEach(child => {
+                const _p = child.val();
+                if(_p && _p.name) {
+                    const _o = document.createElement('option');
+                    _o.value = child.key;
+                    _o.textContent = `${_p.name} (${_p.hearts || 0} hearts)`;
+                    _s.appendChild(_o);
+                }
+            });
+        });
+    }
+
+    window._0x9 = function() {
+        const _s = document.getElementById('_0x7');
+        const _k = _s.value;
+        const _v = parseInt(document.getElementById('_0x8').value);
+        
+        if(_k && !isNaN(_v)) {
+            _0xpr.child(_k).update({
+                hearts: _v,
+                lastUpdate: firebase.database.ServerValue.TIMESTAMP
+            }).then(() => {
+                alert('Score Updated');
+                _0xe();
+            });
+        }
+    };
+
+    window._0xa = function() {
+        const _s = document.getElementById('_0x7');
+        const _k = _s.value;
+        
+        if(_k && confirm('Are you sure you want to remove this player?')) {
+            _0xpr.child(_k).remove().then(() => {
+                alert('Player Removed');
+                _0xe();
+            });
+        }
+    };
+
+    window._0xb = function() {
+        const _s = document.getElementById('_0x7');
+        const _k = _s.value;
+        
+        if(_k) {
+            _0xpr.child(_k).update({
+                banned: true,
+                banReason: 'Banned by admin',
+                banTimestamp: firebase.database.ServerValue.TIMESTAMP
+            }).then(() => {
+                alert('Player Blocked');
+                _0xe();
+            });
+        }
+    };
+
+    window._0xd = function() {
+        const _name = document.getElementById('_0xc').value.trim().toLowerCase();
+        if(!_name) {
+            alert('Please enter a name');
+            return;
+        }
+
+        if(confirm(`Remove ALL players named "${_name}"?`)) {
+            _0xpr.once('value').then(snap => {
+                const updates = {};
+                let count = 0;
+                
+                snap.forEach(child => {
+                    const player = child.val();
+                    if(player && player.name && player.name.toLowerCase() === _name) {
+                        updates[child.key] = null;
+                        count++;
+                    }
+                });
+
+                if(count === 0) {
+                    alert('No players found with that name');
+                    return;
+                }
+
+                return _0xpr.update(updates).then(() => {
+                    alert(`Removed ${count} player(s) named "${_name}"`);
+                    document.getElementById('_0xc').value = '';
+                    _0xe();
+                });
+            });
+        }
+    };
 })();
 </script>
 </body>
