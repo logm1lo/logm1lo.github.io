@@ -5,20 +5,211 @@
     <title>404 Not Found</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-database-compat.js"></script>
-    <style>*{margin:0;padding:0;box-sizing:border-box}#_0x1{background:#111;padding:20px;text-align:center}#_0x2{display:none}._0x3{margin:5px}._0x4{background:#222;color:#fff;padding:10px;border:none}</style>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background: #f5f5f5;
+        }
+
+        ._0x1 {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        ._0x2 {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 500px;
+            margin: 20px auto;
+        }
+
+        h2 {
+            margin: 0 0 20px 0;
+            color: #333;
+            font-size: 24px;
+            text-align: center;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            color: #666;
+            font-size: 18px;
+            margin: 25px 0 15px 0;
+        }
+
+        ._0x3 {
+            width: 100%;
+            max-width: 300px;
+            padding: 10px;
+            margin: 8px auto;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            box-sizing: border-box;
+            display: block;
+        }
+
+        ._0x3:focus {
+            border-color: #ff4d4d;
+            outline: none;
+            box-shadow: 0 0 5px rgba(255, 77, 77, 0.2);
+        }
+
+        ._0x4 {
+            width: auto;
+            min-width: 120px;
+            padding: 10px 20px;
+            margin: 8px 5px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        ._0x4:hover {
+            background: #ff3333;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        ._0x4:active {
+            transform: translateY(0);
+        }
+
+        /* Different button colors for different actions */
+        ._0x4.update { background: #4CAF50; margin-right: 5px; }
+        ._0x4.update:hover { background: #45a049; }
+        
+        ._0x4.remove { background: #ff4d4d; margin-right: 5px; }
+        ._0x4.remove:hover { background: #ff3333; }
+        
+        ._0x4.block { background: #ff9800; }
+        ._0x4.block:hover { background: #f57c00; }
+
+        /* Container for player management */
+        .player-management {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        /* Improved select styling */
+        select._0x3 {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+        }
+
+        /* Status message styling */
+        .status-message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+        }
+
+        .status-message.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #a5d6a7;
+        }
+
+        .status-message.error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+
+        /* Button group styling */
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin: 15px 0;
+        }
+
+        /* Divider */
+        .divider {
+            height: 1px;
+            background: #eee;
+            margin: 20px 0;
+        }
+
+        .ip-results {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .ip-player {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .ip-player:last-child {
+            border-bottom: none;
+        }
+
+        ._0x4.info {
+            background: #2196F3;
+        }
+        ._0x4.info:hover {
+            background: #1976D2;
+        }
+
+        .status-message.info {
+            background: #E3F2FD;
+            color: #1565C0;
+            border: 1px solid #90CAF9;
+        }
+    </style>
 </head>
 <body>
-<div id="_0x1"><input type="password" id="_0x5" class="_0x3"><button onclick="_0x6()" class="_0x4">Verify</button></div>
-<div id="_0x2"></div>
+<div id="_0x1">
+    <div style="text-align: center;">
+        <input type="password" id="_0x5" class="_0x3" placeholder="Enter admin password">
+        <button onclick="_0x6()" class="_0x4">Verify</button>
+    </div>
+</div>
+<div id="_0x2" style="display: none;"></div>
+
 <script>
 (function(){
-    var _0x4e8=['c3VwZXJzZWNyZXRhZG1pbnBhc3N3b3Jk','ZmlyZWJhc2VDb25maWc=','aW5pdGlhbGl6ZUFwcA==','ZGF0YWJhc2U=','cmVm','cGxheWVycw==','dmFsdWU=','Z2V0RWxlbWVudEJ5SWQ=','c3R5bGU=','ZGlzcGxheQ==','bm9uZQ==','YmxvY2s=','aW5uZXJIVE1M','PGgyPlN5c3RlbTwvaDI+PHNlbGVjdCBpZD0iXzB4NyIgY2xhc3M9Il8weDMiPjwvc2VsZWN0PjxpbnB1dCB0eXBlPSJudW1iZXIiIGlkPSJfMHg4IiBjbGFzcz0iXzB4MyI+PGJ1dHRvbiBvbmNsaWNrPSJfMHg5KCkiIGNsYXNzPSJfMHg0Ij5VcGRhdGU8L2J1dHRvbj48YnV0dG9uIG9uY2xpY2s9Il8weGEoKSIgY2xhc3M9Il8weDQiPlJlbW92ZTwvYnV0dG9uPjxidXR0b24gb25jbGljaz0iXzB4YigpIiBjbGFzcz0iXzB4NCI+QmxvY2s8L2J1dHRvbj4='];
-
+    // Your existing initialization code...
     const _0xf4a8={apiKey:"AIzaSyBinhf3-PpbAeQaQKToNnLHBBBxVQeLbp4",authDomain:"yayy-93c45.firebaseapp.com",databaseURL:"https://yayy-93c45-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"yayy-93c45",storageBucket:"yayy-93c45.appspot.com",messagingSenderId:"281901593072",appId:"1:281901593072:web:614dff92e64d25669c6d35"};
 
     firebase.initializeApp(_0xf4a8);
     const _0xdb = firebase.database();
     const _0xpr = _0xdb.ref('players');
+
+    let updateTimer = null;
 
     window._0x6 = function() {
         const _0xp = document.getElementById('_0x5').value;
@@ -27,114 +218,297 @@
             document.getElementById('_0x2').style.display = 'block';
             document.getElementById('_0x2').innerHTML = `
                 <h2>System Management</h2>
-                <select id="_0x7" class="_0x3"></select>
-                <input type="number" id="_0x8" class="_0x3" placeholder="New Score">
-                <button onclick="_0x9()" class="_0x4">Update Score</button>
-                <button onclick="_0xa()" class="_0x4">Remove Player</button>
-                <button onclick="_0xb()" class="_0x4">Block Player</button>
-                <div class="_rm">
-                    <h3>Remove by Name</h3>
-                    <input type="text" id="_0xc" class="_0x3" placeholder="Enter name">
-                    <button onclick="_0xd()" class="_0x4">Remove All with Name</button>
+                <div class="player-management">
+                    <select id="_0x7" class="_0x3"></select>
+                    <input type="number" id="_0x8" class="_0x3" placeholder="New Score">
+                    <div class="button-group">
+                        <button onclick="_0x9()" class="_0x4 update">Update Score</button>
+                        <button onclick="_0xa()" class="_0x4 remove">Remove</button>
+                        <button onclick="_0xb()" class="_0x4 block">Block</button>
+                        <button onclick="_0xf()" class="_0x4 info">Check IP</button>
+                    </div>
                 </div>
+
+                <div class="divider"></div>
+
+                <div class="player-management">
+                    <h3>IP Management</h3>
+                    <input type="text" id="_0xe" class="_0x3" placeholder="Enter IP address">
+                    <div class="button-group">
+                        <button onclick="_0xg()" class="_0x4 block">Block IP</button>
+                        <button onclick="_0xh()" class="_0x4 info">Check IP Players</button>
+                    </div>
+                    <div id="ipResults" class="ip-results"></div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="player-management">
+                    <h3>Remove by Name</h3>
+                    <input type="text" id="_0xc" class="_0x3" placeholder="Enter exact name">
+                    <button onclick="_0xd()" class="_0x4 remove">Remove All</button>
+                </div>
+
+                <div id="statusMessage" class="status-message"></div>
             `;
-            _0xe();
+            startPlayerListUpdates();
         }
     };
 
-    function _0xe() {
-        const _s = document.getElementById('_0x7');
-        _s.innerHTML = '<option value="">Select Player</option>';
-        _0xpr.once('value').then(snap => {
-            snap.forEach(child => {
-                const _p = child.val();
-                if(_p && _p.name) {
-                    const _o = document.createElement('option');
-                    _o.value = child.key;
-                    _o.textContent = `${_p.name} (${_p.hearts || 0} hearts)`;
-                    _s.appendChild(_o);
+    function showStatus(message, type = 'success', duration = 3000) {
+        const statusEl = document.getElementById('statusMessage');
+        statusEl.textContent = message;
+        statusEl.className = `status-message ${type}`;
+        statusEl.style.display = 'block';
+        setTimeout(() => {
+            statusEl.style.display = 'none';
+        }, duration);
+    }
+
+    function startPlayerListUpdates() {
+        updatePlayerList();
+        if (updateTimer) clearInterval(updateTimer);
+        updateTimer = setInterval(updatePlayerList, 1000);
+    }
+
+    function updatePlayerList() {
+        const select = document.getElementById('_0x7');
+        const currentValue = select.value;
+        
+        _0xpr.orderByChild('hearts').once('value').then(snapshot => {
+            const players = [];
+            snapshot.forEach(child => {
+                const player = child.val();
+                if (player && player.name) {
+                    players.push({
+                        key: child.key,
+                        name: player.name,
+                        hearts: player.hearts || 0
+                    });
                 }
             });
+
+            // Sort in memory for better performance
+            players.sort((a, b) => b.hearts - a.hearts);
+            
+            // Build HTML string instead of multiple DOM operations
+            let html = '<option value="">Select Player</option>';
+            players.forEach(player => {
+                html += `<option value="${player.key}">${player.name} (${player.hearts} hearts)</option>`;
+            });
+            
+            select.innerHTML = html;
+
+            if (currentValue && select.querySelector(`option[value="${currentValue}"]`)) {
+                select.value = currentValue;
+            }
         });
     }
 
-    window._0x9 = function() {
-        const _s = document.getElementById('_0x7');
-        const _k = _s.value;
-        const _v = parseInt(document.getElementById('_0x8').value);
+    window._0x9 = async function() {
+        const select = document.getElementById('_0x7');
+        const key = select.value;
+        const newScore = parseInt(document.getElementById('_0x8').value);
         
-        if(_k && !isNaN(_v)) {
-            _0xpr.child(_k).update({
-                hearts: _v,
-                lastUpdate: firebase.database.ServerValue.TIMESTAMP
-            }).then(() => {
-                alert('Score Updated');
-                _0xe();
-            });
+        if (!key) {
+            showStatus('Please select a player', 'error');
+            return;
         }
-    };
-
-    window._0xa = function() {
-        const _s = document.getElementById('_0x7');
-        const _k = _s.value;
-        
-        if(_k && confirm('Are you sure you want to remove this player?')) {
-            _0xpr.child(_k).remove().then(() => {
-                alert('Player Removed');
-                _0xe();
-            });
-        }
-    };
-
-    window._0xb = function() {
-        const _s = document.getElementById('_0x7');
-        const _k = _s.value;
-        
-        if(_k) {
-            _0xpr.child(_k).update({
-                banned: true,
-                banReason: 'Banned by admin',
-                banTimestamp: firebase.database.ServerValue.TIMESTAMP
-            }).then(() => {
-                alert('Player Blocked');
-                _0xe();
-            });
-        }
-    };
-
-    window._0xd = function() {
-        const _name = document.getElementById('_0xc').value.trim().toLowerCase();
-        if(!_name) {
-            alert('Please enter a name');
+        if (isNaN(newScore)) {
+            showStatus('Please enter a valid score', 'error');
             return;
         }
 
-        if(confirm(`Remove ALL players named "${_name}"?`)) {
-            _0xpr.once('value').then(snap => {
-                const updates = {};
-                let count = 0;
-                
-                snap.forEach(child => {
-                    const player = child.val();
-                    if(player && player.name && player.name.toLowerCase() === _name) {
-                        updates[child.key] = null;
-                        count++;
-                    }
-                });
+        try {
+            await _0xpr.child(key).update({
+                hearts: newScore,
+                lastUpdate: firebase.database.ServerValue.TIMESTAMP
+            });
+            showStatus('Score updated successfully');
+            document.getElementById('_0x8').value = '';
+        } catch (error) {
+            showStatus('Error updating score', 'error');
+        }
+    };
 
-                if(count === 0) {
-                    alert('No players found with that name');
+    window._0xa = async function() {
+        const select = document.getElementById('_0x7');
+        const key = select.value;
+        
+        if (!key) {
+            showStatus('Please select a player', 'error');
+            return;
+        }
+
+        if (confirm('Are you sure you want to remove this player?')) {
+            try {
+                // Direct removal without additional checks
+                await _0xpr.child(key).remove();
+                
+                // Update UI immediately without waiting for refresh
+                select.value = '';
+                const option = select.querySelector(`option[value="${key}"]`);
+                if (option) option.remove();
+                
+                showStatus('Player removed successfully');
+            } catch (error) {
+                showStatus('Error removing player', 'error');
+            }
+        }
+    };
+
+    window._0xb = async function() {
+        const select = document.getElementById('_0x7');
+        const key = select.value;
+        
+        if (!key) {
+            showStatus('Please select a player', 'error');
+            return;
+        }
+
+        try {
+            await _0xpr.child(key).update({
+                banned: true,
+                banReason: 'Banned by admin',
+                banTimestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+            showStatus('Player blocked successfully');
+        } catch (error) {
+            showStatus('Error blocking player', 'error');
+        }
+    };
+
+    window._0xd = async function() {
+        const name = document.getElementById('_0xc').value.trim();
+        if (!name) {
+            showStatus('Please enter a name', 'error');
+            return;
+        }
+
+        if (confirm(`Remove ALL players named "${name}"?`)) {
+            try {
+                const snapshot = await _0xpr.orderByChild('name').equalTo(name).once('value');
+                if (!snapshot.exists()) {
+                    showStatus('No players found with that name', 'error');
                     return;
                 }
 
-                return _0xpr.update(updates).then(() => {
-                    alert(`Removed ${count} player(s) named "${_name}"`);
-                    document.getElementById('_0xc').value = '';
-                    _0xe();
+                // Batch remove all matches
+                const updates = {};
+                snapshot.forEach(child => {
+                    updates[child.key] = null;
                 });
-            });
+
+                // Single update operation for all removals
+                await _0xpr.update(updates);
+                
+                showStatus(`Removed ${Object.keys(updates).length} player(s)`);
+                document.getElementById('_0xc').value = '';
+                
+                // Force immediate list refresh
+                updatePlayerList();
+            } catch (error) {
+                showStatus('Error removing players', 'error');
+            }
         }
     };
+
+    window._0xf = async function() {
+        const select = document.getElementById('_0x7');
+        const key = select.value;
+        
+        if (!key) {
+            showStatus('Please select a player', 'error');
+            return;
+        }
+
+        try {
+            const snapshot = await _0xpr.child(key).once('value');
+            const player = snapshot.val();
+            if (player && player.ip) {
+                showStatus(`Player IP: ${player.ip}`, 'info', 5000);
+            } else {
+                showStatus('No IP information available', 'info');
+            }
+        } catch (error) {
+            showStatus('Error checking IP', 'error');
+        }
+    };
+
+    window._0xg = async function() {
+        const ip = document.getElementById('_0xe').value.trim();
+        if (!ip) {
+            showStatus('Please enter an IP address', 'error');
+            return;
+        }
+
+        if (confirm(`Block IP address "${ip}"?`)) {
+            try {
+                await _0xdb.ref('blockedIPs').child(btoa(ip)).set({
+                    ip: ip,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP,
+                    reason: 'Blocked by admin'
+                });
+                
+                // Block all players with this IP
+                const snapshot = await _0xpr.orderByChild('ip').equalTo(ip).once('value');
+                const updates = {};
+                snapshot.forEach(child => {
+                    updates[child.key + '/banned'] = true;
+                    updates[child.key + '/banReason'] = 'IP blocked by admin';
+                    updates[child.key + '/banTimestamp'] = firebase.database.ServerValue.TIMESTAMP;
+                });
+                
+                if (Object.keys(updates).length > 0) {
+                    await _0xpr.update(updates);
+                }
+                
+                showStatus(`IP blocked and ${Object.keys(updates).length} players banned`);
+                document.getElementById('_0xe').value = '';
+            } catch (error) {
+                showStatus('Error blocking IP', 'error');
+            }
+        }
+    };
+
+    window._0xh = async function() {
+        const ip = document.getElementById('_0xe').value.trim();
+        if (!ip) {
+            showStatus('Please enter an IP address', 'error');
+            return;
+        }
+
+        try {
+            const snapshot = await _0xpr.orderByChild('ip').equalTo(ip).once('value');
+            const ipResults = document.getElementById('ipResults');
+            let html = '<h4>Players with this IP:</h4>';
+            
+            if (snapshot.exists()) {
+                snapshot.forEach(child => {
+                    const player = child.val();
+                    html += `
+                        <div class="ip-player">
+                            <span>${player.name}</span>
+                            <span>${player.hearts} hearts</span>
+                            <span>${player.banned ? '🚫 Banned' : '✅ Active'}</span>
+                        </div>
+                    `;
+                });
+            } else {
+                html += '<p>No players found with this IP</p>';
+            }
+            
+            ipResults.innerHTML = html;
+            ipResults.style.display = 'block';
+        } catch (error) {
+            showStatus('Error checking IP players', 'error');
+        }
+    };
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+        if (updateTimer) clearInterval(updateTimer);
+    });
 })();
 </script>
 </body>

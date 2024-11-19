@@ -1,18 +1,14 @@
-/* General Styles */
+/* Reset and Base Styles */
 body {
-    font-family: 'Roboto', sans-serif;
     margin: 0;
     padding: 0;
+    min-height: 100vh;
+    overflow-x: hidden;
+    font-family: 'Roboto', sans-serif;
     background-color: #f0f0f0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    flex-direction: column;
-    overflow: hidden; /* Prevent scrolling */
 }
 
-/* Container for the poster and button */
+/* Poster Container */
 .poster-container {
     position: relative;
     text-align: center;
@@ -28,34 +24,6 @@ body {
     margin: auto;
 }
 
-/* Wish Button */
-#wishButton {
-    position: absolute;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 20px 40px;
-    font-size: 24px;
-    background-color: #ff6b6b;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    z-index: 10;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.3s ease;
-}
-
-#wishButton:hover {
-    background-color: #ff3d3d;
-}
-
-#wishButton:focus {
-    outline: none;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
-}
-
-/* Poster */
 #poster {
     width: 100%;
     height: 100%;
@@ -63,7 +31,8 @@ body {
     border-radius: 10px;
 }
 
-#wishes-container, #hearts-container {
+/* Hearts and Wishes Containers */
+#hearts-container, #wishes-container {
     position: absolute;
     top: 0;
     left: 0;
@@ -72,54 +41,7 @@ body {
     pointer-events: none;
 }
 
-/* Wish container (cloud) */
-.wish {
-    position: absolute;
-    background: rgba(255, 255, 255, 0.9);
-    padding: 15px;
-    border-radius: 15px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    opacity: 0;
-    pointer-events: none;
-    z-index: 100;
-    max-width: min(200px, 40vw);
-    word-wrap: break-word;
-    transform: translate(-50%, -50%);
-    transition: all 0.8s ease;
-    left: 0;
-    top: 0;
-    will-change: transform, opacity;
-}
-
-.wish.show {
-    opacity: 0.9;
-    animation: gentleFloat 8s ease-in-out infinite;
-}
-
-@keyframes gentleFloat {
-    0% {
-        transform: translate(-50%, -50%);
-    }
-    50% {
-        transform: translate(-50%, calc(-50% - 15px));
-    }
-    100% {
-        transform: translate(-50%, -50%);
-    }
-}
-
-.wish.fade-out {
-    opacity: 0;
-    transform: translateY(-10px);
-    transition: all 1s ease;
-}
-
-.wish:hover {
-    background: #f1f1f1;
-    cursor: pointer;
-}
-
-/* Heart styling */
+/* Heart Animation */
 .heart {
     position: absolute;
     font-size: 30px;
@@ -127,197 +49,135 @@ body {
     opacity: 0.9;
     transition: all 0.3s ease;
     transform: translate(-50%, -50%);
-    animation: floatHeart 6s ease-in-out infinite;
+    animation: floatHeart 1s ease-out forwards;
 }
 
 @keyframes floatHeart {
     0% {
-        transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -100%) scale(0.5);
+        opacity: 0;
+    }
+}
+
+/* Wish Styles */
+.wish {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 15px;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    max-width: 200px;
+    word-wrap: break-word;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s ease-out;
+    z-index: 100;
+}
+
+.wish.show {
+    opacity: 0.95;
+    transform: translateY(0);
+    animation: floatWish 4s ease-in-out infinite;
+}
+
+.wish.fade-out {
+    opacity: 0;
+    transform: translateY(-20px);
+}
+
+@keyframes floatWish {
+    0%, 100% {
+        transform: translateY(0);
     }
     50% {
-        transform: translate(-50%, calc(-50% - 30px));
-    }
-    100% {
-        transform: translate(-50%, -50%);
+        transform: translateY(-10px);
     }
 }
 
-.heart:hover {
-    transform: scale(1.2);
-    opacity: 1;
+/* Add hover effect */
+.wish:hover {
+    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    transform: scale(1.05);
+    z-index: 101;
 }
 
-.heart.fade-out {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.8);
-    transition: all 0.5s ease;
-}
-
-/* Styling for buttons */
-button {
-    background-color: #ff4d4d;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    margin-top: 20px;
-    transition: background-color 0.3s ease;
-}
-
-button:hover {
-    background-color: #e60000;
-}
-
-/* Update Form Container Styling */
-.wish-form-container {
+/* Name Prompt Container */
+.name-prompt-container {
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: rgba(255, 255, 255, 0.95);
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
-    width: 90%;
-    max-width: 400px;
-    visibility: hidden;
-    opacity: 0;
-    transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
-    margin: 0;
-    left: 50% !important;
-    right: auto !important;
-    -webkit-transform: translate(-50%, -50%);
-}
-
-.wish-form-container.show {
-    visibility: visible;
-    opacity: 1;
-    animation: popIn 0.3s ease-out forwards;
-}
-
-@keyframes popIn {
-    0% {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(0.8);
-    }
-    100% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
-    }
-}
-
-@keyframes popOut {
-    0% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
-    }
-    100% {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(0.8);
-    }
-}
-
-.wish-form {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
     display: flex;
-    flex-direction: column;
-    gap: 15px;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
 }
 
-.wish-form h2 {
-    margin: 0 0 10px 0;
+.name-prompt {
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
     text-align: center;
-    color: #333;
+    max-width: 400px;
+    width: 90%;
 }
 
-.wish-form input {
+.name-prompt h2 {
+    margin: 0 0 20px 0;
+    color: #333;
+    font-size: 24px;
+}
+
+.name-prompt input {
     width: 100%;
     padding: 12px;
-    margin: 0;
+    margin: 10px 0;
+    border: 2px solid #ddd;
     border-radius: 8px;
-    border: 1px solid #ddd;
     font-size: 16px;
     box-sizing: border-box;
 }
 
-.wish-form button {
+.name-prompt button {
+    background: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-top: 15px;
+}
+
+.error-message {
+    color: #ff4d4d;
     margin: 5px 0;
-    padding: 12px;
+    font-size: 14px;
+    min-height: 20px;
 }
 
-#wishInput, #nameInput {
-    font-family: 'Roboto', sans-serif;
-}
-
-#wishFormContainer #closeFormButton {
-    background-color: #ccc;
-    color: black;
-}
-
-#wishFormContainer #closeFormButton:hover {
-    background-color: #999;
-}
-
-/* Additional responsive adjustments for smaller screens */
-@media (max-width: 768px) {
-    .poster-container {
-        padding: 10px;
-        height: 80vh;
-    }
-
-    .wish {
-        padding: 10px;
-        font-size: 14px;
-    }
-
-    #wishButton {
-        padding: 15px 30px;
-        font-size: 20px;
-    }
-
-    .wish-form-container {
-        width: 85%;
-        max-width: 320px;
-        padding: 15px;
-    }
-}
-
-@media (max-width: 480px) {
-    .poster-container {
-        padding: 5px;
-        height: 70vh;
-    }
-
-    .wish {
-        padding: 8px;
-        font-size: 12px;
-    }
-
-    #wishButton {
-        padding: 12px 25px;
-        font-size: 18px;
-    }
-
-    #poster {
-        width: 100%;
-        max-width: 95%; /* Ensure it's fully mobile-friendly */
-    }
-}
-
-/* Update Scoreboard Styles - Make it even bigger */
+/* Scoreboard Styles */
 .scoreboard {
     background: white;
     border-radius: 15px;
     box-shadow: 0 6px 12px rgba(0,0,0,0.2);
-    padding: 25px;
-    max-width: 500px; /* Increased from 400px */
+    padding: 20px;
+    width: 400px;
     margin: 25px;
     position: fixed;
     top: 0;
     right: 0;
-    font-size: 18px; /* Increased base font size */
+    font-size: 18px;
+    box-sizing: border-box;
 }
 
 .scoreboard h2 {
@@ -325,7 +185,7 @@ button:hover {
     padding-bottom: 15px;
     border-bottom: 3px solid #eee;
     color: #333;
-    font-size: 2em; /* Increased from 1.5em */
+    font-size: 2em;
     text-align: center;
     font-weight: bold;
 }
@@ -333,359 +193,48 @@ button:hover {
 #scoreList {
     max-height: 60vh;
     overflow-y: auto;
+    overflow-x: hidden;
     scrollbar-width: thin;
     scrollbar-color: #ff4d4d #f0f0f0;
     padding-right: 10px;
-}
-
-/* Customize scrollbar for webkit browsers */
-#scoreList::-webkit-scrollbar {
-    width: 8px;
-}
-
-#scoreList::-webkit-scrollbar-track {
-    background: #f0f0f0;
-    border-radius: 4px;
-}
-
-#scoreList::-webkit-scrollbar-thumb {
-    background: #ff4d4d;
-    border-radius: 4px;
-}
-
-#scoreList::-webkit-scrollbar-thumb:hover {
-    background: #e60000;
+    width: 100%;
 }
 
 .score-item {
     display: flex;
     align-items: center;
-    padding: 15px 20px; /* Increased padding */
+    padding: 10px 12px;
     border-bottom: 2px solid #eee;
     transition: background-color 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .player-rank {
-    margin-right: 20px;
-    font-size: 1.4em; /* Larger rank numbers */
-    min-width: 30px;
+    flex: 0 0 40px;
+    text-align: center;
+    font-weight: bold;
 }
 
 .player-name {
-    flex-grow: 1;
-    margin-right: 20px;
-    font-size: 1.3em; /* Larger names */
+    flex: 1;
+    padding: 0 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .player-score {
-    margin-right: 12px;
-    font-size: 1.3em; /* Larger scores */
-}
-
-.online-indicator {
-    font-size: 16px; /* Larger indicator */
+    flex: 0 0 80px;
+    text-align: right;
+    font-weight: bold;
 }
 
 .top-three {
     background: rgba(255, 223, 186, 0.2);
 }
 
-.score-item:hover {
-    background-color: rgba(255, 77, 77, 0.1);
-}
-
-.score-item:last-child {
-    border-bottom: none;
-}
-
-/* Add smooth animation for score updates */
-.score-item {
-    animation: scoreUpdate 0.3s ease-out;
-}
-
-@keyframes scoreUpdate {
-    from {
-        background-color: rgba(255, 77, 77, 0.2);
-    }
-    to {
-        background-color: transparent;
-    }
-}
-
-/* Update Name Prompt Styles - Make it even bigger */
-.name-prompt-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    visibility: hidden;
-}
-
-.name-prompt {
-    background: white;
-    padding: 50px; /* Increased padding */
-    border-radius: 20px;
-    text-align: center;
-    max-width: 600px; /* Increased from 500px */
-    width: 90%;
-    box-shadow: 0 6px 25px rgba(0,0,0,0.25);
-}
-
-.name-prompt h2 {
-    font-size: 2.5em; /* Larger title */
-    margin-bottom: 30px;
-    color: #333;
-}
-
-#playerNameInput {
-    width: 100%;
-    padding: 20px;
-    font-size: 1.4em; /* Larger input text */
-    border: 3px solid #ddd;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    box-sizing: border-box;
-}
-
-#submitNameButton {
-    padding: 20px 40px;
-    font-size: 1.4em; /* Larger button text */
-    background-color: #ff4d4d;
-    color: white;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    width: 100%;
-    margin-top: 25px;
-}
-
-#submitNameButton:hover {
-    background-color: #e60000;
-}
-
-.error-message {
-    color: #f44336;
-    margin: 20px 0;
-    font-size: 1.2em; /* Larger error messages */
-}
-
-/* Update Mobile Responsiveness */
-@media (max-width: 768px) {
-    .scoreboard {
-        position: fixed;
-        right: 10px;
-        max-width: 400px; /* Increased from 300px */
-        font-size: 16px;
-        padding: 20px;
-    }
-
-    .name-prompt {
-        width: 95%;
-        padding: 40px;
-    }
-}
-
-@media (max-width: 480px) {
-    .scoreboard {
-        right: 5px;
-        max-width: 300px; /* Increased from 250px */
-        padding: 15px;
-        font-size: 14px;
-    }
-
-    .name-prompt {
-        padding: 30px;
-    }
-}
-
-/* Add instant score update animation */
-.score-update {
-    animation: quickHighlight 0.15s ease-out;
-}
-
-@keyframes quickHighlight {
-    0% {
-        background-color: rgba(255, 77, 77, 0.3);
-    }
-    100% {
-        background-color: transparent;
-    }
-}
-
-/* Make score transitions smoother */
-.player-score {
-    transition: all 0.15s ease-out;
-}
-
-/* Optimize animations */
-.score-item {
-    will-change: transform, opacity, background-color;
-    transform: translateZ(0);
-}
-
-/* Optimize score updates */
-.score-item {
-    will-change: transform, opacity;
-    transform: translateZ(0);
-    transition: transform 0.1s ease-out;
-    backface-visibility: hidden;
-    perspective: 1000px;
-}
-
-.player-score {
-    transition: none; /* Remove transition for instant updates */
-}
-
-/* Make highlight faster */
-@keyframes quickHighlight {
-    0%, 100% { background-color: transparent; }
-    50% { background-color: rgba(255, 77, 77, 0.2); }
-}
-
-.score-update {
-    animation: quickHighlight 0.1s ease-out;
-}
-
-/* Optimize performance */
-.scoreboard {
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    perspective: 1000px;
-    contain: content;
-}
-
-#scoreList {
-    contain: layout style;
-}
-
-/* Milestone Popup Styles */
-.milestone-popup {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(0.5);
-    z-index: 2000;
-    opacity: 0;
-    transition: all 0.3s ease-out;
-}
-
-.milestone-popup.show {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
-}
-
-.milestone-popup.hide {
-    transform: translate(-50%, -50%) scale(0.5);
-    opacity: 0;
-}
-
-.milestone-content {
-    background: linear-gradient(135deg, #ff6b6b, #ff4d4d);
-    padding: 30px 50px;
-    border-radius: 20px;
-    text-align: center;
-    color: white;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    animation: celebrateBackground 2s infinite;
-}
-
-.milestone-content h2 {
-    font-size: 2.5em;
-    margin: 0 0 15px 0;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-}
-
-.milestone-score {
-    font-size: 3em;
-    font-weight: bold;
-    margin: 10px 0;
-    text-shadow: 3px 3px 6px rgba(0,0,0,0.2);
-}
-
-.milestone-quote {
-    font-size: 1.4em;
-    margin: 15px 0 0 0;
-    font-style: italic;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-}
-
-@keyframes celebrateBackground {
-    0%, 100% {
-        background: linear-gradient(135deg, #ff6b6b, #ff4d4d);
-    }
-    50% {
-        background: linear-gradient(135deg, #ff4d4d, #ff6b6b);
-    }
-}
-
-/* Add confetti animation */
-.milestone-popup::before,
-.milestone-popup::after {
-    content: '✨';
-    position: absolute;
-    font-size: 2em;
-    animation: confetti 1s ease-out infinite;
-}
-
-.milestone-popup::before {
-    left: -20px;
-    top: -20px;
-}
-
-.milestone-popup::after {
-    right: -20px;
-    bottom: -20px;
-}
-
-@keyframes confetti {
-    0% {
-        transform: translate(0, 0) rotate(0);
-        opacity: 1;
-    }
-    100% {
-        transform: translate(10px, 10px) rotate(180deg);
-        opacity: 0;
-    }
-}
-
-/* Optimize score updates for millisecond changes */
-.score-item {
-    will-change: transform;
-    transform: translateZ(0);
-    transition: none !important;
-    backface-visibility: hidden;
-    -webkit-font-smoothing: antialiased;
-}
-
-.player-score {
-    transition: none !important;
-}
-
-/* Remove animations that might slow down updates */
-.score-update {
-    animation: none !important;
-}
-
-/* Optimize rendering performance */
-.scoreboard {
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    contain: content;
-    -webkit-font-smoothing: antialiased;
-}
-
-#scoreList {
-    contain: layout style;
-}
-
-/* CPS Counter Styles */
+/* CPS Counter */
 .cps-counter {
     position: fixed;
     top: 20px;
@@ -698,32 +247,138 @@ button:hover {
     z-index: 1000;
     font-weight: bold;
     color: #333;
-    backdrop-filter: blur(5px);
-    border: 2px solid rgba(255, 77, 77, 0.3);
 }
 
-.cps-current {
-    margin-bottom: 8px;
-    color: #ff4d4d;
+/* Wish Button and Form */
+#wishButton {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 15px 30px;
+    font-size: 18px;
+    background: #ff4d4d;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    z-index: 1000;
 }
 
-.cps-peak {
-    color: #e60000;
+.wish-form-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    z-index: 2000;
+    width: 90%;
+    max-width: 400px;
+    visibility: hidden;
 }
 
-#currentCPS, #peakCPS {
-    display: inline-block;
-    min-width: 40px;
-    text-align: right;
-    font-size: 1.3em;
+.wish-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
-/* Mobile responsiveness for CPS counter */
+.wish-form input {
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+.wish-form button {
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    background: #ff4d4d;
+    color: white;
+}
+
+/* Live Users Counter */
+.live-collaboration {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 10px 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
-    .cps-counter {
-        top: 10px;
-        left: 10px;
-        padding: 10px 20px;
-        font-size: 1em;
+    .scoreboard {
+        width: 350px;
+        margin: 15px;
+        padding: 15px;
+        font-size: 16px;
     }
+    
+    .player-rank {
+        flex: 0 0 45px;
+    }
+    
+    .player-score {
+        flex: 0 0 90px;
+    }
+    
+    .poster-container {
+        height: 70vh;
+    }
+    
+    .wish-form-container {
+        width: 95%;
+    }
+}
+
+@media (max-width: 480px) {
+    .scoreboard {
+        width: 300px;
+        margin: 10px;
+        padding: 12px;
+        font-size: 14px;
+        right: 10px;
+        transform: none;
+    }
+    
+    .player-rank {
+        flex: 0 0 40px;
+    }
+    
+    .player-score {
+        flex: 0 0 80px;
+    }
+    
+    .cps-counter {
+        font-size: 1em;
+        padding: 10px 20px;
+    }
+    
+    #wishButton {
+        padding: 12px 25px;
+        font-size: 16px;
+    }
+}
+
+/* Add current player highlight */
+.score-item[data-current="true"] {
+    background-color: rgba(255, 77, 77, 0.1);
+    border-left: 4px solid #ff4d4d;
+    font-weight: bold;
+}
+
+.score-item[data-current="true"] .player-name::after {
+    content: " (You)";
+    color: #ff4d4d;
+    font-size: 0.9em;
+    font-style: italic;
 }
