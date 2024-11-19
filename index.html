@@ -995,7 +995,7 @@
         }
     }
 
-    // Update the startBattle function to initialize click counters
+    // Update the startBattle function to ensure battle data is initialized
     function startBattle(challenge) {
         const modal = document.getElementById('cpsBattleModal');
         const countdown = document.getElementById('battleCountdown');
@@ -1006,38 +1006,41 @@
         document.getElementById('challengerScore').textContent = '0';
         document.getElementById('challengedScore').textContent = '0';
         
-        // Initialize battle clicks in Firebase
+        // Initialize battle data in Firebase
         db.ref(`battles/${challenge.id}`).set({
             challengerClicks: 0,
-            challengedClicks: 0
-        });
-        
-        // Set names
-        challengerName.textContent = challenge.challenger.name;
-        challengedName.textContent = challenge.challenged.name;
-        
-        // Show modal and countdown
-        modal.style.display = 'block';
-        countdown.style.display = 'block';
-        countdown.textContent = '5';
-        
-        // Disable the non-active click area
-        const isChallenger = challenge.challenger.key === userKey;
-        const opponentClickArea = document.getElementById(isChallenger ? 'challengedClickArea' : 'challengerClickArea');
-        opponentClickArea.style.pointerEvents = 'none';
-        opponentClickArea.style.opacity = '0.7';
-        
-        let count = 5;
-        const countInterval = setInterval(() => {
-            count--;
-            countdown.textContent = count;
+            challengedClicks: 0,
+            startTime: firebase.database.ServerValue.TIMESTAMP,
+            status: 'active'
+        }).then(() => {
+            // Continue with battle setup after data is initialized
+            challengerName.textContent = challenge.challenger.name;
+            challengedName.textContent = challenge.challenged.name;
             
-            if (count <= 0) {
-                clearInterval(countInterval);
-                countdown.style.display = 'none';
-                initializeBattle(challenge);
-            }
-        }, 1000);
+            modal.style.display = 'block';
+            countdown.style.display = 'block';
+            countdown.textContent = '5';
+            
+            const isChallenger = challenge.challenger.key === userKey;
+            const opponentClickArea = document.getElementById(isChallenger ? 'challengedClickArea' : 'challengerClickArea');
+            opponentClickArea.style.pointerEvents = 'none';
+            opponentClickArea.style.opacity = '0.7';
+            
+            let count = 5;
+            const countInterval = setInterval(() => {
+                count--;
+                countdown.textContent = count;
+                
+                if (count <= 0) {
+                    clearInterval(countInterval);
+                    countdown.style.display = 'none';
+                    initializeBattle(challenge);
+                }
+            }, 1000);
+        }).catch(error => {
+            console.error('Error initializing battle:', error);
+            alert('Error starting battle. Please try again.');
+        });
     }
 
     function initializeBattle(challenge) {
@@ -1051,11 +1054,24 @@
         // Create a reference for this battle's clicks
         const battleClicksRef = db.ref(`battles/${challenge.id}`);
         
+        // Initialize battle data if it doesn't exist
+        battleClicksRef.once('value', snapshot => {
+            if (!snapshot.exists()) {
+                battleClicksRef.set({
+                    challengerClicks: 0,
+                    challengedClicks: 0,
+                    startTime: firebase.database.ServerValue.TIMESTAMP
+                });
+            }
+        });
+        
         // Set initial clicks for this player
-        battleClicksRef.child(isChallenger ? 'challengerClicks' : 'challengedClicks').set(0);
+        const myClicksRef = battleClicksRef.child(isChallenger ? 'challengerClicks' : 'challengedClicks');
+        myClicksRef.set(0);
         
         // Listen to opponent's clicks
-        battleClicksRef.child(isChallenger ? 'challengedClicks' : 'challengerClicks').on('value', (snapshot) => {
+        const opponentClicksRef = battleClicksRef.child(isChallenger ? 'challengedClicks' : 'challengerClicks');
+        opponentClicksRef.on('value', (snapshot) => {
             const opponentClicks = snapshot.val() || 0;
             document.getElementById(isChallenger ? 'challengedScore' : 'challengerScore').textContent = opponentClicks;
         });
@@ -1066,7 +1082,7 @@
             battleClickTimes.push(Date.now());
             
             // Update clicks in Firebase
-            battleClicksRef.child(isChallenger ? 'challengerClicks' : 'challengedClicks').set(clicks);
+            myClicksRef.set(clicks);
         };
         
         clickArea.addEventListener('click', clickHandler);
@@ -1082,126 +1098,155 @@
                 clearInterval(battleInterval);
                 clickArea.removeEventListener('click', clickHandler);
                 
-                // Clean up Firebase listeners
-                battleClicksRef.off();
-                
-                // Remove battle clicks data
-                battleClicksRef.remove();
-                
-                endBattle(challenge, clicks);
+                // Make sure final score is recorded before ending
+                myClicksRef.set(clicks).then(() => {
+                    // Small delay to ensure both players' final scores are recorded
+                    setTimeout(() => {
+                        // Clean up Firebase listeners
+                        opponentClicksRef.off();
+                        
+                        endBattle(challenge, clicks);
+                    }, 500);
+                });
             }
         }, 1000);
+        
+        // Cleanup function for unexpected termination
+        window.addEventListener('beforeunload', () => {
+            opponentClicksRef.off();
+            myClicksRef.set(clicks);
+        });
     }
 
     // Update the endBattle function to include cleanup of battle clicks
     async function endBattle(challenge, finalScore) {
         try {
             const isChallenger = challenge.challenger.key === userKey;
-            const opponentScore = parseInt(document.getElementById(isChallenger ? 'challengedScore' : 'challengerScore').textContent);
             
-            // Get current scores
+            // Get final scores from the battle ref
+            const battleSnapshot = await db.ref(`battles/${challenge.id}`).once('value');
+            const battleData = battleSnapshot.val();
+            
+            if (!battleData) {
+                console.error('No battle data found');
+                return;
+            }
+            
+            const challengerFinalScore = battleData.challengerClicks || 0;
+            const challengedFinalScore = battleData.challengedClicks || 0;
+            
+            // Get current heart scores
             const [challengerSnap, challengedSnap] = await Promise.all([
                 playersRef.child(challenge.challenger.key).once('value'),
                 playersRef.child(challenge.challenged.key).once('value')
             ]);
             
-            const challengerScore = challengerSnap.val()?.hearts || 0;
-            const challengedScore = challengedSnap.val()?.hearts || 0;
+            const challengerHearts = challengerSnap.val()?.hearts || 0;
+            const challengedHearts = challengedSnap.val()?.hearts || 0;
             
             // Calculate transfers based on who won and the specific rules
             let challengerUpdate = { inBattle: false };
             let challengedUpdate = { inBattle: false };
             let transferAmount = 0;
             
-            if (finalScore > opponentScore) {
-                // Current player won
-                if (isChallenger) {
-                    // Challenger won - gets 40% of challenged player's hearts
-                    transferAmount = Math.floor(challengedScore * 0.4);
-                    challengerUpdate.hearts = challengerScore + transferAmount;
-                    challengedUpdate.hearts = challengedScore - transferAmount;
-                    alert(`You won! You gained ${transferAmount} hearts (40% of opponent's hearts)!`);
-                } else {
-                    // Challenged player won - gets 60% of challenger's hearts
-                    transferAmount = Math.floor(challengerScore * 0.6);
-                    challengerUpdate.hearts = challengerScore - transferAmount;
-                    challengedUpdate.hearts = challengedScore + transferAmount;
-                    alert(`You won! You gained ${transferAmount} hearts (60% of challenger's hearts)!`);
-                }
-            } else if (finalScore < opponentScore) {
-                // Current player lost
-                if (isChallenger) {
-                    // Challenger lost - loses 60% of their hearts
-                    transferAmount = Math.floor(challengerScore * 0.6);
-                    challengerUpdate.hearts = challengerScore - transferAmount;
-                    challengedUpdate.hearts = challengedScore + transferAmount;
-                    alert(`You lost! You lost ${transferAmount} hearts (60% of your hearts)!`);
-                } else {
-                    // Challenged player lost - loses 40% of their hearts
-                    transferAmount = Math.floor(challengedScore * 0.4);
-                    challengerUpdate.hearts = challengerScore + transferAmount;
-                    challengedUpdate.hearts = challengedScore - transferAmount;
-                    alert(`You lost! You lost ${transferAmount} hearts (40% of your hearts)!`);
-                }
-            } else {
-                // It's a tie
-                alert("It's a tie! No hearts were exchanged.");
-            }
+            // Determine winner based on final scores
+            const challengerWon = challengerFinalScore > challengedFinalScore;
+            const isTie = challengerFinalScore === challengedFinalScore;
             
-            // Update scores and reset battle states
-            await Promise.all([
-                playersRef.child(challenge.challenger.key).update(challengerUpdate),
-                playersRef.child(challenge.challenged.key).update(challengedUpdate)
-            ]);
+            // Show battle results with scores
+            const myScore = isChallenger ? challengerFinalScore : challengedFinalScore;
+            const opponentScore = isChallenger ? challengedFinalScore : challengerFinalScore;
             
-            // Complete cleanup
-            const cleanupTasks = [
-                // Remove the challenge from database
-                db.ref(`challenges/${challenge.id}`).remove(),
+            try {
+                if (isTie) {
+                    alert(`It's a tie! ${myScore} vs ${opponentScore}\nNo hearts were exchanged.`);
+                } else if (isChallenger) {
+                    if (challengerWon) {
+                        // Challenger won
+                        transferAmount = Math.floor(challengedHearts * 0.4);
+                        challengerUpdate.hearts = challengerHearts + transferAmount;
+                        challengedUpdate.hearts = challengedHearts - transferAmount;
+                        alert(`🎉 Victory! ${myScore} vs ${opponentScore}\nYou won ${transferAmount} hearts (40% of opponent's hearts)!`);
+                    } else {
+                        // Challenger lost
+                        transferAmount = Math.floor(challengerHearts * 0.6);
+                        challengerUpdate.hearts = challengerHearts - transferAmount;
+                        challengedUpdate.hearts = challengedHearts + transferAmount;
+                        alert(`💔 Defeat! ${myScore} vs ${opponentScore}\nYou lost ${transferAmount} hearts (60% of your hearts)!`);
+                    }
+                } else {
+                    // Player is the challenged one
+                    if (challengerWon) {
+                        // Challenged player lost
+                        transferAmount = Math.floor(challengedHearts * 0.4);
+                        challengerUpdate.hearts = challengerHearts + transferAmount;
+                        challengedUpdate.hearts = challengedHearts - transferAmount;
+                        alert(`💔 Defeat! ${myScore} vs ${opponentScore}\nYou lost ${transferAmount} hearts (40% of your hearts)!`);
+                    } else {
+                        // Challenged player won
+                        transferAmount = Math.floor(challengerHearts * 0.6);
+                        challengerUpdate.hearts = challengerHearts - transferAmount;
+                        challengedUpdate.hearts = challengedHearts + transferAmount;
+                        alert(`🎉 Victory! ${myScore} vs ${opponentScore}\nYou won ${transferAmount} hearts (60% of challenger's hearts)!`);
+                    }
+                }
+
+                // Make sure alerts are shown before updating database
+                await new Promise(resolve => setTimeout(resolve, 100));
                 
-                // Reset battle states explicitly for both players
-                playersRef.child(challenge.challenger.key).child('inBattle').set(false),
-                playersRef.child(challenge.challenged.key).child('inBattle').set(false)
-            ];
-            
-            await Promise.all(cleanupTasks);
-            
-            // Reset UI and states
-            const modal = document.getElementById('cpsBattleModal');
-            modal.style.display = 'none';
-            
-            // Reset click areas
-            document.getElementById('challengerClickArea').style.pointerEvents = 'auto';
-            document.getElementById('challengerClickArea').style.opacity = '1';
-            document.getElementById('challengedClickArea').style.pointerEvents = 'auto';
-            document.getElementById('challengedClickArea').style.opacity = '1';
-            
-            // Reset scores
-            document.getElementById('challengerScore').textContent = '0';
-            document.getElementById('challengedScore').textContent = '0';
-            
-            // Clear all intervals and timeouts
-            if (battleInterval) {
-                clearInterval(battleInterval);
-                battleInterval = null;
+                // Update scores and reset battle states
+                await Promise.all([
+                    playersRef.child(challenge.challenger.key).update(challengerUpdate),
+                    playersRef.child(challenge.challenged.key).update(challengedUpdate)
+                ]);
+                
+                // Complete cleanup
+                const cleanupTasks = [
+                    db.ref(`challenges/${challenge.id}`).remove(),
+                    db.ref(`battles/${challenge.id}`).remove(),
+                    playersRef.child(challenge.challenger.key).child('inBattle').set(false),
+                    playersRef.child(challenge.challenged.key).child('inBattle').set(false)
+                ];
+                
+                await Promise.all(cleanupTasks);
+                
+                // Reset UI and states
+                const modal = document.getElementById('cpsBattleModal');
+                modal.style.display = 'none';
+                
+                // Reset click areas
+                document.getElementById('challengerClickArea').style.pointerEvents = 'auto';
+                document.getElementById('challengerClickArea').style.opacity = '1';
+                document.getElementById('challengedClickArea').style.pointerEvents = 'auto';
+                document.getElementById('challengedClickArea').style.opacity = '1';
+                
+                // Reset scores
+                document.getElementById('challengerScore').textContent = '0';
+                document.getElementById('challengedScore').textContent = '0';
+                
+                // Clear all intervals and timeouts
+                if (battleInterval) {
+                    clearInterval(battleInterval);
+                    battleInterval = null;
+                }
+                if (battleTimeout) {
+                    clearTimeout(battleTimeout);
+                    battleTimeout = null;
+                }
+                
+                // Reset all battle states
+                activeBattle = null;
+                battleClickTimes = [];
+                challengedPlayer = null;
+                
+                // Force a scoreboard update
+                const scoreSnapshot = await playersRef.orderByChild('hearts').once('value');
+                updateScoreboard(scoreSnapshot);
+                
+            } catch (innerError) {
+                console.error('Error processing battle results:', innerError);
+                alert('Error processing battle results. Please check the scoreboard for updates.');
             }
-            if (battleTimeout) {
-                clearTimeout(battleTimeout);
-                battleTimeout = null;
-            }
-            
-            // Reset all battle states
-            activeBattle = null;
-            battleClickTimes = [];
-            challengedPlayer = null;
-            
-            // Force a scoreboard update
-            const scoreSnapshot = await playersRef.orderByChild('hearts').once('value');
-            updateScoreboard(scoreSnapshot);
-            
-            // Clean up battle clicks data
-            await db.ref(`battles/${challenge.id}`).remove();
-            
         } catch (error) {
             console.error('Error ending battle:', error);
             // Emergency cleanup in case of error
@@ -1209,7 +1254,8 @@
                 await Promise.all([
                     playersRef.child(challenge.challenger.key).update({ inBattle: false }),
                     playersRef.child(challenge.challenged.key).update({ inBattle: false }),
-                    db.ref(`challenges/${challenge.id}`).remove()
+                    db.ref(`challenges/${challenge.id}`).remove(),
+                    db.ref(`battles/${challenge.id}`).remove()
                 ]);
             } catch (cleanupError) {
                 console.error('Error during emergency cleanup:', cleanupError);
