@@ -175,5 +175,197 @@
     };
     firebase.initializeApp(firebaseConfig);
     </script>
+
+    <!-- Add this after the Firebase Configuration script -->
+    <script>
+    // Initialize Firebase references
+    const db = firebase.database();
+    const playersRef = db.ref('players');
+    const wishesRef = db.ref('wishes');
+    const liveUserRef = db.ref('liveUsers');
+
+    // Game variables
+    let playerName = '';
+    let userKey = '';
+    let clickTimes = [];
+    let peakCPS = 0;
+
+    // Initialize live user tracking
+    userKey = liveUserRef.push().key;
+    liveUserRef.child(userKey).set(true);
+    liveUserRef.child(userKey).onDisconnect().remove();
+
+    // Update live user count
+    liveUserRef.on('value', (snapshot) => {
+        document.getElementById('liveUserCount').textContent = snapshot.numChildren();
+    });
+
+    // Handle name submission
+    document.getElementById('submitNameButton').addEventListener('click', async () => {
+        const nameInput = document.getElementById('playerNameInput');
+        const name = nameInput.value.trim();
+        const nameError = document.getElementById('nameError');
+        
+        if (!name) {
+            nameError.textContent = 'Please enter a name';
+            return;
+        }
+        
+        try {
+            const snapshot = await playersRef.orderByChild('name').equalTo(name).once('value');
+            if (snapshot.exists()) {
+                nameError.textContent = 'Name already taken';
+                return;
+            }
+            
+            playerName = name;
+            await playersRef.child(userKey).set({
+                name: playerName,
+                hearts: 0,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+            
+            document.getElementById('namePromptContainer').style.display = 'none';
+            initializeGame();
+        } catch (error) {
+            console.error('Error setting name:', error);
+            nameError.textContent = 'Error saving name';
+        }
+    });
+
+    // Initialize click handling
+    function initializeGame() {
+        const posterContainer = document.querySelector('.poster-container');
+        posterContainer.addEventListener('click', handleClick);
+        
+        // Initialize scoreboard
+        playersRef.orderByChild('hearts').on('value', updateScoreboard);
+        
+        // Initialize wish form
+        document.getElementById('wishButton').addEventListener('click', () => {
+            document.getElementById('wishFormContainer').style.visibility = 'visible';
+        });
+        
+        document.getElementById('submitWishButton').addEventListener('click', submitWish);
+        document.getElementById('closeFormButton').addEventListener('click', () => {
+            document.getElementById('wishFormContainer').style.visibility = 'hidden';
+        });
+    }
+
+    // Handle clicks
+    async function handleClick(event) {
+        if (!playerName) return;
+        
+        const currentTime = Date.now();
+        clickTimes.push(currentTime);
+        clickTimes = clickTimes.filter(time => currentTime - time <= 1000);
+        
+        const currentCPS = clickTimes.length;
+        document.getElementById('currentCPS').textContent = currentCPS.toFixed(1);
+        
+        if (currentCPS > peakCPS) {
+            peakCPS = currentCPS;
+            document.getElementById('peakCPS').textContent = peakCPS.toFixed(1);
+        }
+        
+        try {
+            if (!await rateLimiter(userKey, 'CLICK')) return;
+            
+            const snapshot = await playersRef.child(userKey).once('value');
+            const currentScore = (snapshot.val()?.hearts || 0) + 1;
+            
+            await playersRef.child(userKey).update({
+                hearts: currentScore,
+                lastUpdate: firebase.database.ServerValue.TIMESTAMP
+            });
+            
+            displayHeart(event);
+            await checkMilestone(userKey, currentScore);
+        } catch (error) {
+            console.error('Error updating score:', error);
+        }
+    }
+
+    // Display heart animation
+    function displayHeart(event) {
+        const heart = document.createElement('div');
+        heart.className = 'heart';
+        heart.innerHTML = '💖';
+        
+        const rect = event.target.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        
+        heart.style.left = `${x}px`;
+        heart.style.top = `${y}px`;
+        
+        document.getElementById('hearts-container').appendChild(heart);
+        setTimeout(() => heart.remove(), 1000);
+    }
+
+    // Update scoreboard
+    function updateScoreboard(snapshot) {
+        const scoreList = document.getElementById('scoreList');
+        const scores = [];
+        
+        snapshot.forEach((child) => {
+            const data = child.val();
+            if (data.name && typeof data.hearts === 'number') {
+                scores.push({
+                    name: data.name,
+                    hearts: data.hearts
+                });
+            }
+        });
+        
+        scores.sort((a, b) => b.hearts - a.hearts);
+        
+        scoreList.innerHTML = scores.map((score, index) => `
+            <div class="score-item ${index < 3 ? 'top-three' : ''}" data-player="${score.name}">
+                <span class="player-rank">${index < 3 ? ['🥇','🥈','🥉'][index] : (index + 1)}</span>
+                <span class="player-name">${score.name}</span>
+                <span class="player-score">${score.hearts} 💖</span>
+            </div>
+        `).join('');
+    }
+
+    // Handle wish submission
+    async function submitWish() {
+        const nameInput = document.getElementById('nameInput');
+        const wishInput = document.getElementById('wishInput');
+        const name = nameInput.value.trim();
+        const wish = wishInput.value.trim();
+        
+        if (!name || !wish) {
+            alert('Please enter both name and wish');
+            return;
+        }
+        
+        try {
+            await wishesRef.push({
+                name,
+                text: wish,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+            
+            nameInput.value = '';
+            wishInput.value = '';
+            document.getElementById('wishFormContainer').style.visibility = 'hidden';
+        } catch (error) {
+            console.error('Error saving wish:', error);
+            alert('Error saving wish');
+        }
+    }
+
+    // Display wishes
+    wishesRef.on('child_added', (snapshot) => {
+        const wish = snapshot.val();
+        const wishElement = document.createElement('div');
+        wishElement.className = 'wish';
+        wishElement.textContent = `${wish.name}: ${wish.text}`;
+        document.getElementById('wishes-container').appendChild(wishElement);
+        setTimeout(() => wishElement.remove(), 5000);
+    });
+    </script>
 </body>
 </html>
