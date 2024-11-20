@@ -573,15 +573,6 @@
         }
     }
 
-    function escapeHtml(unsafe) {
-        return unsafe
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    }
-
     async function updateScoreboard(snapshot) {
         const scoreList = document.getElementById('scoreList');
         const scores = [];
@@ -589,12 +580,11 @@
         snapshot.forEach((child) => {
             const data = child.val();
             if (data.name && typeof data.hearts === 'number') {
-                // Sanitize the name before adding to scores array
                 scores.push({
                     key: child.key,
-                    name: escapeHtml(data.name.toString()),
-                    hearts: parseInt(data.hearts),
-                    inBattle: !!data.inBattle
+                    name: data.name,
+                    hearts: data.hearts,
+                    inBattle: data.inBattle || false
                 });
             }
         });
@@ -611,7 +601,6 @@
             const isCurrentPlayer = score.key === userKey;
             const canChallengePlayer = await canChallenge(score.key);
             
-            // Use data attributes with escaped values
             return `
                 <div class="score-item ${index < 3 ? 'top-three' : ''}" 
                      data-player="${score.name}"
@@ -621,7 +610,7 @@
                     <span class="player-score">${score.hearts} 💖</span>
                     ${canChallengePlayer ? `
                         <button class="challenge-button" 
-                                onclick="initiateChallenge(${JSON.stringify(score.key)}, ${JSON.stringify(score.name)})"
+                                onclick="initiateChallenge('${score.key}', '${score.name}')"
                                 ${score.inBattle ? 'disabled' : ''}>
                             Battle
                         </button>
@@ -630,7 +619,6 @@
             `;
         }));
         
-        // Set the innerHTML after all content is properly escaped
         scoreList.innerHTML = scoreListHTML.join('');
     }
 
@@ -780,10 +768,6 @@
     }
 
     async function initiateChallenge(targetKey, targetName) {
-        // Ensure parameters are strings and sanitized
-        targetKey = escapeHtml(targetKey.toString());
-        targetName = escapeHtml(targetName.toString());
-        
         if (!playerName || !userKey) {
             alert('Please enter your name first!');
             return;
