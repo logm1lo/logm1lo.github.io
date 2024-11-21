@@ -189,6 +189,60 @@
             color: #1565C0;
             border: 1px solid #90CAF9;
         }
+
+        .admin-section textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            resize: vertical;
+        }
+
+        .admin-section select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: white;
+        }
+
+        ._0x4.reset {
+            background: #9C27B0;
+            margin-right: 5px;
+        }
+
+        ._0x4.reset:hover {
+            background: #7B1FA2;
+        }
+
+        .status-message.warning {
+            background: #FFF3E0;
+            color: #E65100;
+            border: 1px solid #FFB74D;
+        }
+
+        .ip-results {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .ip-player {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .ip-player:last-child {
+            border-bottom: none;
+        }
     </style>
 </head>
 <body>
@@ -250,6 +304,32 @@
                 </div>
 
                 <div id="statusMessage" class="status-message"></div>
+
+                <div class="admin-section">
+                    <h3>Broadcast Message</h3>
+                    <textarea id="broadcastMessage" placeholder="Enter message to broadcast"></textarea>
+                    <select id="messageType">
+                        <option value="info">Info</option>
+                        <option value="warning">Warning</option>
+                        <option value="error">Error</option>
+                        <option value="success">Success</option>
+                    </select>
+                    <button onclick="_0xb()">Send Broadcast</button>
+                </div>
+
+                <div class="admin-section">
+                    <h3>Player Actions</h3>
+                    <button onclick="_0xc()">Reset Password</button>
+                    <button onclick="_0xd()">Modify Hearts</button>
+                    <button onclick="_0xe()">View Details</button>
+                </div>
+
+                <div class="admin-section">
+                    <h3>System Stats</h3>
+                    <p id="_0x8">Online Players: 0</p>
+                    <p id="_0x9">Total Players: 0</p>
+                    <p id="_0xa">Active Battles: 0</p>
+                </div>
             `;
             startPlayerListUpdates();
         }

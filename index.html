@@ -61,9 +61,590 @@
     }
 
     /* Prevent right-click context menu on poster container */
+
+    .auth-form input[type="email"] {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+    }
+
+    .auth-error {
+        color: #ff4444;
+        margin-top: 10px;
+        font-size: 14px;
+        text-align: center;
+    }
+
+    /* Add transition for form switching */
+    .auth-form {
+        display: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .auth-form.active {
+        display: block;
+        opacity: 1;
+    }
+
+    .broadcast-message {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 15px 25px;
+        border-radius: 8px;
+        color: white;
+        z-index: 2000;
+        animation: slideDown 0.5s ease-out;
+    }
+
+    .broadcast-message.info { background: #2196F3; }
+    .broadcast-message.warning { background: #FF9800; }
+    .broadcast-message.error { background: #f44336; }
+    .broadcast-message.success { background: #4CAF50; }
+
+    @keyframes slideDown {
+        from { transform: translate(-50%, -100%); }
+        to { transform: translate(-50%, 0); }
+    }
+
+    .auth-success {
+        color: #4CAF50;
+        margin-top: 10px;
+        font-size: 14px;
+        text-align: center;
+        padding: 10px;
+        background: #E8F5E9;
+        border-radius: 4px;
+        border: 1px solid #A5D6A7;
+    }
+
+    .auth-form input[type="email"] {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+    }
+
+    .auth-form input[type="email"]:focus {
+        border-color: #4CAF50;
+        outline: none;
+        box-shadow: 0 0 5px rgba(76, 175, 80, 0.2);
+    }
+
+    .auth-form .password-toggle {
+        position: relative;
+    }
+
+    .auth-form .password-toggle button {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #666;
+    }
+
+    .auth-form .password-requirements {
+        font-size: 12px;
+        color: #666;
+        margin: 5px 0;
+        padding: 5px;
+        background: #f5f5f5;
+        border-radius: 4px;
+    }
+
+    .auth-form .password-strength {
+        height: 4px;
+        background: #eee;
+        margin: 5px 0;
+        border-radius: 2px;
+    }
+
+    .auth-form .password-strength-indicator {
+        height: 100%;
+        width: 0;
+        border-radius: 2px;
+        transition: all 0.3s;
+    }
+
+    .auth-form .password-strength-indicator.weak { 
+        background: #ff4444; 
+        width: 33%; 
+    }
+
+    .auth-form .password-strength-indicator.medium { 
+        background: #ffa700; 
+        width: 66%; 
+    }
+
+    .auth-form .password-strength-indicator.strong { 
+        background: #00C851; 
+        width: 100%; 
+    }
+
+    .notification {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 15px 25px;
+        border-radius: 8px;
+        color: white;
+        z-index: 2000;
+        animation: slideDown 0.5s ease-out;
+    }
+
+    .notification.success { background: #00C851; }
+    .notification.error { background: #ff4444; }
+    .notification.warning { background: #ffa700; }
+    .notification.info { background: #33b5e5; }
+
+    @keyframes slideDown {
+        from { transform: translate(-50%, -100%); }
+        to { transform: translate(-50%, 0); }
+    }
+
+    .auth-success {
+        margin-top: 10px;
+        padding: 10px;
+        background: #E8F5E9;
+        border: 1px solid #A5D6A7;
+        border-radius: 4px;
+        color: #2E7D32;
+        text-align: center;
+    }
+
+    .auth-error {
+        margin-top: 10px;
+        padding: 10px;
+        background: #FFEBEE;
+        border: 1px solid #FFCDD2;
+        border-radius: 4px;
+        color: #C62828;
+        text-align: center;
+    }
+
+    .logout-button {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #ff4444;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        z-index: 1000;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+    }
+
+    .logout-button:hover {
+        background: #cc0000;
+        transform: translateY(-2px);
+    }
+
+    /* Add scoreboard toggle styles */
+    .scoreboard {
+        transition: transform 0.3s ease;
+    }
+
+    .scoreboard.hidden {
+        transform: translateX(calc(100% - 40px));
+    }
+
+    .toggle-scoreboard {
+        cursor: pointer;
+        transition: transform 0.3s ease;
+    }
+
+    .toggle-scoreboard .arrow {
+        display: inline-block;
+        transition: transform 0.3s ease;
+    }
+
+    .scoreboard.hidden .toggle-scoreboard .arrow {
+        transform: rotate(180deg);
+    }
+
+    /* Auth Modal Styles */
+    .auth-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.85);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+    }
+
+    .auth-container {
+        background: #ffffff;
+        padding: 35px;
+        border-radius: 20px;
+        box-shadow: 0 4px 25px rgba(0, 0, 0, 0.3);
+        width: 90%;
+        max-width: 400px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .auth-content {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .auth-tabs {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+        width: 100%;
+    }
+
+    .auth-form {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
+        display: none;
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+
+    .auth-form.active {
+        display: block;
+        opacity: 1;
+        animation: fadeIn 0.3s ease;
+    }
+
+    /* Add this to ensure form inputs are centered */
+    .form-group {
+        width: 100%;
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .form-group input {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .auth-form input {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .auth-tabs {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+    }
+
+    .auth-tab {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        background: #f0f0f0;
+        color: #666;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 15px;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    .auth-tab:hover {
+        background: #e0e0e0;
+        transform: translateY(-1px);
+    }
+
+    .auth-tab.active {
+        background: #ff4d4d;
+        color: white;
+    }
+
+    .auth-form h2 {
+        color: #ff4d4d;
+        font-size: 24px;
+        margin-bottom: 25px;
+        font-weight: 600;
+    }
+
+    .auth-form input[type="text"],
+    .auth-form input[type="password"],
+    .auth-form input[type="email"] {
+        width: 100%;
+        padding: 12px 15px;
+        margin-bottom: 15px;
+        border: 2px solid #eee;
+        border-radius: 10px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        background: #f8f8f8;
+    }
+
+    .auth-form input:focus {
+        border-color: #ff4d4d;
+        outline: none;
+        box-shadow: 0 0 8px rgba(255, 77, 77, 0.2);
+        background: white;
+    }
+
+    .auth-form button[type="submit"] {
+        width: 100%;
+        padding: 12px;
+        background: #ff4d4d;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 15px;
+    }
+
+    .auth-form button[type="submit"]:hover {
+        background: #ff3333;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 77, 77, 0.2);
+    }
+
+    .auth-form button[type="submit"]:active {
+        transform: translateY(0);
+    }
+
+    .remember-me {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin: 15px 0;
+    }
+
+    .remember-me input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        accent-color: #ff4d4d;
+    }
+
+    .remember-me label {
+        color: #666;
+        cursor: pointer;
+        font-size: 15px;
+    }
+
+    .auth-error {
+        background: #ffebee;
+        color: #c62828;
+        padding: 12px;
+        border-radius: 8px;
+        margin-top: 15px;
+        text-align: center;
+        font-size: 14px;
+        display: none;
+    }
+
+    .auth-error:not(:empty) {
+        display: block;
+        animation: shake 0.5s ease;
+    }
+
+    .auth-success {
+        background: #e8f5e9;
+        color: #2e7d32;
+        padding: 12px;
+        border-radius: 8px;
+        margin-top: 15px;
+        text-align: center;
+        font-size: 14px;
+        display: none;
+    }
+
+    .auth-success:not(:empty) {
+        display: block;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+
+    /* Password strength indicator */
+    .password-strength {
+        height: 4px;
+        background: #eee;
+        margin: 5px 0 15px;
+        border-radius: 2px;
+        overflow: hidden;
+    }
+
+    .password-strength-indicator {
+        height: 100%;
+        width: 0;
+        transition: all 0.3s ease;
+    }
+
+    .password-strength-indicator.weak { 
+        background: #ff4444; 
+        width: 33%; 
+    }
+
+    .password-strength-indicator.medium { 
+        background: #ffa700; 
+        width: 66%; 
+    }
+
+    .password-strength-indicator.strong { 
+        background: #00C851; 
+        width: 100%; 
+    }
+
+    .password-requirements {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 15px;
+        padding: 10px;
+        background: #f5f5f5;
+        border-radius: 8px;
+        text-align: left;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .auth-form.active {
+        animation: fadeIn 0.3s ease forwards;
+    }
     </style>
 </head>
 <body>
+    <div id="authModal" class="auth-modal">
+        <div class="auth-container">
+            <div class="auth-content">
+                <div class="auth-tabs">
+                    <button class="auth-tab active" data-tab="login">Login</button>
+                    <button class="auth-tab" data-tab="register">Register</button>
+                    <button class="auth-tab" data-tab="guest">Guest</button>
+                    <button class="auth-tab" data-tab="forgot">Forgot Password</button>
+                </div>
+                
+                <!-- Login Form -->
+                <form id="loginForm" class="auth-form active">
+                    <h2>Welcome Back!</h2>
+                    <div class="form-group">
+                        <input type="text" placeholder="Username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" placeholder="Password" name="password" required>
+                    </div>
+                    <div class="remember-me">
+                        <input type="checkbox" id="rememberLogin" name="remember">
+                        <label for="rememberLogin">Remember me</label>
+                    </div>
+                    <button type="submit">Login</button>
+                    <div class="auth-error"></div>
+                </form>
+                
+                <!-- Register Form -->
+                <form id="registerForm" class="auth-form">
+                    <h2>Create Account</h2>
+                    <div class="form-group">
+                        <input type="text" placeholder="Username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" placeholder="Email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" placeholder="Password" name="password" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" placeholder="Confirm Password" name="confirmPassword" required>
+                    </div>
+                    <button type="submit">Register</button>
+                    <div class="auth-error"></div>
+                </form>
+                
+                <!-- Guest Form -->
+                <form id="guestForm" class="auth-form">
+                    <h2>Play as Guest</h2>
+                    <div class="form-group">
+                        <input type="text" placeholder="Nickname" name="nickname" required>
+                    </div>
+                    <button type="submit">Start Playing</button>
+                    <div class="auth-error"></div>
+                </form>
+                
+                <!-- Forgot Password Form -->
+                <form id="forgotForm" class="auth-form">
+                    <h2>Reset Password</h2>
+                    <div class="form-group">
+                        <input type="text" placeholder="Username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" placeholder="Email" name="email" required>
+                    </div>
+                    <button type="submit">Reset Password</button>
+                    <div class="auth-error"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div id="chatSystem" class="chat-system">
+        <div class="chat-header">
+            <span class="chat-title">Chat</span>
+            <div class="chat-tabs">
+                <button class="chat-tab active" data-chat="all">All</button>
+                <button class="chat-tab" data-chat="friends">Friends</button>
+            </div>
+            <button class="chat-toggle">▼</button>
+        </div>
+        
+        <div class="chat-content">
+            <div class="chat-messages" id="chatMessages"></div>
+            <div class="chat-input-container">
+                <input type="text" id="chatInput" placeholder="Type a message...">
+                <button id="sendMessage">Send</button>
+            </div>
+        </div>
+    </div>
+    
+    <button id="logoutButton" class="logout-button" style="display: none;">
+        Logout
+    </button>
+    
     <audio id="challengeNotificationSound" preload="auto">
         <source src="notificationsound.mp3" type="audio/mp3">
     </audio>
@@ -84,7 +665,12 @@
     </div>
     
     <div class="scoreboard">
-        <h2>Top Clickers 🏆</h2>
+        <div class="scoreboard-header">
+            <h2>Top Clickers 🏆</h2>
+            <button id="toggleScoreboard" class="toggle-scoreboard">
+                <span class="arrow">▶</span>
+            </button>
+        </div>
         <div id="scoreList"></div>
     </div>
     
@@ -134,7 +720,6 @@
         </div>
     </div>
 
-    <!-- Add this after your other modals -->
     <div id="waitingModal" class="waiting-modal">
         <div class="waiting-content">
             <h3>Waiting for Response</h3>
@@ -144,7 +729,6 @@
         </div>
     </div>
 
-    <!-- Add this after your other modals -->
     <div id="updatePopup" class="update-popup">
         <div class="update-content">
             <h2>🎮 New Feature: CPS Battle! 🎮</h2>
@@ -188,6 +772,10 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-database-compat.js"></script>
+
+    <!-- Add these after your Firebase scripts -->
+    <script src="auth.js"></script>
+    <script src="chat.js"></script>
 
     <script>
     // Firebase Configuration
@@ -234,7 +822,7 @@
         2000: "🏆 Outstanding! 2,000 hearts mastered!",
         2500: "💫 Phenomenal! 2,500 hearts conquered!",
         3000: "🌠 Incredible! 3,000 hearts milestone!",
-        4000: "🎪 Spectacular! 4,000 hearts achieved!",
+        4000: " Spectacular! 4,000 hearts achieved!",
         5000: "👑 Legendary! 5,000 hearts mastered!",
         7500: "⚡ Extraordinary! 7,500 hearts reached!",
         10000: "🔥 Mythical! 10,000 hearts conquered!",
@@ -258,7 +846,249 @@
     // Add this near the top of your script with other global variables
     let challengeListeners = [];
 
+    // Add this after your other global variables
+    let isScoreboardCollapsed = false;
+
+    // Initialize auth and chat systems
+    const auth = new AuthSystem();
+    const chat = new ChatSystem(auth);
+
+    // Update your existing DOMContentLoaded event listener
     document.addEventListener('DOMContentLoaded', function() {
+        // Add tab switching functionality for auth modal
+        const authTabs = document.querySelectorAll('.auth-tab');
+        const authForms = document.querySelectorAll('.auth-form');
+        
+        authTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetForm = tab.dataset.tab;
+                
+                // Update active states
+                authTabs.forEach(t => t.classList.remove('active'));
+                authForms.forEach(f => f.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(`${targetForm}Form`).classList.add('active');
+            });
+        });
+
+        // Handle login form submission
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const username = form.username.value;
+            const password = form.password.value;
+            const remember = form.remember.checked;
+            
+            try {
+                const user = await auth.login(username, password, remember);
+                
+                // Check if password needs to be reset
+                if (user.passwordReset) {
+                    const newPassword = prompt('Please enter a new password:');
+                    if (newPassword && newPassword.length >= 6) {
+                        await playersRef.child(user.id).update({
+                            password: newPassword,
+                            passwordReset: false
+                        });
+                        showNotification('Password updated successfully!', 'success');
+                    } else {
+                        showNotification('Please set a new password next time you login', 'warning');
+                    }
+                }
+                
+                document.getElementById('authModal').style.display = 'none';
+                playerName = user.name;
+                userKey = user.id;
+                
+                showNotification('Login successful!', 'success');
+                initializeGame();
+            } catch (error) {
+                form.querySelector('.auth-error').textContent = error.message;
+            }
+        });
+
+        // Handle registration form submission
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const username = form.username.value;
+            const email = form.email.value;
+            const password = form.password.value;
+            const confirmPassword = form.confirmPassword.value;
+            
+            if (password !== confirmPassword) {
+                form.querySelector('.auth-error').textContent = 'Passwords do not match';
+                return;
+            }
+            
+            try {
+                const user = await auth.register(username, email, password);
+                // Show registration success message
+                showNotification('Registration successful! Logging you in...', 'success');
+                
+                // Auto-login after registration
+                await auth.login(username, password, false);
+                document.getElementById('authModal').style.display = 'none';
+                playerName = user.name;
+                userKey = user.id;
+                
+                // Initialize the game with the new user
+                initializeGame();
+            } catch (error) {
+                form.querySelector('.auth-error').textContent = error.message;
+            }
+        });
+
+        // Handle guest form submission
+        document.getElementById('guestForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nickname = e.target.nickname.value;
+            document.getElementById('authModal').style.display = 'none';
+            playerName = `Guest_${nickname}`;
+            initializeGame();
+        });
+
+        // Hide name prompt container as we're using auth modal instead
+        document.getElementById('namePromptContainer').style.display = 'none';
+
+        // Rest of your existing DOMContentLoaded code...
+    });
+
+    // Update your handleClick function to include lastUpdate
+    async function handleClick(event) {
+        if (!playerName) return;
+        
+        const now = performance.now();
+        if (now - lastProcessedClick < MIN_CLICK_INTERVAL) return;
+        lastProcessedClick = now;
+        
+        try {
+            clickTimes.push(now);
+            
+            const updates = {
+                hearts: firebase.database.ServerValue.increment(1),
+                lastUpdate: firebase.database.ServerValue.TIMESTAMP // Add this
+            };
+            
+            await playersRef.child(userKey).update(updates);
+            displayHeart(event);
+            
+            const snapshot = await playersRef.child(userKey).once('value');
+            const currentScore = snapshot.val()?.hearts || 0;
+            checkMilestone(currentScore);
+        } catch (error) {
+            console.error('Error updating score:', error);
+        }
+    }
+
+    // Update the logout function
+    function logout() {
+        if (confirm('Are you sure you want to logout?')) {
+            try {
+                // Clear all session and storage data
+                sessionStorage.clear(); // Clear all session storage
+                localStorage.clear();   // Clear all local storage
+                
+                // Specifically ensure these critical items are removed
+                localStorage.removeItem('sessionHash');
+                localStorage.removeItem('rememberedUser');
+                localStorage.removeItem('userCredentials');
+                localStorage.removeItem('scoreboardHidden');
+                sessionStorage.removeItem('sessionHash');
+                sessionStorage.removeItem('userSession');
+                
+                // Clear user data
+                playerName = '';
+                userKey = '';
+                
+                // Remove Firebase listeners
+                if (scoreboardListener) {
+                    playersRef.off('value', scoreboardListener);
+                }
+                
+                // Remove live user status
+                if (userKey) {
+                    liveUserRef.child(userKey).remove();
+                }
+                
+                // Clear chat
+                const chatMessages = document.getElementById('chatMessages');
+                if (chatMessages) {
+                    chatMessages.innerHTML = '';
+                }
+                
+                // Hide logout button
+                const logoutButton = document.getElementById('logoutButton');
+                if (logoutButton) {
+                    logoutButton.style.display = 'none';
+                }
+                
+                // Reset CPS counter
+                const currentCPS = document.getElementById('currentCPS');
+                const peakCPS = document.getElementById('peakCPS');
+                if (currentCPS) currentCPS.textContent = '0';
+                if (peakCPS) peakCPS.textContent = '0';
+                
+                // Cancel any ongoing animations or intervals
+                if (cpsUpdateFrame) {
+                    cancelAnimationFrame(cpsUpdateFrame);
+                }
+                
+                // Clear any remaining cookies
+                document.cookie.split(";").forEach(function(c) { 
+                    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+                });
+                
+                // Show auth modal
+                const authModal = document.getElementById('authModal');
+                if (authModal) {
+                    authModal.style.display = 'block';
+                    
+                    // Reset all auth forms
+                    document.querySelectorAll('.auth-form').forEach(form => {
+                        form.reset();
+                        const error = form.querySelector('.auth-error');
+                        if (error) error.textContent = '';
+                    });
+                    
+                    // Switch to login tab
+                    const loginTab = document.querySelector('[data-tab="login"]');
+                    if (loginTab) loginTab.click();
+                }
+                
+                // Show notification
+                showNotification('Logged out successfully', 'success');
+                
+                // Force page reload to reset all states
+                setTimeout(() => {
+                    window.location.href = window.location.pathname + '?logout=' + Date.now();
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Logout error:', error);
+                showNotification('Error during logout', 'error');
+            }
+        }
+    }
+
+    // Add this function for showing notifications
+    function showNotification(message, type = 'success') {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        // Remove notification after 3 seconds
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+
+    // Update the initializeGame function
+    function initializeGame() {
+        console.log('Initializing game with:', { playerName, userKey });
+        
         // Initialize live user tracking
         liveUserRef.child(userKey).set(true);
         liveUserRef.child(userKey).onDisconnect().remove();
@@ -268,231 +1098,113 @@
             document.getElementById('liveUserCount').textContent = snapshot.numChildren();
         });
 
-        // Handle name submission with better error handling
-        document.getElementById('submitNameButton').addEventListener('click', async () => {
-            console.log('Submit button clicked'); // Debug log
-            
-            const nameInput = document.getElementById('playerNameInput');
-            const name = nameInput.value.trim();
-            const nameError = document.getElementById('nameError');
-            
-            if (!name) {
-                nameError.textContent = 'Please enter a name';
-                return;
-            }
-
-            if (name.length > 12) {
-                nameError.textContent = 'Name must be 12 characters or less';
-                return;
-            }
-            
-            try {
-                // Check for existing name
-                const snapshot = await playersRef.orderByChild('name').equalTo(name).once('value');
-                if (snapshot.exists()) {
-                    nameError.textContent = 'Name already taken';
-                    return;
-                }
-                
-                // Set player name
-                playerName = name;
-                
-                // Register player with IP
-                try {
-                    const ipResponse = await fetch('https://api.ipify.org?format=json');
-                    const ipData = await ipResponse.json();
-                    
-                    await playersRef.child(userKey).set({
-                        name: playerName,
-                        hearts: 0,
-                        ip: ipData.ip,
-                        timestamp: firebase.database.ServerValue.TIMESTAMP
-                    });
-
-                    // Hide name prompt
-                    document.getElementById('namePromptContainer').style.display = 'none';
-                    
-                    // Show update popup after name submission
-                    const hasSeenUpdate = localStorage.getItem('hasSeenCPSBattleUpdate');
-                    if (!hasSeenUpdate) {
-                        const updatePopup = document.getElementById('updatePopup');
-                        if (updatePopup) {
-                            updatePopup.style.display = 'block';
-                            
-                            // Add click handler for close button
-                            document.getElementById('closeUpdatePopup').onclick = () => {
-                                updatePopup.style.display = 'none';
-                                localStorage.setItem('hasSeenCPSBattleUpdate', 'true');
-                            };
-                        }
-                    }
-                    
-                    // Initialize game
-                    initializeGame();
-                    
-                    console.log('Player registered successfully'); // Debug log
-                } catch (error) {
-                    // Fallback if IP fetch fails
-                    await playersRef.child(userKey).set({
-                        name: playerName,
-                        hearts: 0,
-                        timestamp: firebase.database.ServerValue.TIMESTAMP
-                    });
-
-                    // Hide name prompt and show update popup
-                    document.getElementById('namePromptContainer').style.display = 'none';
-                    
-                    // Show update popup after name submission
-                    const hasSeenUpdate = localStorage.getItem('hasSeenCPSBattleUpdate');
-                    if (!hasSeenUpdate) {
-                        const updatePopup = document.getElementById('updatePopup');
-                        if (updatePopup) {
-                            updatePopup.style.display = 'block';
-                            
-                            // Add click handler for close button
-                            document.getElementById('closeUpdatePopup').onclick = () => {
-                                updatePopup.style.display = 'none';
-                                localStorage.setItem('hasSeenCPSBattleUpdate', 'true');
-                            };
-                        }
-                    }
-                    
-                    initializeGame();
-                }
-            } catch (error) {
-                console.error('Error registering player:', error);
-                nameError.textContent = 'Error saving name. Please try again.';
-            }
-        });
-
-        // Initialize wish system
-        const wishButton = document.getElementById('wishButton');
-        const submitWishButton = document.getElementById('submitWishButton');
-        const closeFormButton = document.getElementById('closeFormButton');
-
-        wishButton.addEventListener('click', () => {
-            document.getElementById('wishFormContainer').style.visibility = 'visible';
-        });
-
-        submitWishButton.addEventListener('click', submitWish);
-
-        closeFormButton.addEventListener('click', () => {
-            document.getElementById('wishFormContainer').style.visibility = 'hidden';
-        });
-
-        // Initialize wishes display - fetch existing wishes
-        wishesRef.orderByChild('timestamp').limitToLast(50).once('value', (snapshot) => {
-            snapshot.forEach((child) => {
-                displayWish(child.val());
-            });
-        });
-
-        // Listen for new wishes
-        wishesRef.orderByChild('timestamp').startAfter(Date.now()).on('child_added', (snapshot) => {
-            displayWish(snapshot.val());
-        });
-
-        // Prevent right-click context menu
-        document.querySelector('.poster-container').addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-            return false;
-        });
-
-        // Prevent dragging of images
-        document.querySelectorAll('img').forEach(img => {
-            img.addEventListener('dragstart', function(e) {
-                e.preventDefault();
-                return false;
-            });
-        });
-
-        // Function to show update popup
-        function showUpdatePopup() {
-            const hasSeenUpdate = localStorage.getItem('hasSeenCPSBattleUpdate');
-            
-            if (!hasSeenUpdate) {
-                // Show update popup after a short delay
-                setTimeout(() => {
-                    const updatePopup = document.getElementById('updatePopup');
-                    if (updatePopup) {
-                        updatePopup.style.display = 'block';
-                        console.log('Showing update popup'); // Debug log
-                    }
-                }, 1000);
-            }
-        }
-
-        // Handle close button for update popup
-        const closeUpdateBtn = document.getElementById('closeUpdatePopup');
-        if (closeUpdateBtn) {
-            closeUpdateBtn.addEventListener('click', () => {
-                document.getElementById('updatePopup').style.display = 'none';
-                localStorage.setItem('hasSeenCPSBattleUpdate', 'true');
-            });
-        }
-
-        // Show the popup
-        showUpdatePopup();
-    });
-
-    // Initialize game function with error handling
-    function initializeGame() {
-        console.log('Initializing game'); // Debug log
-        
+        // Initialize click handler
         const posterContainer = document.querySelector('.poster-container');
         if (posterContainer) {
             posterContainer.addEventListener('click', handleClick);
-            console.log('Click handler attached');
-        } else {
-            console.error('Poster container not found');
         }
-        
+
         // Start scoreboard updates
+        if (scoreboardListener) {
+            playersRef.off('value', scoreboardListener);
+        }
         scoreboardListener = playersRef.orderByChild('hearts').on('value', updateScoreboard);
-        
-        // Start CPS counter
-        startCPSUpdater();
-        
-        // Set up challenge listeners
-        setupChallengeListeners();
-        
-        console.log('Game initialized successfully');
-    }
 
-    // Optimized click handler
-    async function handleClick(event) {
-        if (!playerName) return;
-        
-        const now = performance.now();
-        if (now - lastProcessedClick < MIN_CLICK_INTERVAL) return; // Throttle clicks
-        lastProcessedClick = now;
-        
-        try {
-            // Add click to times array
-            clickTimes.push(now);
+        // Start CPS counter
+        if (cpsUpdateFrame) {
+            cancelAnimationFrame(cpsUpdateFrame);
+        }
+        startCPSUpdater();
+
+        // Set up battle listeners
+        setupBattleListeners();
+        setupChallengeListeners();
+
+        // Initialize player status
+        playersRef.child(userKey).update({
+            inBattle: false,
+            lastUpdate: firebase.database.ServerValue.TIMESTAMP
+        });
+
+        // Show update popup for new users
+        const hasSeenUpdate = localStorage.getItem('hasSeenCPSBattleUpdate');
+        if (!hasSeenUpdate) {
+            const updatePopup = document.getElementById('updatePopup');
+            const closeButton = document.getElementById('closeUpdatePopup');
             
-            // Update score in Firebase
-            const updates = {
-                hearts: firebase.database.ServerValue.increment(1),
-                lastUpdate: firebase.database.ServerValue.TIMESTAMP
+            if (updatePopup) {
+                updatePopup.style.display = 'block';
+                
+                closeButton.onclick = () => {
+                    updatePopup.style.display = 'none';
+                    localStorage.setItem('hasSeenCPSBattleUpdate', 'true');
+                };
+            }
+        }
+
+        // Initialize scoreboard toggle
+        const scoreboard = document.querySelector('.scoreboard');
+        const toggleButton = document.getElementById('toggleScoreboard');
+        if (scoreboard && toggleButton) {
+            const savedState = localStorage.getItem('scoreboardHidden');
+            
+            if (savedState === 'true') {
+                scoreboard.classList.add('hidden');
+            }
+
+            toggleButton.onclick = () => {
+                scoreboard.classList.toggle('hidden');
+                localStorage.setItem('scoreboardHidden', scoreboard.classList.contains('hidden'));
             };
-            
-            await playersRef.child(userKey).update(updates);
-            
-            // Display heart animation
-            displayHeart(event);
-            
-            // Check milestone (get current score first)
-            const snapshot = await playersRef.child(userKey).once('value');
-            const currentScore = snapshot.val()?.hearts || 0;
-            checkMilestone(currentScore);
-            
+        }
+
+        // Show logout button if user is logged in
+        const logoutButton = document.getElementById('logoutButton');
+        if (logoutButton) {
+            logoutButton.style.display = 'block';
+            logoutButton.onclick = logout;
+        }
+
+        // Initialize chat system if available
+        try {
+            if (typeof chat !== 'undefined' && chat && typeof chat.initialize === 'function') {
+                chat.initialize();
+            }
         } catch (error) {
-            console.error('Error updating score:', error);
+            console.warn('Chat system initialization failed:', error);
         }
     }
 
-    // Optimized CPS counter
+    // Add this function after your handleClick function
+    function displayHeart(event) {
+        const heart = document.createElement('div');
+        heart.className = 'heart';
+        heart.innerHTML = '💖';
+        
+        const rect = event.target.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        
+        heart.style.cssText = `
+            left: ${x}px;
+            top: ${y}px;
+            will-change: transform, opacity;
+        `;
+        
+        const container = document.getElementById('hearts-container');
+        container.appendChild(heart);
+        
+        // Use requestAnimationFrame for smoother animation
+        requestAnimationFrame(() => {
+            heart.style.opacity = '0';
+            heart.style.transform = 'translate(-50%, -150%) scale(0.5)';
+            setTimeout(() => {
+                container.removeChild(heart);
+            }, 1000);
+        });
+    }
+
+    // Also add the startCPSUpdater function that was missing
     function startCPSUpdater() {
         let frameCount = 0;
         const MAX_FRAMES = 60;
@@ -533,46 +1245,7 @@
         cpsUpdateFrame = requestAnimationFrame(updateCPS);
     }
 
-    // Optimized heart display
-    function displayHeart(event) {
-        const heart = document.createElement('div');
-        heart.className = 'heart';
-        heart.innerHTML = '💖';
-        
-        const rect = event.target.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-        
-        heart.style.cssText = `
-            left: ${x}px;
-            top: ${y}px;
-            will-change: transform, opacity;
-        `;
-        
-        const container = document.getElementById('hearts-container');
-        container.appendChild(heart);
-        
-        // Use requestAnimationFrame for smoother removal
-        requestAnimationFrame(() => {
-            heart.style.opacity = '0';
-            heart.style.transform = 'translate(-50%, -150%) scale(0.5)';
-            setTimeout(() => {
-                container.removeChild(heart);
-            }, 1000);
-        });
-    }
-
-    function checkMilestone(score) {
-        const milestone = Object.entries(MILESTONES).find(([threshold]) => score === parseInt(threshold));
-        if (milestone) {
-            const popup = document.createElement('div');
-            popup.className = 'milestone-popup';
-            popup.innerHTML = `<div class="milestone-content">${milestone[1]}</div>`;
-            document.body.appendChild(popup);
-            setTimeout(() => popup.remove(), 5000);
-        }
-    }
-
+    // Update the updateScoreboard function
     async function updateScoreboard(snapshot) {
         const scoreList = document.getElementById('scoreList');
         const scores = [];
@@ -584,7 +1257,9 @@
                     key: child.key,
                     name: data.name,
                     hearts: data.hearts,
-                    inBattle: data.inBattle || false
+                    inBattle: data.inBattle || false,
+                    lastUpdate: data.lastUpdate || 0,
+                    status: getPlayerStatus(data.lastUpdate)
                 });
             }
         });
@@ -606,7 +1281,10 @@
                      data-player="${score.name}"
                      data-current="${isCurrentPlayer}">
                     <span class="player-rank">${rankDisplay}</span>
-                    <span class="player-name">${score.name}</span>
+                    <div class="player-info">
+                        <div class="status-indicator ${score.status}"></div>
+                        <span class="player-name">${score.name}</span>
+                    </div>
                     <span class="player-score">${score.hearts} 💖</span>
                     ${canChallengePlayer ? `
                         <button class="challenge-button" 
@@ -622,267 +1300,24 @@
         scoreList.innerHTML = scoreListHTML.join('');
     }
 
-    async function submitWish(event) {
-        event.preventDefault();
+    // Add the getPlayerStatus function
+    function getPlayerStatus(lastUpdate) {
+        if (!lastUpdate) return 'status-offline';
         
         const now = Date.now();
-        if (now - lastWishTime < MIN_WISH_INTERVAL) {
-            alert('Please wait a few seconds before sending another wish');
-            return;
-        }
+        const timeSinceUpdate = now - lastUpdate;
         
-        const nameInput = document.getElementById('nameInput');
-        const wishInput = document.getElementById('wishInput');
-        const name = nameInput.value.trim();
-        const wish = wishInput.value.trim();
-        
-        if (!name || !wish) {
-            alert('Please enter both name and wish');
-            return;
-        }
-        
-        if (wish.length > 100) { // Add length limit
-            alert('Wish must be 100 characters or less');
-            return;
-        }
-        
-        try {
-            // Calculate random position within visible area
-            const containerRect = document.querySelector('.poster-container').getBoundingClientRect();
-            const maxWidth = containerRect.width - 200;
-            const maxHeight = containerRect.height - 100;
-            
-            const wishData = {
-                name: name,
-                text: wish,
-                timestamp: firebase.database.ServerValue.TIMESTAMP,
-                x: Math.random() * maxWidth,
-                y: Math.random() * maxHeight
-            };
-            
-            // Save to database
-            await wishesRef.push(wishData);
-            
-            // Display immediately without waiting for the database event
-            displayWish({
-                ...wishData,
-                timestamp: Date.now() // Use current time for immediate display
-            });
-            
-            // Clear form and hide
-            nameInput.value = '';
-            wishInput.value = '';
-            document.getElementById('wishFormContainer').style.visibility = 'hidden';
-            lastWishTime = now;
-        } catch (error) {
-            console.error('Error saving wish:', error);
-            alert('Error saving wish. Please try again later.');
+        if (timeSinceUpdate < 30000) { // Less than 30 seconds
+            return 'status-online';
+        } else if (timeSinceUpdate < 300000) { // Less than 5 minutes
+            return 'status-away';
+        } else {
+            return 'status-offline';
         }
     }
 
-    function displayWish(wishData) {
-        try {
-            const wishElement = document.createElement('div');
-            wishElement.className = 'wish';
-            
-            // Ensure container exists
-            const container = document.querySelector('.poster-container');
-            const wishesContainer = document.getElementById('wishes-container');
-            if (!container || !wishesContainer) {
-                console.error('Required containers not found');
-                return;
-            }
-            
-            // Ensure position is within container bounds
-            const containerRect = container.getBoundingClientRect();
-            const maxX = Math.max(0, containerRect.width - 200);
-            const maxY = Math.max(0, containerRect.height - 100);
-            
-            const x = Math.min(Math.max(0, wishData.x || 0), maxX);
-            const y = Math.min(Math.max(0, wishData.y || 0), maxY);
-            
-            wishElement.style.left = `${x}px`;
-            wishElement.style.top = `${y}px`;
-            wishElement.textContent = `${wishData.name || 'Anonymous'}: ${wishData.text || ''}`;
-            
-            wishesContainer.appendChild(wishElement);
-            
-            // Add animation classes
-            requestAnimationFrame(() => {
-                wishElement.classList.add('show');
-            });
-            
-            // Remove after animation
-            setTimeout(() => {
-                wishElement.classList.add('fade-out');
-                setTimeout(() => {
-                    if (wishElement.parentNode) {
-                        wishElement.remove();
-                    }
-                }, 1000);
-            }, 4000);
-        } catch (error) {
-            console.error('Error displaying wish:', error);
-        }
-    }
+    // Add these functions after your existing JavaScript code
 
-    // Cleanup function
-    function cleanup() {
-        if (scoreboardListener) {
-            playersRef.off('value', scoreboardListener);
-        }
-        if (cpsUpdateFrame) {
-            cancelAnimationFrame(cpsUpdateFrame);
-        }
-        
-        // Clean up challenge listeners
-        challengeListeners.forEach(listener => listener.off());
-        challengeListeners = [];
-        
-        wishesRef.off();
-        liveUserRef.off();
-        
-        // Remove update popup if it exists
-        const updatePopup = document.getElementById('updatePopup');
-        if (updatePopup) {
-            updatePopup.style.display = 'none';
-        }
-    }
-
-    window.addEventListener('beforeunload', cleanup);
-
-    async function registerPlayer(name) {
-        try {
-            const ipResponse = await fetch('https://api.ipify.org?format=json');
-            const ipData = await ipResponse.json();
-            
-            await playersRef.child(userKey).set({
-                name: name,
-                hearts: 0,
-                ip: ipData.ip,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
-            });
-        } catch (error) {
-            console.error('Error registering player:', error);
-        }
-    }
-
-    async function initiateChallenge(targetKey, targetName) {
-        if (!playerName || !userKey) {
-            alert('Please enter your name first!');
-            return;
-        }
-        
-        if (activeBattle) {
-            alert('You are already in a battle!');
-            return;
-        }
-
-        try {
-            // Check if target player is still available
-            const targetSnapshot = await playersRef.child(targetKey).once('value');
-            const targetData = targetSnapshot.val();
-            
-            if (!targetData || targetData.inBattle) {
-                alert('This player is no longer available for battle.');
-                return;
-            }
-
-            // Show waiting modal
-            const waitingModal = document.getElementById('waitingModal');
-            const challengedPlayerName = document.getElementById('challengedPlayerName');
-            challengedPlayerName.textContent = targetName;
-            waitingModal.style.display = 'block';
-
-            // Update challenger status
-            await playersRef.child(userKey).update({ inBattle: true });
-            
-            // Create challenge
-            const newChallengeRef = db.ref('challenges').push();
-            const challengeData = {
-                id: newChallengeRef.key,
-                challenger: {
-                    key: userKey,
-                    name: playerName
-                },
-                challenged: {
-                    key: targetKey,
-                    name: targetName
-                },
-                status: 'pending',
-                timestamp: Date.now()
-            };
-
-            await newChallengeRef.set(challengeData);
-            
-            // Setup cancel button
-            const cancelButton = document.getElementById('cancelChallenge');
-            const cancelHandler = async () => {
-                try {
-                    await newChallengeRef.remove();
-                    await playersRef.child(userKey).update({ inBattle: false });
-                    waitingModal.style.display = 'none';
-                    activeBattle = null;
-                    cancelButton.removeEventListener('click', cancelHandler);
-                } catch (error) {
-                    console.error('Error canceling challenge:', error);
-                }
-            };
-            
-            cancelButton.addEventListener('click', cancelHandler);
-            
-            // Set timeout for challenge response
-            const timeoutId = setTimeout(async () => {
-                const snapshot = await newChallengeRef.once('value');
-                if (snapshot.val()?.status === 'pending') {
-                    await newChallengeRef.remove();
-                    await playersRef.child(userKey).update({ inBattle: false });
-                    waitingModal.style.display = 'none';
-                    alert('Challenge timed out');
-                    activeBattle = null;
-                    cancelButton.removeEventListener('click', cancelHandler);
-                }
-            }, 30000); // 30 seconds timeout
-
-            // Listen for response
-            newChallengeRef.on('value', async (snapshot) => {
-                const challenge = snapshot.val();
-                if (!challenge) {
-                    await playersRef.child(userKey).update({ inBattle: false });
-                    waitingModal.style.display = 'none';
-                    activeBattle = null;
-                    cancelButton.removeEventListener('click', cancelHandler);
-                    return;
-                }
-
-                if (challenge.status === 'accepted') {
-                    clearTimeout(timeoutId);
-                    waitingModal.style.display = 'none';
-                    activeBattle = challenge;
-                    cancelButton.removeEventListener('click', cancelHandler);
-                    startBattle(challenge);
-                } else if (challenge.status === 'refused') {
-                    clearTimeout(timeoutId);
-                    await playersRef.child(userKey).update({ inBattle: false });
-                    waitingModal.style.display = 'none';
-                    alert(`${targetName} refused your challenge`);
-                    newChallengeRef.off();
-                    await newChallengeRef.remove();
-                    activeBattle = null;
-                    cancelButton.removeEventListener('click', cancelHandler);
-                }
-            });
-
-        } catch (error) {
-            console.error('Error initiating challenge:', error);
-            document.getElementById('waitingModal').style.display = 'none';
-            await playersRef.child(userKey).update({ inBattle: false });
-            activeBattle = null;
-            alert('Failed to initiate challenge. Please try again.');
-        }
-    }
-
-    // Update the challenge listener setup
     function setupChallengeListeners() {
         // Clear any existing listeners
         challengeListeners.forEach(listener => listener.off());
@@ -897,15 +1332,11 @@
                 if (!challenge) return;
 
                 if (challenge.status === 'pending') {
-                    // Play notification sound when receiving a challenge
+                    // Play notification sound
                     const notificationSound = document.getElementById('challengeNotificationSound');
                     try {
-                        // Reset the audio to the start
                         notificationSound.currentTime = 0;
-                        
-                        // Play the sound
                         const playPromise = notificationSound.play();
-                        
                         if (playPromise !== undefined) {
                             playPromise.catch(error => {
                                 console.log("Audio play failed:", error);
@@ -916,30 +1347,13 @@
                     }
                     
                     showChallengeNotification(challenge, snapshot.key);
-                } else if (challenge.status === 'accepted' && !activeBattle) {
-                    activeBattle = challenge;
-                    startBattle(challenge);
                 }
             });
 
-        // Listen for challenges where user is challenger
-        const challengerListener = db.ref('challenges')
-            .orderByChild('challenger/key')
-            .equalTo(userKey)
-            .on('child_added', async (snapshot) => {
-                const challenge = snapshot.val();
-                if (!challenge) return;
-
-                if (challenge.status === 'accepted' && !activeBattle) {
-                    activeBattle = challenge;
-                    startBattle(challenge);
-                }
-            });
-
-        challengeListeners.push(
-            { ref: db.ref('challenges'), off: () => db.ref('challenges').off('child_added', challengedListener) },
-            { ref: db.ref('challenges'), off: () => db.ref('challenges').off('child_added', challengerListener) }
-        );
+        challengeListeners.push({
+            ref: db.ref('challenges'),
+            off: () => db.ref('challenges').off('child_added', challengedListener)
+        });
     }
 
     function showChallengeNotification(challenge, challengeId) {
@@ -952,34 +1366,11 @@
         notification.style.display = 'block';
     }
 
-    // Update the acceptChallenge function
     async function acceptChallenge(challengeId) {
         try {
             const challengeRef = db.ref(`challenges/${challengeId}`);
-            const snapshot = await challengeRef.once('value');
-            const challenge = snapshot.val();
-
-            if (!challenge) {
-                alert('Challenge no longer exists');
-                return;
-            }
-
-            // Update both players' battle status
-            await Promise.all([
-                playersRef.child(challenge.challenger.key).update({ inBattle: true }),
-                playersRef.child(challenge.challenged.key).update({ inBattle: true })
-            ]);
-
-            // Update challenge status
             await challengeRef.update({ status: 'accepted' });
-            
-            // Hide notification
             document.getElementById('challengeNotification').style.display = 'none';
-            
-            // Start battle for challenged player
-            activeBattle = { ...challenge, id: challengeId };
-            startBattle(activeBattle);
-
         } catch (error) {
             console.error('Error accepting challenge:', error);
             alert('Error accepting challenge. Please try again.');
@@ -988,62 +1379,16 @@
 
     async function refuseChallenge(challengeId) {
         try {
-            await db.ref(`challenges/${challengeId}`).update({ status: 'refused' });
+            const challengeRef = db.ref(`challenges/${challengeId}`);
+            await challengeRef.update({ status: 'refused' });
             document.getElementById('challengeNotification').style.display = 'none';
         } catch (error) {
             console.error('Error refusing challenge:', error);
         }
     }
 
-    // Update the startBattle function to ensure battle data is initialized
-    function startBattle(challenge) {
-        const modal = document.getElementById('cpsBattleModal');
-        const countdown = document.getElementById('battleCountdown');
-        const challengerName = document.getElementById('challengerName');
-        const challengedName = document.getElementById('challengedName');
-        
-        // Reset scores
-        document.getElementById('challengerScore').textContent = '0';
-        document.getElementById('challengedScore').textContent = '0';
-        
-        // Initialize battle data in Firebase
-        db.ref(`battles/${challenge.id}`).set({
-            challengerClicks: 0,
-            challengedClicks: 0,
-            startTime: firebase.database.ServerValue.TIMESTAMP,
-            status: 'active'
-        }).then(() => {
-            // Continue with battle setup after data is initialized
-            challengerName.textContent = challenge.challenger.name;
-            challengedName.textContent = challenge.challenged.name;
-            
-            modal.style.display = 'block';
-            countdown.style.display = 'block';
-            countdown.textContent = '5';
-            
-            const isChallenger = challenge.challenger.key === userKey;
-            const opponentClickArea = document.getElementById(isChallenger ? 'challengedClickArea' : 'challengerClickArea');
-            opponentClickArea.style.pointerEvents = 'none';
-            opponentClickArea.style.opacity = '0.7';
-            
-            let count = 5;
-            const countInterval = setInterval(() => {
-                count--;
-                countdown.textContent = count;
-                
-                if (count <= 0) {
-                    clearInterval(countInterval);
-                    countdown.style.display = 'none';
-                    initializeBattle(challenge);
-                }
-            }, 1000);
-        }).catch(error => {
-            console.error('Error initializing battle:', error);
-            alert('Error starting battle. Please try again.');
-        });
-    }
-
-    function initializeBattle(challenge) {
+    // Battle system functions
+    async function initializeBattle(challenge) {
         const isChallenger = challenge.challenger.key === userKey;
         const clickArea = document.getElementById(isChallenger ? 'challengerClickArea' : 'challengedClickArea');
         const scoreElement = document.getElementById(isChallenger ? 'challengerScore' : 'challengedScore');
@@ -1110,15 +1455,8 @@
                 });
             }
         }, 1000);
-        
-        // Cleanup function for unexpected termination
-        window.addEventListener('beforeunload', () => {
-            opponentClicksRef.off();
-            myClicksRef.set(clicks);
-        });
     }
 
-    // Update the endBattle function to include cleanup of battle clicks
     async function endBattle(challenge, finalScore) {
         try {
             const isChallenger = challenge.challenger.key === userKey;
@@ -1157,116 +1495,59 @@
             const myScore = isChallenger ? challengerFinalScore : challengedFinalScore;
             const opponentScore = isChallenger ? challengedFinalScore : challengerFinalScore;
             
-            try {
-                if (isTie) {
-                    alert(`It's a tie! ${myScore} vs ${opponentScore}\nNo hearts were exchanged.`);
-                } else if (isChallenger) {
-                    if (challengerWon) {
-                        // Challenger won
-                        transferAmount = Math.floor(challengedHearts * 0.4);
-                        challengerUpdate.hearts = challengerHearts + transferAmount;
-                        challengedUpdate.hearts = challengedHearts - transferAmount;
-                        alert(`🎉 Victory! ${myScore} vs ${opponentScore}\nYou won ${transferAmount} hearts (40% of opponent's hearts)!`);
-                    } else {
-                        // Challenger lost
-                        transferAmount = Math.floor(challengerHearts * 0.6);
-                        challengerUpdate.hearts = challengerHearts - transferAmount;
-                        challengedUpdate.hearts = challengedHearts + transferAmount;
-                        alert(`💔 Defeat! ${myScore} vs ${opponentScore}\nYou lost ${transferAmount} hearts (60% of your hearts)!`);
-                    }
+            if (isTie) {
+                alert(`It's a tie! ${myScore} vs ${opponentScore}\nNo hearts were exchanged.`);
+            } else if (isChallenger) {
+                if (challengerWon) {
+                    transferAmount = Math.floor(challengedHearts * 0.4);
+                    challengerUpdate.hearts = challengerHearts + transferAmount;
+                    challengedUpdate.hearts = challengedHearts - transferAmount;
+                    alert(`🎉 Victory! ${myScore} vs ${opponentScore}\nYou won ${transferAmount} hearts!`);
                 } else {
-                    // Player is the challenged one
-                    if (challengerWon) {
-                        // Challenged player lost
-                        transferAmount = Math.floor(challengedHearts * 0.4);
-                        challengerUpdate.hearts = challengerHearts + transferAmount;
-                        challengedUpdate.hearts = challengedHearts - transferAmount;
-                        alert(`💔 Defeat! ${myScore} vs ${opponentScore}\nYou lost ${transferAmount} hearts (40% of your hearts)!`);
-                    } else {
-                        // Challenged player won
-                        transferAmount = Math.floor(challengerHearts * 0.6);
-                        challengerUpdate.hearts = challengerHearts - transferAmount;
-                        challengedUpdate.hearts = challengedHearts + transferAmount;
-                        alert(`🎉 Victory! ${myScore} vs ${opponentScore}\nYou won ${transferAmount} hearts (60% of challenger's hearts)!`);
-                    }
+                    transferAmount = Math.floor(challengerHearts * 0.6);
+                    challengerUpdate.hearts = challengerHearts - transferAmount;
+                    challengedUpdate.hearts = challengedHearts + transferAmount;
+                    alert(`💔 Defeat! ${myScore} vs ${opponentScore}\nYou lost ${transferAmount} hearts!`);
                 }
+            } else {
+                if (challengerWon) {
+                    transferAmount = Math.floor(challengedHearts * 0.4);
+                    challengerUpdate.hearts = challengerHearts + transferAmount;
+                    challengedUpdate.hearts = challengedHearts - transferAmount;
+                    alert(`💔 Defeat! ${myScore} vs ${opponentScore}\nYou lost ${transferAmount} hearts!`);
+                } else {
+                    transferAmount = Math.floor(challengerHearts * 0.6);
+                    challengerUpdate.hearts = challengerHearts - transferAmount;
+                    challengedUpdate.hearts = challengedHearts + transferAmount;
+                    alert(`🎉 Victory! ${myScore} vs ${opponentScore}\nYou won ${transferAmount} hearts!`);
+                }
+            }
 
-                // Make sure alerts are shown before updating database
-                await new Promise(resolve => setTimeout(resolve, 100));
-                
-                // Update scores and reset battle states
-                await Promise.all([
-                    playersRef.child(challenge.challenger.key).update(challengerUpdate),
-                    playersRef.child(challenge.challenged.key).update(challengedUpdate)
-                ]);
-                
-                // Complete cleanup
-                const cleanupTasks = [
-                    db.ref(`challenges/${challenge.id}`).remove(),
-                    db.ref(`battles/${challenge.id}`).remove(),
-                    playersRef.child(challenge.challenger.key).child('inBattle').set(false),
-                    playersRef.child(challenge.challenged.key).child('inBattle').set(false)
-                ];
-                
-                await Promise.all(cleanupTasks);
-                
-                // Reset UI and states
-                const modal = document.getElementById('cpsBattleModal');
-                modal.style.display = 'none';
-                
-                // Reset click areas
-                document.getElementById('challengerClickArea').style.pointerEvents = 'auto';
-                document.getElementById('challengerClickArea').style.opacity = '1';
-                document.getElementById('challengedClickArea').style.pointerEvents = 'auto';
-                document.getElementById('challengedClickArea').style.opacity = '1';
-                
-                // Reset scores
-                document.getElementById('challengerScore').textContent = '0';
-                document.getElementById('challengedScore').textContent = '0';
-                
-                // Clear all intervals and timeouts
-                if (battleInterval) {
-                    clearInterval(battleInterval);
-                    battleInterval = null;
-                }
-                if (battleTimeout) {
-                    clearTimeout(battleTimeout);
-                    battleTimeout = null;
-                }
-                
-                // Reset all battle states
-                activeBattle = null;
-                battleClickTimes = [];
-                challengedPlayer = null;
-                
-                // Force a scoreboard update
-                const scoreSnapshot = await playersRef.orderByChild('hearts').once('value');
-                updateScoreboard(scoreSnapshot);
-                
-            } catch (innerError) {
-                console.error('Error processing battle results:', innerError);
-                alert('Error processing battle results. Please check the scoreboard for updates.');
-            }
-        } catch (error) {
-            console.error('Error ending battle:', error);
-            // Emergency cleanup in case of error
-            try {
-                await Promise.all([
-                    playersRef.child(challenge.challenger.key).update({ inBattle: false }),
-                    playersRef.child(challenge.challenged.key).update({ inBattle: false }),
-                    db.ref(`challenges/${challenge.id}`).remove(),
-                    db.ref(`battles/${challenge.id}`).remove()
-                ]);
-            } catch (cleanupError) {
-                console.error('Error during emergency cleanup:', cleanupError);
-            }
-            
-            // Reset UI and states even if there's an error
+            // Update scores and reset battle states
+            await Promise.all([
+                playersRef.child(challenge.challenger.key).update(challengerUpdate),
+                playersRef.child(challenge.challenged.key).update(challengedUpdate),
+                db.ref(`challenges/${challenge.id}`).remove(),
+                db.ref(`battles/${challenge.id}`).remove()
+            ]);
+
+            // Reset UI and states
             document.getElementById('cpsBattleModal').style.display = 'none';
             activeBattle = null;
             battleClickTimes = [];
             challengedPlayer = null;
-            
+
+            if (battleInterval) {
+                clearInterval(battleInterval);
+                battleInterval = null;
+            }
+            if (battleTimeout) {
+                clearTimeout(battleTimeout);
+                battleTimeout = null;
+            }
+
+        } catch (error) {
+            console.error('Error ending battle:', error);
             alert('Error during battle end. States have been reset.');
         }
     }
@@ -1284,6 +1565,283 @@
             }
         });
     }
+
+    // Add the initiateChallenge function
+    async function initiateChallenge(targetKey, targetName) {
+        if (!playerName || !userKey) {
+            alert('Please enter your name first!');
+            return;
+        }
+        
+        if (activeBattle) {
+            alert('You are already in a battle!');
+            return;
+        }
+
+        try {
+            // Check if target player is still available
+            const targetSnapshot = await playersRef.child(targetKey).once('value');
+            const targetData = targetSnapshot.val();
+            
+            if (!targetData || targetData.inBattle) {
+                alert('This player is no longer available for battle.');
+                return;
+            }
+
+            // Show waiting modal
+            const waitingModal = document.getElementById('waitingModal');
+            const challengedPlayerName = document.getElementById('challengedPlayerName');
+            challengedPlayerName.textContent = targetName;
+            waitingModal.style.display = 'block';
+
+            // Update challenger status
+            await playersRef.child(userKey).update({ inBattle: true });
+            
+            // Create challenge
+            const newChallengeRef = db.ref('challenges').push();
+            const challengeData = {
+                id: newChallengeRef.key,
+                challenger: {
+                    key: userKey,
+                    name: playerName
+                },
+                challenged: {
+                    key: targetKey,
+                    name: targetName
+                },
+                status: 'pending',
+                timestamp: Date.now()
+            };
+
+            await newChallengeRef.set(challengeData);
+            
+            // Setup cancel button
+            const cancelButton = document.getElementById('cancelChallenge');
+            const cancelHandler = async () => {
+                try {
+                    await newChallengeRef.remove();
+                    await playersRef.child(userKey).update({ inBattle: false });
+                    waitingModal.style.display = 'none';
+                    activeBattle = null;
+                    cancelButton.removeEventListener('click', cancelHandler);
+                } catch (error) {
+                    console.error('Error canceling challenge:', error);
+                }
+            };
+            
+            cancelButton.addEventListener('click', cancelHandler);
+            
+            // Set timeout for challenge response
+            setTimeout(async () => {
+                const snapshot = await newChallengeRef.once('value');
+                if (snapshot.val()?.status === 'pending') {
+                    await newChallengeRef.remove();
+                    await playersRef.child(userKey).update({ inBattle: false });
+                    waitingModal.style.display = 'none';
+                    alert('Challenge timed out');
+                    activeBattle = null;
+                    cancelButton.removeEventListener('click', cancelHandler);
+                }
+            }, 30000); // 30 seconds timeout
+        } catch (error) {
+            console.error('Error initiating challenge:', error);
+            document.getElementById('waitingModal').style.display = 'none';
+            await playersRef.child(userKey).update({ inBattle: false });
+            activeBattle = null;
+            alert('Failed to initiate challenge. Please try again.');
+        }
+    }
+
+    // Add after the endBattle function
+    function startBattle(challenge) {
+        const battleModal = document.getElementById('cpsBattleModal');
+        const isChallenger = challenge.challenger.key === userKey;
+        
+        // Reset battle UI
+        document.getElementById('challengerName').textContent = challenge.challenger.name;
+        document.getElementById('challengedName').textContent = challenge.challenged.name;
+        document.getElementById('challengerScore').textContent = '0';
+        document.getElementById('challengedScore').textContent = '0';
+        document.getElementById('battleTimer').textContent = '20';
+        
+        // Show battle modal
+        battleModal.style.display = 'block';
+        
+        // Show countdown
+        const countdown = document.getElementById('battleCountdown');
+        countdown.style.display = 'block';
+        let count = 3;
+        countdown.textContent = count;
+        
+        const countdownInterval = setInterval(() => {
+            count--;
+            if (count > 0) {
+                countdown.textContent = count;
+            } else if (count === 0) {
+                countdown.textContent = 'GO!';
+            } else {
+                clearInterval(countdownInterval);
+                countdown.style.display = 'none';
+                initializeBattle(challenge);
+            }
+        }, 1000);
+    }
+
+    // Add after the setupChallengeListeners function
+    function setupBattleListeners() {
+        const challengesRef = db.ref('challenges');
+        
+        // Listen for challenge status changes
+        challengesRef.on('child_changed', async (snapshot) => {
+            const challenge = snapshot.val();
+            if (!challenge) return;
+
+            const isChallenged = challenge.challenged.key === userKey;
+            const isChallenger = challenge.challenger.key === userKey;
+
+            if (!isChallenged && !isChallenger) return;
+
+            if (challenge.status === 'accepted') {
+                document.getElementById('waitingModal').style.display = 'none';
+                startBattle(challenge);
+            } else if (challenge.status === 'refused') {
+                if (isChallenger) {
+                    document.getElementById('waitingModal').style.display = 'none';
+                    alert('Challenge was refused');
+                    await playersRef.child(userKey).update({ inBattle: false });
+                }
+            }
+        });
+
+        // Listen for challenge removals
+        challengesRef.on('child_removed', async (snapshot) => {
+            const challenge = snapshot.val();
+            if (!challenge) return;
+
+            if (challenge.challenged.key === userKey || challenge.challenger.key === userKey) {
+                document.getElementById('waitingModal').style.display = 'none';
+                document.getElementById('challengeNotification').style.display = 'none';
+                await playersRef.child(userKey).update({ inBattle: false });
+            }
+        });
+    }
+
+    // Add after handleClick function
+    function checkMilestone(score) {
+        const milestoneKeys = Object.keys(MILESTONES)
+            .map(Number)
+            .sort((a, b) => a - b);
+        
+        for (const milestone of milestoneKeys) {
+            if (score >= milestone && (!localStorage.getItem(`milestone_${milestone}`))) {
+                showNotification(MILESTONES[milestone], 'success');
+                localStorage.setItem(`milestone_${milestone}`, 'true');
+                
+                // Play achievement sound if available
+                const achievementSound = document.getElementById('achievementSound');
+                if (achievementSound) {
+                    achievementSound.currentTime = 0;
+                    achievementSound.play().catch(error => {
+                        console.log("Audio play failed:", error);
+                    });
+                }
+                break;
+            }
+        }
+    }
+
+    // Add after the auth form event listeners
+    document.getElementById('forgotForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const username = form.username.value;
+        const email = form.email.value;
+        
+        try {
+            // Check if user exists and email matches
+            const snapshot = await playersRef.orderByChild('name')
+                .equalTo(username)
+                .once('value');
+            const playerData = snapshot.val();
+            
+            if (!playerData) {
+                throw new Error('User not found');
+            }
+            
+            const playerId = Object.keys(playerData)[0];
+            const player = playerData[playerId];
+            
+            if (!player.email || player.email !== email) {
+                throw new Error('Email does not match our records');
+            }
+            
+            // Generate temporary password
+            const tempPassword = Math.random().toString(36).slice(-8);
+            
+            // Update password in database
+            await playersRef.child(playerId).update({
+                password: tempPassword,
+                passwordReset: true,
+                passwordResetTimestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+            
+            // Show success message with temporary password
+            form.querySelector('.auth-error').className = 'auth-success';
+            form.querySelector('.auth-success').textContent = 
+                `Password reset successful! Your temporary password is: ${tempPassword}`;
+            
+            // Clear form
+            form.reset();
+            
+            // Switch to login form after 5 seconds
+            setTimeout(() => {
+                const loginTab = document.querySelector('[data-tab="login"]');
+                loginTab.click();
+            }, 5000);
+            
+        } catch (error) {
+            form.querySelector('.auth-error').textContent = error.message;
+        }
+    });
+
+    // Update the login form handler to handle temporary passwords
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const username = form.username.value;
+        const password = form.password.value;
+        const remember = form.remember.checked;
+        
+        try {
+            const user = await auth.login(username, password, remember);
+            
+            // Check if password needs to be reset
+            if (user.passwordReset) {
+                const newPassword = prompt('Please enter a new password (minimum 6 characters):');
+                if (!newPassword || newPassword.length < 6) {
+                    throw new Error('Password must be at least 6 characters long');
+                }
+                
+                // Update with new password
+                await playersRef.child(user.id).update({
+                    password: newPassword,
+                    passwordReset: false,
+                    passwordResetTimestamp: null
+                });
+                
+                showNotification('Password updated successfully!', 'success');
+            }
+            
+            document.getElementById('authModal').style.display = 'none';
+            playerName = user.name;
+            userKey = user.id;
+            
+            showNotification('Login successful!', 'success');
+            initializeGame();
+        } catch (error) {
+            form.querySelector('.auth-error').textContent = error.message;
+        }
+    });
     </script>
 </body>
 </html>
