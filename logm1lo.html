@@ -257,13 +257,28 @@
 <script>
 (function(){
     // Your existing initialization code...
-    const _0xf4a8={apiKey:"AIzaSyBinhf3-PpbAeQaQKToNnLHBBBxVQeLbp4",authDomain:"yayy-93c45.firebaseapp.com",databaseURL:"https://yayy-93c45-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"yayy-93c45",storageBucket:"yayy-93c45.appspot.com",messagingSenderId:"281901593072",appId:"1:281901593072:web:614dff92e64d25669c6d35"};
+    const _0xf4a8 = {
+        apiKey: process.env.FIREBASE_API_KEY,
+        authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+        databaseURL: process.env.FIREBASE_DATABASE_URL,
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+        messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+        appId: process.env.FIREBASE_APP_ID
+    };
 
     firebase.initializeApp(_0xf4a8);
     const _0xdb = firebase.database();
     const _0xpr = _0xdb.ref('players');
 
     let updateTimer = null;
+
+    // Add this helper function at the top
+    function escapeHTML(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
 
     window._0x6 = function() {
         const _0xp = document.getElementById('_0x5').value;
@@ -356,31 +371,51 @@
         const currentValue = select.value;
         
         _0xpr.orderByChild('hearts').once('value').then(snapshot => {
+            const select = document.createElement('select');
+            select.id = 'playerSelect';
+            
+            // Add default option
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'Select Player';
+            select.appendChild(defaultOption);
+            
+            // Process players safely
             const players = [];
             snapshot.forEach(child => {
                 const player = child.val();
                 if (player && player.name) {
                     players.push({
-                        key: child.key,
-                        name: player.name,
-                        hearts: player.hearts || 0
+                        key: escapeHTML(child.key),
+                        name: escapeHTML(player.name),
+                        hearts: parseInt(player.hearts || 0, 10)
                     });
                 }
             });
-
-            // Sort in memory for better performance
+            
+            // Sort players by hearts
             players.sort((a, b) => b.hearts - a.hearts);
             
-            // Build HTML string instead of multiple DOM operations
-            let html = '<option value="">Select Player</option>';
+            // Add player options safely
             players.forEach(player => {
-                html += `<option value="${player.key}">${player.name} (${player.hearts} hearts)</option>`;
+                const option = document.createElement('option');
+                option.value = player.key;
+                option.textContent = `${player.name} (${player.hearts} hearts)`;
+                select.appendChild(option);
             });
             
-            select.innerHTML = html;
-
-            if (currentValue && select.querySelector(`option[value="${currentValue}"]`)) {
-                select.value = currentValue;
+            // Replace existing select element safely
+            const oldSelect = document.getElementById('playerSelect');
+            if (oldSelect) {
+                oldSelect.parentNode.replaceChild(select, oldSelect);
+            }
+            
+            // Restore previous selection if valid
+            if (currentValue) {
+                const matchingOption = select.querySelector(`option[value="${escapeHTML(currentValue)}"]`);
+                if (matchingOption) {
+                    select.value = currentValue;
+                }
             }
         });
     }

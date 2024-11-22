@@ -1,1 +1,25 @@
-firebase-rules.json
+# Environment variables and secrets
+.env
+*.pem
+*.key
+secrets/
+
+# Dependencies
+node_modules/
+
+# Build files
+dist/
+build/
+
+# IDE files
+.idea/
+.vscode/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed

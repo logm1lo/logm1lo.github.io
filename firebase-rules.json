@@ -1,0 +1,24 @@
+{
+  "rules": {
+    ".read": "auth != null",
+    ".write": "auth != null",
+    "players": {
+      ".read": true,
+      ".write": "auth != null",
+      "$uid": {
+        ".validate": "newData.hasChildren(['name', 'hearts']) && newData.child('name').isString() && newData.child('hearts').isNumber()"
+      }
+    },
+    "challenges": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      "$challengeId": {
+        ".validate": "newData.hasChildren(['challenger', 'challenged', 'status'])"
+      }
+    },
+    "blockedIPs": {
+      ".read": "auth != null && root.child('players').child(auth.uid).child('isAdmin').val() === true",
+      ".write": "auth != null && root.child('players').child(auth.uid).child('isAdmin').val() === true"
+    }
+  }
+} 
