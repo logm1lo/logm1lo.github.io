@@ -986,9 +986,30 @@
     function logout() {
         if (confirm('Are you sure you want to logout?')) {
             try {
+                // End any active battle first
+                if (activeBattle) {
+                    // Clear battle UI
+                    document.getElementById('cpsBattleModal').style.display = 'none';
+                    document.getElementById('waitingModal').style.display = 'none';
+                    document.getElementById('challengeNotification').style.display = 'none';
+                    
+                    // Clear battle intervals and timeouts
+                    if (battleInterval) {
+                        clearInterval(battleInterval);
+                        battleInterval = null;
+                    }
+                    if (battleTimeout) {
+                        clearTimeout(battleTimeout);
+                        battleTimeout = null;
+                    }
+                    
+                    // Update player battle status
+                    playersRef.child(userKey).update({ inBattle: false });
+                }
+
                 // Clear all session and storage data
-                sessionStorage.clear(); // Clear all session storage
-                localStorage.clear();   // Clear all local storage
+                sessionStorage.clear();
+                localStorage.clear();
                 
                 // Specifically ensure these critical items are removed
                 localStorage.removeItem('sessionHash');
@@ -1040,30 +1061,18 @@
                     document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
                 });
                 
+                // Reset battle-related variables
+                activeBattle = null;
+                battleClickTimes = [];
+                challengedPlayer = null;
+                
                 // Show auth modal
-                const authModal = document.getElementById('authModal');
-                if (authModal) {
-                    authModal.style.display = 'block';
-                    
-                    // Reset all auth forms
-                    document.querySelectorAll('.auth-form').forEach(form => {
-                        form.reset();
-                        const error = form.querySelector('.auth-error');
-                        if (error) error.textContent = '';
-                    });
-                    
-                    // Switch to login tab
-                    const loginTab = document.querySelector('[data-tab="login"]');
-                    if (loginTab) loginTab.click();
-                }
+                document.getElementById('authModal').style.display = 'block';
                 
-                // Show notification
+                // Call auth system logout
+                auth.logout();
+                
                 showNotification('Logged out successfully', 'success');
-                
-                // Force page reload to reset all states
-                setTimeout(() => {
-                    window.location.href = window.location.pathname + '?logout=' + Date.now();
-                }, 1000);
                 
             } catch (error) {
                 console.error('Logout error:', error);
