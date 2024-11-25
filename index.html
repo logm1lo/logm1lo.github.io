@@ -668,7 +668,7 @@
         Logout
     </button>
     
-    <audio id="challengeNotificationSound" preload="auto">
+    <audio id="challengeNotificationSound" preload="auto" muted>
         <source src="notificationsound.mp3" type="audio/mp3">
     </audio>
     
@@ -850,7 +850,7 @@
         7500: "⚡ Extraordinary! 7,500 hearts reached!",
         10000: "🔥 Mythical! 10,000 hearts conquered!",
         15000: "🌌 Cosmic! 15,000 hearts achieved!",
-        20000: "💎 Divine! 20,000 hearts mastered!",
+        20000: "�� Divine! 20,000 hearts mastered!",
         25000: "🎭 Epic! 25,000 hearts milestone!",
         30000: "🏰 Majestic! 30,000 hearts reached!",
         40000: "⚔️ Heroic! 40,000 hearts conquered!",
@@ -1960,7 +1960,7 @@
         });
     }
 
-    // Add this function to show broadcast messages
+    // Update the showBroadcastMessage function
     function showBroadcastMessage(message, type = 'info') {
         const existingBroadcast = document.querySelector('.broadcast-message');
         if (existingBroadcast) {
@@ -1972,13 +1972,28 @@
         broadcastDiv.textContent = message;
         document.body.appendChild(broadcastDiv);
 
-        // Play notification sound if available
+        // Try to play sound only if user has interacted with the page
         const notificationSound = document.getElementById('challengeNotificationSound');
-        if (notificationSound) {
-            notificationSound.currentTime = 0;
-            notificationSound.play().catch(error => {
+        if (notificationSound && document.hasFocus()) {
+            try {
+                // Reset and play sound
+                notificationSound.currentTime = 0;
+                const playPromise = notificationSound.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.warn('Audio play failed:', error);
+                        // Store the broadcast to play sound later when user interacts
+                        queuedNotification = {
+                            message,
+                            type,
+                            timestamp: Date.now()
+                        };
+                    });
+                }
+            } catch (error) {
                 console.warn('Audio play failed:', error);
-            });
+            }
         }
 
         // Remove the message after 5 seconds
@@ -1987,6 +2002,26 @@
             setTimeout(() => broadcastDiv.remove(), 500);
         }, 5000);
     }
+
+    // Add this variable at the top of your script
+    let queuedNotification = null;
+
+    // Add this event listener to handle queued notifications
+    document.addEventListener('click', function playQueuedNotification() {
+        if (queuedNotification) {
+            const notificationSound = document.getElementById('challengeNotificationSound');
+            if (notificationSound) {
+                notificationSound.currentTime = 0;
+                notificationSound.play().catch(error => {
+                    console.warn('Audio play failed:', error);
+                });
+            }
+            queuedNotification = null;
+        }
+    }, { once: false });
+
+    // Update the audio element to include muted attribute
+    // Add this in your HTML body
     </script>
 </body>
 </html>
