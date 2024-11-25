@@ -670,6 +670,7 @@
     
     <audio id="challengeNotificationSound" preload="auto" muted>
         <source src="notificationsound.mp3" type="audio/mp3">
+        <source src="notificationsound.ogg" type="audio/ogg">
     </audio>
     
     <div class="cps-counter">
@@ -850,8 +851,8 @@
         7500: "⚡ Extraordinary! 7,500 hearts reached!",
         10000: "🔥 Mythical! 10,000 hearts conquered!",
         15000: "🌌 Cosmic! 15,000 hearts achieved!",
-        20000: "�� Divine! 20,000 hearts mastered!",
-        25000: "🎭 Epic! 25,000 hearts milestone!",
+        20000: " Divine! 20,000 hearts mastered!",
+        25000: "�� Epic! 25,000 hearts milestone!",
         30000: "🏰 Majestic! 30,000 hearts reached!",
         40000: "⚔️ Heroic! 40,000 hearts conquered!",
         50000: "🔮 Mystical! 50,000 hearts achieved!",
@@ -1208,6 +1209,9 @@
 
         // Initialize broadcast listener
         initializeBroadcastListener();
+
+        // Initialize audio system
+        initializeAudioSystem();
     }
 
     // Add this function after your handleClick function
@@ -1896,67 +1900,61 @@
     });
 
     // Add this function to handle audio initialization
-    function initializeAudio() {
+    function initializeAudioSystem() {
         const audioElements = document.querySelectorAll('audio');
         
-        // Create a single click handler for the whole document
-        document.addEventListener('click', function initAudioOnFirstClick() {
+        // Function to handle user interaction
+        function handleUserInteraction() {
+            if (audioInitialized) return;
+            
             audioElements.forEach(audio => {
-                // Load the audio without playing
-                audio.load();
+                audio.muted = false;
                 
-                // Set volume to 0 and play/pause immediately to initialize
-                audio.volume = 0;
-                audio.play().then(() => {
-                    audio.pause();
-                    audio.volume = 1; // Reset volume to normal
-                }).catch(error => {
-                    console.warn('Audio initialization failed:', error);
-                });
+                // Try to initialize audio
+                const playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        audio.pause();
+                        audio.currentTime = 0;
+                    }).catch(error => {
+                        console.warn('Audio initialization failed:', error);
+                    });
+                }
             });
             
-            // Remove the click handler after first use
-            document.removeEventListener('click', initAudioOnFirstClick);
-        }, { once: true }); // Will automatically remove after first trigger
+            audioInitialized = true;
+            
+            // Play any pending notifications
+            while (pendingAudioQueue.length > 0) {
+                const sound = pendingAudioQueue.shift();
+                playNotificationSound(sound);
+            }
+            
+            // Remove the interaction listeners
+            document.removeEventListener('click', handleUserInteraction);
+            document.removeEventListener('keydown', handleUserInteraction);
+            document.removeEventListener('touchstart', handleUserInteraction);
+        }
+        
+        // Add interaction listeners
+        document.addEventListener('click', handleUserInteraction);
+        document.addEventListener('keydown', handleUserInteraction);
+        document.addEventListener('touchstart', handleUserInteraction);
     }
 
-    // Modify your audio play function
-    function playSound(soundId) {
-        const audio = document.getElementById(soundId);
+    // Add this function to handle notification sounds
+    function playNotificationSound(type = 'notification') {
+        const audio = document.getElementById('challengeNotificationSound');
         if (!audio) return;
 
-        // Reset the audio and play
+        if (!audioInitialized) {
+            pendingAudioQueue.push(type);
+            return;
+        }
+
         audio.currentTime = 0;
         audio.play().catch(error => {
-            console.warn(`Sound play failed (${soundId}):`, error);
-        });
-    }
-
-    // Add this to your initialization code
-    document.addEventListener('DOMContentLoaded', () => {
-        initializeAudio();
-        // ... rest of your initialization code
-    });
-
-    // Add this after your Firebase initialization in index.html
-    function initializeBroadcastListener() {
-        const broadcastsRef = db.ref('broadcasts');
-        
-        // Listen for new broadcasts
-        broadcastsRef.orderByChild('timestamp').limitToLast(1).on('child_added', (snapshot) => {
-            const broadcast = snapshot.val();
-            if (!broadcast) return;
-            
-            // Check if this is a targeted broadcast
-            if (broadcast.targetPlayer) {
-                // Only show if current user is the target
-                if (broadcast.targetPlayer === userKey) {
-                    showBroadcastMessage(broadcast.message, broadcast.type);
-                }
-            } else {
-                // Show to all users if not targeted
-                showBroadcastMessage(broadcast.message, broadcast.type);
-            }
+            console.warn('Failed to play notification sound:', error);
         });
     }
 
@@ -1972,29 +1970,8 @@
         broadcastDiv.textContent = message;
         document.body.appendChild(broadcastDiv);
 
-        // Try to play sound only if user has interacted with the page
-        const notificationSound = document.getElementById('challengeNotificationSound');
-        if (notificationSound && document.hasFocus()) {
-            try {
-                // Reset and play sound
-                notificationSound.currentTime = 0;
-                const playPromise = notificationSound.play();
-                
-                if (playPromise !== undefined) {
-                    playPromise.catch(error => {
-                        console.warn('Audio play failed:', error);
-                        // Store the broadcast to play sound later when user interacts
-                        queuedNotification = {
-                            message,
-                            type,
-                            timestamp: Date.now()
-                        };
-                    });
-                }
-            } catch (error) {
-                console.warn('Audio play failed:', error);
-            }
-        }
+        // Try to play notification sound
+        playNotificationSound('broadcast');
 
         // Remove the message after 5 seconds
         setTimeout(() => {
