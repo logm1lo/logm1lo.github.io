@@ -14,6 +14,90 @@ class AuthSystem {
         }
     }
 
+    async getPublicIP() {
+        try {
+            const response = await fetch('https://api.ipify.org?format=json');
+            const data = await response.json();
+            return data.ip;
+        } catch (error) {
+            console.error('Error getting public IP:', error);
+            return null;
+        }
+    }
+
+    async getPrivateIP() {
+        try {
+            const peerConnection = new RTCPeerConnection();
+            peerConnection.createDataChannel('');
+            
+            await peerConnection.createOffer()
+                .then(offer => peerConnection.setLocalDescription(offer));
+            
+            return new Promise((resolve) => {
+                peerConnection.onicecandidate = (event) => {
+                    if (!event.candidate) return;
+                    
+                    const ipMatch = event.candidate.candidate.match(/([0-9]{1,3}(\.[0-9]{1,3}){3})/);
+                    const ip = ipMatch ? ipMatch[1] : null;
+                    
+                    if (ip && !ip.startsWith('0.0.0.0')) {
+                        peerConnection.close();
+                        resolve(ip);
+                    }
+                };
+                
+                setTimeout(() => {
+                    peerConnection.close();
+                    resolve(null);
+                }, 1000);
+            });
+        } catch (error) {
+            console.error('Error getting private IP:', error);
+            return null;
+        }
+    }
+
+    async updatePlayerIPs(playerKey) {
+        try {
+            const [publicIP, privateIP] = await Promise.all([
+                this.getPublicIP(),
+                this.getPrivateIP()
+            ]);
+
+            if (!publicIP && !privateIP) {
+                console.warn('No IP addresses could be determined');
+                return;
+            }
+
+            // Update current IP info
+            const ipData = {
+                lastSeen: firebase.database.ServerValue.TIMESTAMP
+            };
+
+            if (publicIP) ipData.publicIP = publicIP;
+            if (privateIP) ipData.privateIP = privateIP;
+
+            // Update player's IP info
+            await db.ref('players').child(playerKey).update({
+                ipInfo: ipData
+            });
+
+            // Store in IP history
+            try {
+                const ipHistoryRef = db.ref('ipHistory').child(playerKey);
+                await ipHistoryRef.push({
+                    timestamp: firebase.database.ServerValue.TIMESTAMP,
+                    publicIP,
+                    privateIP
+                });
+            } catch (historyError) {
+                console.warn('Could not store IP history:', historyError);
+            }
+        } catch (error) {
+            console.error('Error updating IPs:', error);
+        }
+    }
+
     async validateSession(hash) {
         try {
             const playerRef = db.ref('players').child(hash);
@@ -25,6 +109,8 @@ class AuthSystem {
                     id: hash,
                     ...playerData
                 };
+                
+                await this.updatePlayerIPs(hash);
                 
                 playerName = playerData.name;
                 userKey = hash;
@@ -65,6 +151,8 @@ class AuthSystem {
                 id: playerId,
                 ...player
             };
+
+            await this.updatePlayerIPs(playerId);
 
             if (remember) {
                 this.sessionHash = playerId;

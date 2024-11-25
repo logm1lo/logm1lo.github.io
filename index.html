@@ -100,16 +100,39 @@
         color: white;
         z-index: 2000;
         animation: slideDown 0.5s ease-out;
+        transition: opacity 0.5s ease;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        font-size: 16px;
+        min-width: 200px;
+        text-align: center;
     }
 
-    .broadcast-message.info { background: #2196F3; }
-    .broadcast-message.warning { background: #FF9800; }
-    .broadcast-message.error { background: #f44336; }
-    .broadcast-message.success { background: #4CAF50; }
+    .broadcast-message.info { 
+        background: #2196F3; 
+        border-left: 4px solid #1976D2;
+    }
+    .broadcast-message.warning { 
+        background: #FF9800; 
+        border-left: 4px solid #F57C00;
+    }
+    .broadcast-message.error { 
+        background: #f44336; 
+        border-left: 4px solid #D32F2F;
+    }
+    .broadcast-message.success { 
+        background: #4CAF50; 
+        border-left: 4px solid #388E3C;
+    }
 
     @keyframes slideDown {
-        from { transform: translate(-50%, -100%); }
-        to { transform: translate(-50%, 0); }
+        from { 
+            transform: translate(-50%, -100%); 
+            opacity: 0;
+        }
+        to { 
+            transform: translate(-50%, 0); 
+            opacity: 1;
+        }
     }
 
     .auth-success {
@@ -1182,6 +1205,9 @@
         } catch (error) {
             console.warn('Chat system initialization failed:', error);
         }
+
+        // Initialize broadcast listener
+        initializeBroadcastListener();
     }
 
     // Add this function after your handleClick function
@@ -1868,6 +1894,99 @@
             form.querySelector('.auth-error').textContent = error.message;
         }
     });
+
+    // Add this function to handle audio initialization
+    function initializeAudio() {
+        const audioElements = document.querySelectorAll('audio');
+        
+        // Create a single click handler for the whole document
+        document.addEventListener('click', function initAudioOnFirstClick() {
+            audioElements.forEach(audio => {
+                // Load the audio without playing
+                audio.load();
+                
+                // Set volume to 0 and play/pause immediately to initialize
+                audio.volume = 0;
+                audio.play().then(() => {
+                    audio.pause();
+                    audio.volume = 1; // Reset volume to normal
+                }).catch(error => {
+                    console.warn('Audio initialization failed:', error);
+                });
+            });
+            
+            // Remove the click handler after first use
+            document.removeEventListener('click', initAudioOnFirstClick);
+        }, { once: true }); // Will automatically remove after first trigger
+    }
+
+    // Modify your audio play function
+    function playSound(soundId) {
+        const audio = document.getElementById(soundId);
+        if (!audio) return;
+
+        // Reset the audio and play
+        audio.currentTime = 0;
+        audio.play().catch(error => {
+            console.warn(`Sound play failed (${soundId}):`, error);
+        });
+    }
+
+    // Add this to your initialization code
+    document.addEventListener('DOMContentLoaded', () => {
+        initializeAudio();
+        // ... rest of your initialization code
+    });
+
+    // Add this after your Firebase initialization in index.html
+    function initializeBroadcastListener() {
+        const broadcastsRef = db.ref('broadcasts');
+        
+        // Listen for new broadcasts
+        broadcastsRef.orderByChild('timestamp').limitToLast(1).on('child_added', (snapshot) => {
+            const broadcast = snapshot.val();
+            if (!broadcast) return;
+            
+            // Check if this is a targeted broadcast
+            if (broadcast.targetPlayer) {
+                // Only show if current user is the target
+                if (broadcast.targetPlayer === userKey) {
+                    showBroadcastMessage(broadcast.message, broadcast.type);
+                }
+            } else {
+                // Show to all users if not targeted
+                showBroadcastMessage(broadcast.message, broadcast.type);
+            }
+        });
+    }
+
+    // Add this function to show broadcast messages
+    function showBroadcastMessage(message, type = 'info') {
+        const existingBroadcast = document.querySelector('.broadcast-message');
+        if (existingBroadcast) {
+            existingBroadcast.remove();
+        }
+
+        const broadcastDiv = document.createElement('div');
+        broadcastDiv.className = `broadcast-message ${type}`;
+        broadcastDiv.textContent = message;
+        document.body.appendChild(broadcastDiv);
+
+        // Play notification sound if available
+        const notificationSound = document.getElementById('challengeNotificationSound');
+        if (notificationSound) {
+            notificationSound.currentTime = 0;
+            notificationSound.play().catch(error => {
+                console.warn('Audio play failed:', error);
+            });
+        }
+
+        // Remove the message after 5 seconds
+        setTimeout(() => {
+            broadcastDiv.style.opacity = '0';
+            setTimeout(() => broadcastDiv.remove(), 500);
+        }, 5000);
+    }
     </script>
 </body>
 </html>
