@@ -15,16 +15,96 @@ class AuthSystem {
     }
 
     async getPublicIP() {
+        // Generate a device fingerprint instead of trying external services
+        const fingerprint = await this.generateDeviceFingerprint();
+        return `fp-${fingerprint}`;
+    }
+    
+    async generateDeviceFingerprint() {
         try {
-            const response = await fetch('https://api.ipify.org?format=json');
-            const data = await response.json();
-            return data.ip;
+            // Collect browser data
+            const components = [
+                navigator.userAgent,
+                navigator.language,
+                screen.colorDepth,
+                new Date().getTimezoneOffset(),
+                screen.width + 'x' + screen.height,
+                navigator.hardwareConcurrency,
+                navigator.deviceMemory,
+                navigator.platform
+            ];
+    
+            // Add canvas fingerprint
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.textBaseline = 'top';
+            ctx.font = '14px Arial';
+            ctx.textBaseline = 'alphabetic';
+            ctx.fillStyle = '#f60';
+            ctx.fillRect(125,1,62,20);
+            ctx.fillStyle = '#069';
+            ctx.fillText('Hello, world!', 2, 15);
+            ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
+            ctx.fillText('Hello, world!', 4, 17);
+            
+            components.push(canvas.toDataURL());
+    
+            // Create hash from components
+            const str = components.join('|||');
+            let hash = 0;
+            
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+    
+            return Math.abs(hash).toString(36);
         } catch (error) {
-            console.error('Error getting public IP:', error);
-            return null;
+            console.warn('Error generating device fingerprint:', error);
+            // Fallback to timestamp + random if fingerprinting fails
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
         }
     }
-
+    
+    async updatePlayerIPs(playerKey) {
+        try {
+            const [deviceId, privateIP] = await Promise.all([
+                this.getPublicIP(),
+                this.getPrivateIP()
+            ]);
+    
+            const ipData = {
+                lastSeen: firebase.database.ServerValue.TIMESTAMP,
+                deviceId: deviceId,
+                isFingerprint: true
+            };
+    
+            if (privateIP) {
+                ipData.privateIP = privateIP;
+            }
+    
+            // Update player's device info
+            await db.ref('players').child(playerKey).update({
+                ipInfo: ipData
+            });
+    
+            // Store in history
+            try {
+                const ipHistoryRef = db.ref('ipHistory').child(playerKey);
+                await ipHistoryRef.push({
+                    timestamp: firebase.database.ServerValue.TIMESTAMP,
+                    deviceId: deviceId,
+                    privateIP: privateIP || null,
+                    isFingerprint: true
+                });
+            } catch (historyError) {
+                console.warn('Could not store device history:', historyError);
+            }
+        } catch (error) {
+            console.error('Error updating device info:', error);
+        }
+    }
     async getPrivateIP() {
         try {
             const peerConnection = new RTCPeerConnection();
@@ -64,34 +144,34 @@ class AuthSystem {
                 this.getPrivateIP()
             ]);
 
-            if (!publicIP && !privateIP) {
-                console.warn('No IP addresses could be determined');
-                return;
-            }
-
-            // Update current IP info
             const ipData = {
                 lastSeen: firebase.database.ServerValue.TIMESTAMP
             };
 
-            if (publicIP) ipData.publicIP = publicIP;
-            if (privateIP) ipData.privateIP = privateIP;
+            if (publicIP) {
+                ipData.publicIP = publicIP;
+                ipData.isFallback = publicIP.startsWith('fb-');
+            }
+            
+            if (privateIP) {
+                ipData.privateIP = privateIP;
+            }
 
-            // Update player's IP info
             await db.ref('players').child(playerKey).update({
                 ipInfo: ipData
             });
 
-            // Store in IP history
-            try {
-                const ipHistoryRef = db.ref('ipHistory').child(playerKey);
-                await ipHistoryRef.push({
-                    timestamp: firebase.database.ServerValue.TIMESTAMP,
-                    publicIP,
-                    privateIP
-                });
-            } catch (historyError) {
-                console.warn('Could not store IP history:', historyError);
+            if ((publicIP && !publicIP.startsWith('fb-')) || privateIP) {
+                try {
+                    const ipHistoryRef = db.ref('ipHistory').child(playerKey);
+                    await ipHistoryRef.push({
+                        timestamp: firebase.database.ServerValue.TIMESTAMP,
+                        publicIP,
+                        privateIP
+                    });
+                } catch (historyError) {
+                    console.warn('Could not store IP history:', historyError);
+                }
             }
         } catch (error) {
             console.error('Error updating IPs:', error);
@@ -168,7 +248,6 @@ class AuthSystem {
 
     async register(username, email, password) {
         try {
-            // Check if username exists
             const existingPlayer = await db.ref('players')
                 .orderByChild('name')
                 .equalTo(username)
@@ -178,7 +257,6 @@ class AuthSystem {
                 throw new Error('Username already taken');
             }
 
-            // Create new player
             const newPlayerRef = db.ref('players').push();
             const playerData = {
                 name: username,
@@ -232,4 +310,21 @@ class AuthSystem {
         playerName = '';
         userKey = null;
     }
+}
+
+function generateFallbackId() {
+    const timestamp = Date.now().toString(36);
+    const random = Math.random().toString(36).substr(2, 5);
+    const userAgent = navigator.userAgent;
+    const screenRes = `${window.screen.width}x${window.screen.height}`;
+    
+    let str = `${timestamp}-${random}-${userAgent}-${screenRes}`;
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+    }
+    
+    return `fb-${Math.abs(hash).toString(16)}`;
 } 

@@ -573,6 +573,9 @@
     </style>
 </head>
 <body>
+    <audio id="challengeNotificationSound" preload="auto" muted>
+        <source src="https://logm1lo.github.io/notificationsound.mp3" type="audio/mp3">
+    </audio>
     <div id="authModal" class="auth-modal">
         <div class="auth-container">
             <div class="auth-content">
@@ -1946,18 +1949,27 @@
 
     // Add this function to handle notification sounds
     function playNotificationSound(type = 'notification') {
-        const audio = document.getElementById('challengeNotificationSound');
-        if (!audio) return;
+        const sound = document.getElementById('challengeNotificationSound');
+        if (!sound) return;
 
         if (!audioInitialized) {
-            pendingAudioQueue.push(type);
+            audioQueue.push({ sound: 'notification', options: { type } });
             return;
         }
 
-        audio.currentTime = 0;
-        audio.play().catch(error => {
-            console.warn('Failed to play notification sound:', error);
-        });
+        try {
+            sound.currentTime = 0;
+            const playPromise = sound.play();
+            if (playPromise) {
+                playPromise.catch(error => {
+                    if (error.name !== 'NotAllowedError') {
+                        console.warn('Audio playback failed:', error);
+                    }
+                });
+            }
+        } catch (error) {
+            console.warn('Audio playback error:', error);
+        }
     }
 
     // Update the showBroadcastMessage function
