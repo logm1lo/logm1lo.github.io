@@ -570,12 +570,107 @@
     .auth-form.active {
         animation: fadeIn 0.3s ease forwards;
     }
+
+    .powerups-container {
+        position: fixed;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255, 255, 255, 0.95);
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        z-index: 1000; /* Make sure it's above other elements */
+        width: 200px; /* Fixed width */
+    }
+
+    .shop-icon {
+        position: fixed;
+        left: 20px;
+        top: 120px; /* Increased from 60px to move it lower */
+        padding: 10px 20px;
+        background: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        z-index: 999;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .shop-icon:hover {
+        background: #45a049;
+    }
+
+    .modal {
+        display: none; /* Hidden by default */
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.7);
+        z-index: 1000;
+    }
+
+    .modal-content {
+        position: relative;
+        background-color: #fefefe;
+        margin: 5% auto;
+        padding: 20px;
+        width: 90%;
+        max-width: 800px;
+        border-radius: 10px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .close-button {
+        position: absolute;
+        right: 20px;
+        top: 10px;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .close-button:hover {
+        color: #777;
+    }
+
+    .shop-items {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        padding: 20px 0;
+    }
+
+    .powerup-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        padding: 20px;
+    }
+
+    .powerup-item.active {
+        border: 2px solid #4CAF50;
+        background: rgba(76, 175, 80, 0.1);
+    }
+
+    .powerup-timer {
+        font-size: 14px;
+        color: #666;
+        text-align: center;
+        margin-top: 5px;
+    }
     </style>
 </head>
 <body>
     <audio id="challengeNotificationSound" preload="auto" muted>
         <source src="https://logm1lo.github.io/notificationsound.mp3" type="audio/mp3">
     </audio>
+
     <div id="authModal" class="auth-modal">
         <div class="auth-container">
             <div class="auth-content">
@@ -685,6 +780,7 @@
         <div id="hearts-container"></div>
         <div id="wishes-container"></div>
     </div>
+    
     
     <div class="live-collaboration">
         <p>Live Users: <span id="liveUserCount">0</span></p>
@@ -856,7 +952,7 @@
         20000: " Divine! 20,000 hearts mastered!",
         25000: " Epic! 25,000 hearts milestone!",
         30000: "🏰 Majestic! 30,000 hearts reached!",
-        40000: "⚔️ Heroic! 40,000 hearts conquered!",
+        40000: "️ Heroic! 40,000 hearts conquered!",
         50000: "🔮 Mystical! 50,000 hearts achieved!",
         75000: "🌋 Godlike! 75,000 hearts mastered!",
         99999: "👑 MAXIMUM POWER! 99,999 hearts!"
@@ -1124,6 +1220,12 @@
     function initializeGame() {
         console.log('Initializing game with:', { playerName, userKey });
         
+        // Change this line from initializeAudioSystem to initializeAudio
+        initializeAudio();
+        
+        // Initialize broadcast listener
+        initializeBroadcastListener();
+        
         // Initialize live user tracking
         liveUserRef.child(userKey).set(true);
         liveUserRef.child(userKey).onDisconnect().remove();
@@ -1190,7 +1292,7 @@
             toggleButton.onclick = () => {
                 scoreboard.classList.toggle('hidden');
                 localStorage.setItem('scoreboardHidden', scoreboard.classList.contains('hidden'));
-            };
+            }
         }
 
         // Show logout button if user is logged in
@@ -1208,12 +1310,6 @@
         } catch (error) {
             console.warn('Chat system initialization failed:', error);
         }
-
-        // Initialize broadcast listener
-        initializeBroadcastListener();
-
-        // Initialize audio system
-        initializeAudioSystem();
     }
 
     // Add this function after your handleClick function
@@ -1901,51 +1997,48 @@
         }
     });
 
-    // Update the audio initialization code
-    function initializeAudioSystem() {
-        const audioElements = document.querySelectorAll('audio');
-        let audioInitialized = false;
+    // Replace the audio initialization code
+    let audioInitialized = false;
+
+    function initializeAudio() {
+        if (audioInitialized) return;
         
-        // Preload the audio file
-        const notificationSound = document.getElementById('challengeNotificationSound');
-        if (notificationSound) {
-            notificationSound.load();
-        }
-        
-        function handleUserInteraction() {
-            if (audioInitialized) return;
-            
+        function handleFirstInteraction() {
+            const audioElements = document.querySelectorAll('audio');
             audioElements.forEach(audio => {
                 audio.muted = false;
-                
-                // Try to initialize audio with the absolute URL
-                if (audio.id === 'challengeNotificationSound') {
-                    audio.src = 'https://logm1lo.github.io/notificationsound.mp3';
-                }
-                
-                const playPromise = audio.play();
-                if (playPromise !== undefined) {
-                    playPromise.then(() => {
-                        audio.pause();
-                        audio.currentTime = 0;
-                        audioInitialized = true;
-                    }).catch(error => {
-                        console.warn('Audio initialization failed:', error);
-                    });
-                }
+                audio.load();
             });
             
-            // Remove the interaction listeners once initialized
-            document.removeEventListener('click', handleUserInteraction);
-            document.removeEventListener('keydown', handleUserInteraction);
-            document.removeEventListener('touchstart', handleUserInteraction);
+            audioInitialized = true;
+            document.removeEventListener('click', handleFirstInteraction);
+            document.removeEventListener('keydown', handleFirstInteraction);
+            document.removeEventListener('touchstart', handleFirstInteraction);
         }
         
         // Add interaction listeners
-        document.addEventListener('click', handleUserInteraction);
-        document.addEventListener('keydown', handleUserInteraction);
-        document.addEventListener('touchstart', handleUserInteraction);
+        document.addEventListener('click', handleFirstInteraction);
+        document.addEventListener('keydown', handleFirstInteraction);
+        document.addEventListener('touchstart', handleFirstInteraction);
     }
+
+    // Update the playSound function
+    function playSound(soundId) {
+        if (!audioInitialized) return;
+        
+        const audio = document.getElementById(soundId);
+        if (audio) {
+            audio.currentTime = 0;
+            audio.play().catch(error => {
+                console.warn('Sound play failed:', error);
+            });
+        }
+    }
+
+    // Call this in your initialization
+    document.addEventListener('DOMContentLoaded', () => {
+        initializeAudio();
+    });
 
     // Add this function to handle notification sounds
     function playNotificationSound(type = 'notification') {
@@ -2176,6 +2269,144 @@
             }
         }
     }
+
+    function updatePlayerList() {
+        // ... function content ...
+    }
+    
+    // Close the script block properly
     </script>
+</div>
+
+<button id="shopButton" class="shop-icon">
+    🛍️ Shop
+</button>
+
+<div id="shopModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>Power-up Shop</h2>
+        <div class="powerup-grid">
+            <!-- MULTIPLIER -->
+            <div class="powerup-item" data-powerup="MULTIPLIER">
+                <div class="powerup-icon">⚡</div>
+                <div class="powerup-name">2x Multiplier</div>
+                <div class="powerup-description">Double your clicks for 30 seconds</div>
+                <div class="powerup-cost">1000 ❤️</div>
+                <div class="powerup-timer"></div>
+                <button class="buy-button">Buy</button>
+            </div>
+            
+            <!-- AUTO_CLICKER -->
+            <div class="powerup-item" data-powerup="AUTO_CLICKER">
+                <div class="powerup-icon">🤖</div>
+                <div class="powerup-name">Auto Clicker</div>
+                <div class="powerup-description">Automatically clicks 5 times per second</div>
+                <div class="powerup-cost">2000 ❤️</div>
+                <div class="powerup-timer"></div>
+                <button class="buy-button">Buy</button>
+            </div>
+            
+            <!-- HEART_BURST -->
+            <div class="powerup-item" data-powerup="HEART_BURST">
+                <div class="powerup-icon">💥</div>
+                <div class="powerup-name">Heart Burst</div>
+                <div class="powerup-description">Creates 10 hearts instantly</div>
+                <div class="powerup-cost">500 ❤️</div>
+                <div class="powerup-timer"></div>
+                <button class="buy-button">Buy</button>
+            </div>
+            
+            <!-- SCORE_SHIELD -->
+            <div class="powerup-item" data-powerup="SCORE_SHIELD">
+                <div class="powerup-icon">🛡️</div>
+                <div class="powerup-name">Score Shield</div>
+                <div class="powerup-description">Protects 30% of your score in battles</div>
+                <div class="powerup-cost">3000 ❤️</div>
+                <div class="powerup-timer"></div>
+                <button class="buy-button">Buy</button>
+            </div>
+            
+            <!-- RAPID_FIRE -->
+            <div class="powerup-item" data-powerup="RAPID_FIRE">
+                <div class="powerup-icon">🔥</div>
+                <div class="powerup-name">Rapid Fire</div>
+                <div class="powerup-description">Triple click value for 20 seconds</div>
+                <div class="powerup-cost">4000 ❤️</div>
+                <div class="powerup-timer"></div>
+                <button class="buy-button">Buy</button>
+            </div>
+            
+            <!-- LUCKY_CHARM -->
+            <div class="powerup-item" data-powerup="LUCKY_CHARM">
+                <div class="powerup-icon">🍀</div>
+                <div class="powerup-name">Lucky Charm</div>
+                <div class="powerup-description">30% chance for 5x hearts per click</div>
+                <div class="powerup-cost">5000 ❤️</div>
+                <div class="powerup-timer"></div>
+                <button class="buy-button">Buy</button>
+            </div>
+            
+            <!-- GOLDEN_HEART -->
+            <div class="powerup-item" data-powerup="GOLDEN_HEART">
+                <div class="powerup-icon">💝</div>
+                <div class="powerup-name">Golden Heart</div>
+                <div class="powerup-description">Hearts worth 10x more for 25 seconds</div>
+                <div class="powerup-cost">7500 ❤️</div>
+                <div class="powerup-timer"></div>
+                <button class="buy-button">Buy</button>
+            </div>
+            
+            <!-- TIME_WARP -->
+            <div class="powerup-item" data-powerup="TIME_WARP">
+                <div class="powerup-icon">⌛</div>
+                <div class="powerup-name">Time Warp</div>
+                <div class="powerup-description">Double game speed for 15 seconds</div>
+                <div class="powerup-cost">10000 ❤️</div>
+                <div class="powerup-timer"></div>
+                <button class="buy-button">Buy</button>
+            </div>
+            
+            <!-- MEGA_BURST -->
+            <div class="powerup-item" data-powerup="MEGA_BURST">
+                <div class="powerup-icon">💥</div>
+                <div class="powerup-name">Mega Burst</div>
+                <div class="powerup-description">Instant burst of 100 hearts (affected by multipliers)</div>
+                <div class="powerup-cost">15000 ❤️</div>
+                <div class="powerup-timer"></div>
+                <button class="buy-button">Buy</button>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>
+
+<script>
+    // Add this to your existing JavaScript
+    const shopButton = document.getElementById('shopButton');
+    const shopModal = document.getElementById('shopModal');
+    const closeButton = document.querySelector('.close-button');
+
+    shopButton.onclick = function() {
+        shopModal.style.display = 'block';
+    }
+
+    closeButton.onclick = function() {
+        shopModal.style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        if (event.target == shopModal) {
+            shopModal.style.display = 'none';
+        }
+    }
+</script>
+
+
+<audio id="purchaseSound" preload="auto">
+    <source src="https://logm1lo.github.io/purchase.mp3" type="audio/mp3">
+</audio>
+
+<div id="hearts-container"></div>
+</div>
