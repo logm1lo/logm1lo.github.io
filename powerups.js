@@ -53,11 +53,11 @@ class PowerupSystem {
                 }
                 
                 this.showFloatingText(`+${heartsToAdd} ❤️ ${
-                    Object.entries(multipliers)
+                    Object.entries(this.activeMultipliers)
                         .filter(([_, value]) => value > 1)
-                        .map(([key, value]) => `${key}(${value})`)
-                        .join(' × ')
-                } = ${heartsToAdd}`); 
+                        .map(([key, value]) => `${key}(${value}x)`)
+                        .join(' ')
+                }`); 
                 
                 const snapshot = await playersRef.child(userKey).once('value');
                 const currentScore = snapshot.val()?.hearts || 0;
