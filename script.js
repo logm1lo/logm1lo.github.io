@@ -165,99 +165,198 @@ class PowerupSystem {
         this.luckyCharm = false;
         this.activePowerups = new Map();
 
-        // Direct initialization
-        console.log('PowerupSystem constructor called');
-        this.setupShopListeners();
+        // Initialize shop
+        this.initializePowerups();
+
+        // Initialize inventory system
+        this.inventory = new Map();
+        this.loadInventory();
+        this.initializeInventoryUI();
     }
 
-    setupShopListeners() {
-        console.log('Setting up shop listeners');
-        
-        // Setup shop modal
-        const shopButton = document.getElementById('shopButton');
-        const shopModal = document.getElementById('shopModal');
-        const closeButton = shopModal?.querySelector('.close-button');
-
-        if (shopButton && shopModal) {
-            shopButton.onclick = () => {
-                console.log('Shop opened');
-                shopModal.style.display = 'block';
-                this.updatePowerupPrices();
+    initializePowerups() {
+        console.log('Initializing powerup buttons...');
+        document.querySelectorAll('.buy-button').forEach(button => {
+            const powerupItem = button.closest('.powerup-item');
+            const powerupId = powerupItem.dataset.powerup;
+            console.log('Setting up button for:', powerupId);
+            
+            button.onclick = async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Buy clicked for:', powerupId);
+                await this.buyPowerup(powerupId);
             };
+        });
+    }
 
-            if (closeButton) {
-                closeButton.onclick = () => shopModal.style.display = 'none';
-            }
+    initializeInventoryUI() {
+        const inventoryButton = document.getElementById('inventoryButton');
+        const inventoryModal = document.getElementById('inventoryModal');
+        
+        console.log('Initializing inventory UI...');
+        console.log('Found inventory button:', !!inventoryButton);
+        console.log('Found inventory modal:', !!inventoryModal);
+        
+        if (!inventoryButton) {
+            console.error('Inventory button not found in the DOM');
+            return;
+        }
+        
+        if (!inventoryModal) {
+            console.error('Inventory modal not found in the DOM');
+            return;
         }
 
-        // Setup buy buttons with direct onclick handlers
-        document.querySelectorAll('.powerup-item').forEach(item => {
-            const buyButton = item.querySelector('.buy-button');
-            const powerupType = item.dataset.powerup;
-            
-            if (buyButton && powerupType) {
-                console.log('Setting up button for:', powerupType);
-                
-                // Direct onclick handler
-                buyButton.onclick = (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('Buy clicked:', powerupType);
-                    
-                    const currentHearts = parseInt(document.getElementById('score').textContent) || 0;
-                    const powerup = this.POWERUPS[powerupType];
-                    
-                    if (currentHearts >= powerup.cost) {
-                        // Deduct hearts immediately
-                        const newHearts = currentHearts - powerup.cost;
-                        document.getElementById('score').textContent = newHearts;
-                        
-                        // Update Firebase
-                        firebase.database().ref('players').child(userKey).update({
-                            hearts: newHearts
-                        }).then(() => {
-                            console.log('Purchase successful:', powerupType);
-                            this.activatePowerup(powerupType);
-                            this.showNotification(`${powerupType.replace(/_/g, ' ')} purchased!`, 'success');
-                            
-                            // Play sound
-                            const sound = document.getElementById('purchaseSound');
-                            if (sound) sound.play().catch(e => console.log('Sound error:', e));
-                            
-                        }).catch(error => {
-                            console.error('Purchase failed:', error);
-                            // Rollback hearts if Firebase update fails
-                            document.getElementById('score').textContent = currentHearts;
-                            this.showNotification('Purchase failed!', 'error');
-                        });
-                        
-                        this.updatePowerupPrices();
-                    } else {
-                        this.showNotification('Not enough hearts!', 'error');
-                    }
-                };
-            }
+        inventoryButton.addEventListener('click', (e) => {
+            console.log('Inventory button clicked');
+            e.preventDefault();
+            e.stopPropagation();
+            inventoryModal.style.display = 'block';
+            this.updateInventoryDisplay();
         });
 
-        // Update prices initially
-        this.updatePowerupPrices();
+        const closeButton = inventoryModal.querySelector('.close-button');
+        if (closeButton) {
+            closeButton.addEventListener('click', () => {
+                console.log('Close button clicked');
+                inventoryModal.style.display = 'none';
+            });
+        } else {
+            console.error('Close button not found in modal');
+        }
+
+        // Cleanup old event listeners
+        if (this.closeModalHandler) {
+            window.removeEventListener('click', this.closeModalHandler);
+        }
+
+        // Store the handler for future cleanup
+        this.closeModalHandler = (event) => {
+            if (event.target === inventoryModal) {
+                inventoryModal.style.display = 'none';
+            }
+        };
+        window.addEventListener('click', this.closeModalHandler);
     }
 
-    updatePowerupPrices() {
-        const currentHearts = parseInt(document.getElementById('score')?.textContent) || 0;
-        
-        document.querySelectorAll('.powerup-item').forEach(item => {
-            const powerupType = item.dataset.powerup;
-            const powerup = this.POWERUPS[powerupType];
-            const buyButton = item.querySelector('.buy-button');
+    async loadInventory() {
+        try {
+            const snapshot = await firebase.database()
+                .ref(`players/${userKey}/inventory`)
+                .once('value');
+            const inventoryData = snapshot.val() || {};
             
-            if (powerup && buyButton) {
-                const canAfford = currentHearts >= powerup.cost;
-                buyButton.disabled = !canAfford;
-                buyButton.textContent = canAfford ? 'Buy' : 'Not enough hearts';
-                buyButton.style.backgroundColor = canAfford ? '#4CAF50' : '#cccccc';
+            Object.entries(inventoryData).forEach(([powerupId, count]) => {
+                this.inventory.set(powerupId, count);
+            });
+            
+            console.log('Loaded inventory:', this.inventory);
+        } catch (error) {
+            console.error('Error loading inventory:', error);
+        }
+    }
+
+    async buyPowerup(powerupId) {
+        console.log('Attempting to buy:', powerupId);
+        const powerup = this.POWERUPS[powerupId];
+        if (!powerup) return;
+
+        try {
+            // Get current player data from Firebase
+            const playerSnapshot = await firebase.database().ref('players').child(userKey).once('value');
+            const playerData = playerSnapshot.val();
+            const currentHearts = playerData?.hearts || 0;
+
+            console.log('Current hearts:', currentHearts, 'Cost:', powerup.cost);
+
+            if (currentHearts >= powerup.cost && !powerup.active) {
+                try {
+                    // Deduct hearts and add to inventory
+                    await firebase.database().ref(`players/${userKey}`).update({
+                        hearts: currentHearts - powerup.cost,
+                        [`inventory/${powerupId}`]: firebase.database.ServerValue.increment(1)
+                    });
+
+                    // Update local inventory
+                    const currentCount = this.inventory.get(powerupId) || 0;
+                    this.inventory.set(powerupId, currentCount + 1);
+
+                    // Update displays
+                    document.getElementById('score').textContent = currentHearts - powerup.cost;
+                    this.updateInventoryDisplay();
+
+                    this.showNotification(`${powerupId.replace(/_/g, ' ')} added to inventory!`, 'success');
+                } catch (error) {
+                    console.error('Purchase failed:', error);
+                    this.showNotification('Purchase failed!', 'error');
+                }
+            } else if (powerup.active) {
+                this.showNotification('This powerup is already active!', 'warning');
+            } else {
+                this.showNotification('Not enough hearts!', 'error');
             }
+        } catch (error) {
+            console.error('Error buying powerup:', error);
+            this.showNotification('Failed to purchase powerup', 'error');
+        }
+    }
+
+    addInstantHearts(amount) {
+        const scoreElement = document.getElementById('score');
+        const currentHearts = parseInt(scoreElement.textContent) || 0;
+        const newHearts = currentHearts + amount;
+        
+        // Update Firebase
+        firebase.database().ref(`players/${userKey}`).update({
+            hearts: newHearts
         });
+        
+        // Update local display
+        scoreElement.textContent = newHearts;
+    }
+
+    updatePowerupUI(powerupType, active) {
+        const powerupItem = document.querySelector(`.powerup-item[data-powerup="${powerupType}"]`);
+        if (!powerupItem) return;
+
+        const timerDiv = powerupItem.querySelector('.powerup-timer');
+        if (!timerDiv) return;
+
+        if (active && this.POWERUPS[powerupType].duration > 0) {
+            powerupItem.classList.add('active');
+            let timeLeft = this.POWERUPS[powerupType].duration / 1000;
+            
+            const updateTimer = setInterval(() => {
+                timeLeft--;
+                if (timeLeft <= 0) {
+                    clearInterval(updateTimer);
+                    timerDiv.textContent = '';
+                    powerupItem.classList.remove('active');
+                } else {
+                    timerDiv.textContent = `${timeLeft}s`;
+                }
+            }, 1000);
+        }
+    }
+
+    showMegaBurstEffect() {
+        const container = document.getElementById('hearts-container');
+        for (let i = 0; i < 20; i++) {
+            const heart = document.createElement('div');
+            heart.className = 'heart mega-burst';
+            heart.innerHTML = '💖';
+            
+            const x = Math.random() * container.offsetWidth;
+            const y = Math.random() * container.offsetHeight;
+            
+            heart.style.left = `${x}px`;
+            heart.style.top = `${y}px`;
+            
+            container.appendChild(heart);
+            
+            setTimeout(() => heart.remove(), 1500);
+        }
     }
 
     showNotification(message, type = 'success') {
@@ -277,118 +376,113 @@ class PowerupSystem {
         }, 3000);
     }
 
-    activatePowerup(type) {
-        console.log('Activating powerup:', type);
-        const powerup = this.POWERUPS[type];
-        
-        if (!powerup) {
-            console.error('Invalid powerup type:', type);
+    updateInventoryDisplay() {
+        const inventoryGrid = document.querySelector('#inventoryModal .inventory-grid');
+        if (!inventoryGrid) return;
+
+        inventoryGrid.innerHTML = '';
+
+        if (this.inventory.size === 0) {
+            const emptyMessage = document.createElement('div');
+            emptyMessage.className = 'empty-inventory-message';
+            emptyMessage.textContent = 'Your inventory is empty. Purchase powerups from the shop!';
+            inventoryGrid.appendChild(emptyMessage);
             return;
         }
 
-        // Apply the powerup effect
+        this.inventory.forEach((count, powerupId) => {
+            if (count > 0) {
+                const powerup = this.POWERUPS[powerupId];
+                const powerupElement = document.createElement('div');
+                powerupElement.className = 'powerup-item';
+                powerupElement.innerHTML = `
+                    <div class="powerup-icon">${this.getPowerupIcon(powerupId)}</div>
+                    <div class="powerup-name">${powerupId.replace(/_/g, ' ')}</div>
+                    <div class="powerup-description">${this.getPowerupDescription(powerupId)}</div>
+                    <div class="powerup-count">Owned: ${count}</div>
+                    <button class="use-button" ${powerup.active ? 'disabled' : ''}>
+                        ${powerup.active ? 'Active' : 'Use'}
+                    </button>
+                `;
+
+                const useButton = powerupElement.querySelector('.use-button');
+                useButton.onclick = () => this.usePowerup(powerupId);
+
+                inventoryGrid.appendChild(powerupElement);
+            }
+        });
+    }
+
+    getPowerupIcon(powerupId) {
+        const icons = {
+            MULTIPLIER: '⚡',
+            AUTO_CLICKER: '🤖',
+            HEART_BURST: '💥',
+            SCORE_SHIELD: '🛡️',
+            RAPID_FIRE: '🔥',
+            LUCKY_CHARM: '🍀',
+            GOLDEN_HEART: '💝',
+            TIME_WARP: '⌛',
+            MEGA_BURST: '💥'
+        };
+        return icons[powerupId] || '🎁';
+    }
+
+    getPowerupDescription(powerupId) {
+        const descriptions = {
+            MULTIPLIER: 'Double your clicks for 30 seconds',
+            AUTO_CLICKER: 'Automatically clicks 5 times per second',
+            HEART_BURST: 'Creates 10 hearts instantly',
+            SCORE_SHIELD: 'Protects 30% of your score in battles',
+            RAPID_FIRE: 'Triple click value for 20 seconds',
+            LUCKY_CHARM: '30% chance for 5x hearts per click',
+            GOLDEN_HEART: 'Hearts worth 10x more for 25 seconds',
+            TIME_WARP: 'Double game speed for 15 seconds',
+            MEGA_BURST: 'Instant burst of 100 hearts'
+        };
+        return descriptions[powerupId] || 'Special powerup';
+    }
+
+    async usePowerup(powerupId) {
+        const count = this.inventory.get(powerupId) || 0;
+        if (count <= 0) {
+            this.showNotification('You don\'t have any of this powerup!', 'error');
+            return;
+        }
+
+        const powerup = this.POWERUPS[powerupId];
+        if (powerup.active) {
+            this.showNotification('This powerup is already active!', 'warning');
+            return;
+        }
+
+        this.inventory.set(powerupId, count - 1);
+        await firebase.database().ref(`players/${userKey}/inventory/${powerupId}`).set(count - 1);
+
         powerup.active = true;
+        this.updatePowerupStatus(powerupId, true);
         powerup.effect();
 
-        // For duration-based powerups
-        if (powerup.duration > 0) {
-            if (this.activePowerups.has(type)) {
-                clearTimeout(this.activePowerups.get(type));
+        this.updateInventoryDisplay();
+        this.showNotification(`Activated ${powerupId.replace(/_/g, ' ')}!`, 'success');
+    }
+
+    initializeModals() {
+        window.addEventListener('click', (event) => {
+            if (event.target === shopModal) {
+                shopModal.style.display = 'none';
             }
-
-            const timer = setTimeout(() => {
-                this.deactivatePowerup(type);
-            }, powerup.duration);
-
-            this.activePowerups.set(type, timer);
-            this.updatePowerupUI(type, true);
-        } else {
-            // For instant powerups
-            this.deactivatePowerup(type);
-        }
-    }
-
-    deactivatePowerup(type) {
-        const powerup = this.POWERUPS[type];
-        if (!powerup) return;
-
-        powerup.active = false;
-
-        // Reverse the powerup effects
-        switch(type) {
-            case 'MULTIPLIER':
-                this.clickMultiplier /= 2;
-                break;
-            case 'AUTO_CLICKER':
-                if (powerup.interval) {
-                    clearInterval(powerup.interval);
-                    powerup.interval = null;
-                }
-                break;
-            case 'SCORE_SHIELD':
-                this.scoreShield = false;
-                break;
-            case 'RAPID_FIRE':
-                this.clickMultiplier /= 3;
-                break;
-            case 'LUCKY_CHARM':
-                this.luckyCharm = false;
-                break;
-            case 'GOLDEN_HEART':
-                this.heartMultiplier /= 10;
-                break;
-            case 'TIME_WARP':
-                this.gameSpeed /= 2;
-                break;
-        }
-
-        this.updatePowerupUI(type, false);
-        this.activePowerups.delete(type);
-    }
-
-    showMegaBurstEffect() {
-        const container = document.getElementById('hearts-container');
-        const numHearts = 20;
-        
-        for (let i = 0; i < numHearts; i++) {
-            const heart = document.createElement('div');
-            heart.className = 'heart mega-burst';
-            heart.innerHTML = '💖';
-            
-            const x = Math.random() * container.offsetWidth;
-            const y = Math.random() * container.offsetHeight;
-            
-            heart.style.cssText = `
-                left: ${x}px;
-                top: ${y}px;
-                animation-delay: ${i * 50}ms;
-            `;
-            
-            container.appendChild(heart);
-            
-            setTimeout(() => {
-                heart.remove();
-            }, 1500);
-        }
-    }
-
-    addInstantHearts(amount) {
-        const currentHearts = parseInt(document.getElementById('score').textContent) || 0;
-        const newHearts = currentHearts + amount;
-        document.getElementById('score').textContent = newHearts;
-        
-        firebase.database().ref('players').child(userKey).update({
-            hearts: newHearts
+            if (event.target === inventoryModal) {
+                inventoryModal.style.display = 'none';
+            }
         });
     }
 }
 
-// Initialize PowerupSystem immediately and on DOM load
-let powerupSystem = new PowerupSystem();
-
+// Initialize PowerupSystem once
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, reinitializing PowerupSystem');
-    powerupSystem = new PowerupSystem();
+    console.log('Initializing PowerupSystem...');
+    window.powerupSystem = new PowerupSystem();
 });
 
 // Add debug button to test click handling
@@ -425,3 +519,5 @@ window.debugPowerups = () => {
 // Required global variables that should be defined elsewhere
 let userKey;        // User's Firebase key
 let playerName;     // Player's name
+
+

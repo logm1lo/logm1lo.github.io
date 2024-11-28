@@ -891,6 +891,9 @@
         </div>
     </div>
 
+    <!-- Add this before your other script tags -->
+    <script src="powerups.js"></script>
+
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-database-compat.js"></script>
@@ -1217,9 +1220,7 @@
     }
 
     // Update the initializeGame function
-    function initializeGame() {
-        console.log('Initializing game with:', { playerName, userKey });
-        
+    function initializeGame() {        
         // Change this line from initializeAudioSystem to initializeAudio
         initializeAudio();
         
@@ -2282,100 +2283,98 @@
     🛍️ Shop
 </button>
 
+<button id="inventoryButton">
+    <span class="icon">🎒</span>
+    Inventory
+</button>
+
 <div id="shopModal" class="modal">
     <div class="modal-content">
         <span class="close-button">&times;</span>
-        <h2>Power-up Shop</h2>
+        <h2>Powerup Shop</h2>
         <div class="powerup-grid">
-            <!-- MULTIPLIER -->
             <div class="powerup-item" data-powerup="MULTIPLIER">
                 <div class="powerup-icon">⚡</div>
-                <div class="powerup-name">2x Multiplier</div>
+                <div class="powerup-name">Multiplier</div>
                 <div class="powerup-description">Double your clicks for 30 seconds</div>
                 <div class="powerup-cost">1000 ❤️</div>
-                <div class="powerup-timer"></div>
                 <button class="buy-button">Buy</button>
             </div>
             
-            <!-- AUTO_CLICKER -->
             <div class="powerup-item" data-powerup="AUTO_CLICKER">
                 <div class="powerup-icon">🤖</div>
                 <div class="powerup-name">Auto Clicker</div>
                 <div class="powerup-description">Automatically clicks 5 times per second</div>
                 <div class="powerup-cost">2000 ❤️</div>
-                <div class="powerup-timer"></div>
                 <button class="buy-button">Buy</button>
             </div>
             
-            <!-- HEART_BURST -->
             <div class="powerup-item" data-powerup="HEART_BURST">
                 <div class="powerup-icon">💥</div>
                 <div class="powerup-name">Heart Burst</div>
                 <div class="powerup-description">Creates 10 hearts instantly</div>
                 <div class="powerup-cost">500 ❤️</div>
-                <div class="powerup-timer"></div>
                 <button class="buy-button">Buy</button>
             </div>
             
-            <!-- SCORE_SHIELD -->
             <div class="powerup-item" data-powerup="SCORE_SHIELD">
                 <div class="powerup-icon">🛡️</div>
                 <div class="powerup-name">Score Shield</div>
-                <div class="powerup-description">Protects 30% of your score in battles</div>
+                <div class="powerup-description">Protects your score in battles</div>
                 <div class="powerup-cost">3000 ❤️</div>
-                <div class="powerup-timer"></div>
                 <button class="buy-button">Buy</button>
             </div>
             
-            <!-- RAPID_FIRE -->
             <div class="powerup-item" data-powerup="RAPID_FIRE">
                 <div class="powerup-icon">🔥</div>
                 <div class="powerup-name">Rapid Fire</div>
                 <div class="powerup-description">Triple click value for 20 seconds</div>
                 <div class="powerup-cost">4000 ❤️</div>
-                <div class="powerup-timer"></div>
                 <button class="buy-button">Buy</button>
             </div>
             
-            <!-- LUCKY_CHARM -->
             <div class="powerup-item" data-powerup="LUCKY_CHARM">
                 <div class="powerup-icon">🍀</div>
                 <div class="powerup-name">Lucky Charm</div>
-                <div class="powerup-description">30% chance for 5x hearts per click</div>
+                <div class="powerup-description">Increases lucky drops for 30 seconds</div>
                 <div class="powerup-cost">5000 ❤️</div>
-                <div class="powerup-timer"></div>
                 <button class="buy-button">Buy</button>
             </div>
             
-            <!-- GOLDEN_HEART -->
             <div class="powerup-item" data-powerup="GOLDEN_HEART">
                 <div class="powerup-icon">💝</div>
                 <div class="powerup-name">Golden Heart</div>
                 <div class="powerup-description">Hearts worth 10x more for 25 seconds</div>
                 <div class="powerup-cost">7500 ❤️</div>
-                <div class="powerup-timer"></div>
                 <button class="buy-button">Buy</button>
             </div>
             
-            <!-- TIME_WARP -->
             <div class="powerup-item" data-powerup="TIME_WARP">
                 <div class="powerup-icon">⌛</div>
                 <div class="powerup-name">Time Warp</div>
                 <div class="powerup-description">Double game speed for 15 seconds</div>
                 <div class="powerup-cost">10000 ❤️</div>
-                <div class="powerup-timer"></div>
                 <button class="buy-button">Buy</button>
             </div>
             
-            <!-- MEGA_BURST -->
             <div class="powerup-item" data-powerup="MEGA_BURST">
                 <div class="powerup-icon">💥</div>
                 <div class="powerup-name">Mega Burst</div>
-                <div class="powerup-description">Instant burst of 100 hearts (affected by multipliers)</div>
+                <div class="powerup-description">Creates 100 hearts instantly</div>
                 <div class="powerup-cost">15000 ❤️</div>
-                <div class="powerup-timer"></div>
                 <button class="buy-button">Buy</button>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add this right after your shop modal -->
+<div id="inventoryModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>Your Powerup Inventory</h2>
+        <div class="inventory-grid">
+            <!-- Powerups will be added here dynamically -->
         </div>
     </div>
 </div>
@@ -2383,22 +2382,31 @@
 </html>
 
 <script>
-    // Add this to your existing JavaScript
+    // Fix the typo in the shop button handler (remove the 's')
     const shopButton = document.getElementById('shopButton');
     const shopModal = document.getElementById('shopModal');
-    const closeButton = document.querySelector('.close-button');
+    const inventoryModal = document.getElementById('inventoryModal');
+    const closeButtons = document.querySelectorAll('.close-button');
 
     shopButton.onclick = function() {
         shopModal.style.display = 'block';
     }
 
-    closeButton.onclick = function() {
-        shopModal.style.display = 'none';
-    }
+    // Handle all close buttons
+    closeButtons.forEach(button => {
+        button.onclick = function() {
+            shopModal.style.display = 'none';
+            inventoryModal.style.display = 'none';
+        }
+    });
 
+    // Handle clicking outside of modals
     window.onclick = function(event) {
         if (event.target == shopModal) {
             shopModal.style.display = 'none';
+        }
+        if (event.target == inventoryModal) {
+            inventoryModal.style.display = 'none';
         }
     }
 </script>
