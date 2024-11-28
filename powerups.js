@@ -69,7 +69,7 @@ class PowerupSystem {
 
         this.POWERUPS = {
             MULTIPLIER: {
-                cost: 1000,
+                cost: 150,
                 duration: 30000,
                 active: false,
                 effect: () => {
@@ -77,7 +77,7 @@ class PowerupSystem {
                 }
             },
             RAPID_FIRE: {
-                cost: 4000,
+                cost: 500,
                 duration: 20000,
                 active: false,
                 effect: () => {
@@ -85,7 +85,7 @@ class PowerupSystem {
                 }
             },
             AUTO_CLICKER: {
-                cost: 2000,
+                cost: 1000,
                 duration: 20000,
                 active: false,
                 interval: null,
@@ -701,7 +701,181 @@ class PowerupSystem {
     }
 }
 
+// Define image paths
+const CLOSED_IMAGE = './close.png';
+const OPEN_IMAGE = './open.jpg';
+
+// Get the popcat element
+const popcat = document.getElementById('popcat');
+const audio = new Audio('https://logm1lo.github.io/pop.mp3');
+
+// Add styling to make the image 5x bigger and center it
+popcat.style.width = '1000px';
+popcat.style.height = '1000px';
+popcat.style.objectFit = 'contain';
+
+// Center the image
+popcat.style.position = 'fixed';  // or 'absolute' if you prefer
+popcat.style.top = '50%';
+popcat.style.left = '50%';
+popcat.style.transform = 'translate(-50%, -50%)';
+popcat.style.margin = '0';
+popcat.style.padding = '0';
+
+// Set initial image
+popcat.src = CLOSED_IMAGE;
+
+// Function to change image
+function changeImage(isOpen) {
+    popcat.src = isOpen ? OPEN_IMAGE : CLOSED_IMAGE;
+    console.log('Image changed to:', popcat.src); // Debug log
+}
+
+// Mouse events with both capture and bubble phase
+document.addEventListener('mousedown', function(e) {
+    changeImage(true);
+    audio.currentTime = 0;
+    audio.play().catch(err => console.log('Sound play error:', err));
+    
+    if (window.handleClick) {
+        window.handleClick(e);
+    }
+    displayHeart(e);
+}, true); // Use capture phase
+
+document.addEventListener('mouseup', function() {
+    changeImage(false);
+}, true); // Use capture phase
+
+// Touch events
+document.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    changeImage(true);
+    audio.currentTime = 0;
+    audio.play().catch(err => console.log('Sound play error:', err));
+    
+    if (window.handleClick) {
+        // Create a synthetic event with the touch coordinates
+        const touch = e.touches[0];
+        const clickEvent = {
+            clientX: touch.clientX,
+            clientY: touch.clientY
+        };
+        window.handleClick(clickEvent);
+        displayHeart(clickEvent);
+    }
+}, { passive: false });
+
+document.addEventListener('touchend', function(e) {
+    e.preventDefault();
+    changeImage(false);
+}, { passive: false });
+
+// Prevent image dragging
+popcat.addEventListener('dragstart', function(e) {
+    e.preventDefault();
+});
+
+// Preload images
+const preloadImages = () => {
+    const openImg = new Image();
+    const closedImg = new Image();
+    
+    openImg.onload = () => console.log('Open image preloaded successfully');
+    openImg.onerror = () => console.error('Failed to load open image:', OPEN_IMAGE);
+    
+    closedImg.onload = () => console.log('Closed image preloaded successfully');
+    closedImg.onerror = () => console.error('Failed to load closed image:', CLOSED_IMAGE);
+    
+    openImg.src = OPEN_IMAGE;
+    closedImg.src = CLOSED_IMAGE;
+};
+
+// Initialize when the page loads
+window.addEventListener('load', preloadImages);
+
+// Add additional click handler to body
+document.body.addEventListener('click', function(e) {
+    changeImage(true);
+    setTimeout(() => changeImage(false), 100); // Change back after 100ms
+});
+
 // Initialize PowerupSystem when the document is ready
 document.addEventListener('DOMContentLoaded', () => {
     window.powerupSystem = new PowerupSystem();
 }); 
+
+// Update the displayHeart function with more precise positioning
+function displayHeart(event) {
+    // Get the exact click coordinates
+    const x = event.clientX || event.touches?.[0]?.clientX;
+    const y = event.clientY || event.touches?.[0]?.clientY;
+    
+    console.log('Click position:', { x, y }); // Debug log
+    
+    // Create heart element
+    const heart = document.createElement('div');
+    heart.innerHTML = '❤️';
+    heart.className = 'floating-heart';
+    
+    // Style the heart for precise positioning
+    Object.assign(heart.style, {
+        position: 'fixed',
+        left: `${x}px`,
+        top: `${y}px`,
+        transform: 'translate(-50%, -50%)',
+        pointerEvents: 'none',
+        zIndex: '9999',
+        fontSize: '24px', // Make heart size consistent
+        userSelect: 'none',
+        transition: 'all 0.5s ease-out'
+    });
+    
+    document.body.appendChild(heart);
+    
+    // Add floating animation
+    requestAnimationFrame(() => {
+        heart.style.opacity = '0';
+        heart.style.transform = `translate(-50%, ${y - 50}px)`;
+    });
+    
+    // Remove after animation
+    setTimeout(() => heart.remove(), 1000);
+}
+
+// Update click handler to ensure event propagation
+document.addEventListener('click', function(e) {
+    displayHeart(e);
+}, { capture: true }); // Use capture to ensure we get the event first
+
+// Update mousedown handler
+document.addEventListener('mousedown', function(e) {
+    changeImage(true);
+    audio.currentTime = 0;
+    audio.play().catch(err => console.log('Sound play error:', err));
+    
+    if (window.handleClick) {
+        window.handleClick(e);
+    }
+}, true);
+
+// Update touch handler
+document.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    changeImage(true);
+    audio.currentTime = 0;
+    audio.play().catch(err => console.log('Sound play error:', err));
+    
+    const touch = e.touches[0];
+    const clickEvent = {
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+        preventDefault: () => {}
+    };
+    
+    displayHeart(clickEvent);
+    
+    if (window.handleClick) {
+        window.handleClick(clickEvent);
+    }
+}, { passive: false }); 
