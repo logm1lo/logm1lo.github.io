@@ -21,6 +21,8 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
+    <!-- YouTube iframe API will be loaded dynamically -->
+    
     <style>
         html, body {
             height: 100%;
@@ -165,6 +167,89 @@
             }
         }
         
+        /* Music player button */
+        .music-button {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: musicPulse 2s ease-in-out infinite;
+        }
+        
+        .music-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+        
+        .music-button.playing {
+            animation: musicPulse 1s ease-in-out infinite;
+            background: rgba(255, 92, 164, 0.3);
+            border-color: rgba(255, 92, 164, 0.5);
+        }
+        
+        .music-button.waiting {
+            background: rgba(255, 193, 7, 0.3);
+            border-color: rgba(255, 193, 7, 0.5);
+            animation: musicPulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes musicPulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+        
+        /* Music instruction overlay */
+        .music-instruction {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+            z-index: 1001;
+            animation: fadeInOut 4s ease-in-out;
+            pointer-events: none;
+        }
+        
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+            20%, 80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        
+        /* Hidden YouTube iframe */
+        #youtube-player {
+            position: fixed;
+            top: -9999px;
+            left: -9999px;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+        }
+        
         /* Navigation button */
         .nav-button {
             position: fixed;
@@ -204,12 +289,19 @@
                 width: 300px;
             }
             
-            .nav-button {
+            .nav-button, .music-button {
                 width: 50px;
                 height: 50px;
                 font-size: 20px;
                 bottom: 20px;
+            }
+            
+            .nav-button {
                 right: 20px;
+            }
+            
+            .music-button {
+                left: 20px;
             }
         }
         
@@ -225,7 +317,7 @@
         }
         
         /* Enhanced accessibility */
-        .nav-button:focus {
+        .nav-button:focus, .music-button:focus {
             outline: none;
             box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5);
         }
@@ -239,6 +331,17 @@
 </head>
  
 <body>
+    <!-- HTML5 Audio Player -->
+    <audio id="background-music" preload="auto" loop>
+        <source src="sound/Purfect.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    
+    <!-- Music instruction overlay -->
+    <div class="music-instruction" id="music-instruction">
+        🎵 Nhấn vào nút nhạc để bắt đầu phát nhạc
+    </div>
+    
     <!-- Floating hearts background -->
     <div class="floating-hearts-bg">
         <div class="heart">💕</div>
@@ -258,12 +361,149 @@
         <canvas id="pinkboard"></canvas>
     </div>
     
+    <!-- Music control button -->
+    <button class="music-button" onclick="toggleMusic()" aria-label="Bật/tắt nhạc">
+        <i class="fas fa-music"></i>
+    </button>
+    
     <!-- Navigation button -->
     <button class="nav-button" onclick="goBack()" aria-label="Quay lại trang chủ">
         <i class="fas fa-home"></i>
     </button>
     
     <script>
+        // Audio player variables
+        let audioPlayer;
+        let isPlaying = false;
+        let hasUserInteracted = false;
+        
+        // Initialize audio player when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing audio player...');
+            
+            // Get the audio element
+            audioPlayer = document.getElementById('background-music');
+            
+            // Set up audio event listeners
+            audioPlayer.addEventListener('canplaythrough', function() {
+                console.log('Audio is ready to play');
+                updateMusicButton();
+            });
+            
+            audioPlayer.addEventListener('play', function() {
+                console.log('Audio started playing');
+                isPlaying = true;
+                updateMusicButton();
+            });
+            
+            audioPlayer.addEventListener('pause', function() {
+                console.log('Audio paused');
+                isPlaying = false;
+                updateMusicButton();
+            });
+            
+            audioPlayer.addEventListener('ended', function() {
+                console.log('Audio ended');
+                isPlaying = false;
+                updateMusicButton();
+            });
+            
+            audioPlayer.addEventListener('error', function(e) {
+                console.error('Audio error:', e);
+                showMusicError();
+            });
+            
+            // Initial button update
+            updateMusicButton();
+            
+            // Add click event to the entire page to enable audio context
+            document.addEventListener('click', function() {
+                if (!hasUserInteracted) {
+                    hasUserInteracted = true;
+                    updateMusicButton();
+                }
+            }, { once: true });
+        });
+        
+        // Toggle music function
+        function toggleMusic() {
+            console.log('Toggle music called. Audio player:', audioPlayer);
+            
+            if (!audioPlayer) {
+                console.log('Audio player not ready yet');
+                return;
+            }
+            
+            // Mark that user has interacted
+            hasUserInteracted = true;
+            
+            try {
+                if (isPlaying) {
+                    console.log('Pausing music...');
+                    audioPlayer.pause();
+                    isPlaying = false;
+                } else {
+                    console.log('Playing music...');
+                    audioPlayer.play();
+                    isPlaying = true;
+                }
+                
+                updateMusicButton();
+            } catch (error) {
+                console.error('Error toggling music:', error);
+                showMusicError();
+            }
+        }
+        
+        // Show music error message
+        function showMusicError() {
+            const musicButton = document.querySelector('.music-button');
+            musicButton.style.background = 'rgba(255, 0, 0, 0.3)';
+            musicButton.title = 'Không thể phát nhạc. Vui lòng thử lại.';
+            musicButton.classList.remove('waiting', 'playing');
+        }
+        
+        // Update music button appearance
+        function updateMusicButton() {
+            const musicButton = document.querySelector('.music-button');
+            const icon = musicButton.querySelector('i');
+            const instruction = document.getElementById('music-instruction');
+            
+            if (!audioPlayer || !hasUserInteracted) {
+                // Initial state - waiting for user interaction
+                musicButton.classList.remove('playing');
+                musicButton.classList.add('waiting');
+                icon.className = 'fas fa-music';
+                musicButton.title = 'Nhấn để phát nhạc';
+                musicButton.style.animation = 'musicPulse 1.5s ease-in-out infinite';
+                
+                // Show instruction if not already shown
+                if (instruction && (!instruction.style.display || instruction.style.display !== 'none')) {
+                    setTimeout(() => {
+                        if (instruction) {
+                            instruction.style.display = 'none';
+                        }
+                    }, 4000);
+                }
+            } else if (isPlaying) {
+                musicButton.classList.add('playing');
+                musicButton.classList.remove('waiting');
+                icon.className = 'fas fa-pause';
+                musicButton.title = 'Nhấn để tạm dừng';
+                musicButton.style.animation = 'musicPulse 1s ease-in-out infinite';
+                
+                // Hide instruction when music starts
+                if (instruction) {
+                    instruction.style.display = 'none';
+                }
+            } else {
+                musicButton.classList.remove('playing', 'waiting');
+                icon.className = 'fas fa-music';
+                musicButton.title = 'Nhấn để phát nhạc';
+                musicButton.style.animation = 'musicPulse 2s ease-in-out infinite';
+            }
+        }
+        
         // Navigation function
         function goBack() {
             window.location.href = 'index.html';
@@ -273,6 +513,8 @@
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape' || e.key === 'Backspace') {
                 goBack();
+            } else if (e.key === 'm' || e.key === 'M') {
+                toggleMusic();
             }
         });
         
@@ -550,3 +792,4 @@
 </body>
 </html>
  
+
