@@ -1,0 +1,552 @@
+<!DOCTYPE HTML>
+<html lang="vi">
+<head>
+    <title>💕 Iu Hân Nhứt Trên Đời 💕</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Trang web tình yêu dễ thương với hiệu ứng particle đẹp mắt">
+    <meta name="keywords" content="love, tình yêu, particle, animation">
+    <meta name="author" content="CuteCrush">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="https://scontent.fhan5-11.fna.fbcdn.net/v/t39.30808-1/494829787_1249394176791892_7533802705808634468_n.jpg?stp=dst-jpg_s200x200_tt6&_nc_cat=100&ccb=1-7&_nc_sid=e99d92&_nc_eui2=AeGM7lMRR31mWP6pBLxh1fEA5_5clMJRIuzn_lyUwlEi7NEMvuvVPPugbIBi9zkSBdmDUnzK2rqNulXG4zB7PhY8&_nc_ohc=WhB9-eJrNZsQ7kNvwFWpf_K&_nc_oc=AdnAqmp1RmGV08b6W332m0cf31f5W06wYlkZIgOQOJJoCPDQUo4BHNeO4IBM1-Q0bQU&_nc_zt=24&_nc_ht=scontent.fhan5-11.fna&_nc_gid=0mi7H_55zSvHzNLMHOwfUQ&oh=00_AfN3nuUcGPWbxj-il5ZELn4CaxC0Ucaw9AC0aIjZEdJAtA&oe=68655272">
+    
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@300;400;500;600;700&display=swap">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        html, body {
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Quicksand', sans-serif;
+            overflow: hidden;
+        }
+       
+        .box {
+            width: 100%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+        }
+       
+        canvas {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+       
+        #pinkboard {
+            position: relative;
+            margin: auto;
+            height: 500px;
+            width: 500px;
+            animation: animate 1.3s infinite;
+            z-index: 2;
+        }
+       
+        #pinkboard:before,
+        #pinkboard:after {
+            content: '';
+            position: absolute;
+            background: linear-gradient(45deg, #FF5CA4, #FF8E8E);
+            width: 100px;
+            height: 160px;
+            border-top-left-radius: 50px;
+            border-top-right-radius: 50px;
+            box-shadow: 0 10px 30px rgba(255, 92, 164, 0.3);
+        }
+       
+        #pinkboard:before {
+            left: 100px;
+            transform: rotate(-45deg);
+            transform-origin: 0 100%;
+            box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+        }
+       
+        #pinkboard:after {
+            left: 0;
+            transform: rotate(45deg);
+            transform-origin: 100% 100%;
+        }
+       
+        @keyframes animate {
+            0% {
+                transform: scale(1);
+            }
+            30% {
+                transform: scale(.8);
+            }
+            60% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        
+        /* Enhanced title */
+        .love-title {
+            color: white;
+            font-family: 'Pacifico', cursive;
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            animation: titleGlow 3s ease-in-out infinite alternate;
+            z-index: 10;
+        }
+        
+        @keyframes titleGlow {
+            from {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.3);
+            }
+            to {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3), 0 0 30px rgba(255, 255, 255, 0.6);
+            }
+        }
+        
+        /* Floating hearts background */
+        .floating-hearts-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .floating-hearts-bg .heart {
+            position: absolute;
+            font-size: 24px;
+            animation: floatHeart 8s ease-in-out infinite;
+            opacity: 0.4;
+        }
+        
+        .floating-hearts-bg .heart:nth-child(1) { left: 5%; animation-delay: 0s; }
+        .floating-hearts-bg .heart:nth-child(2) { left: 15%; animation-delay: 1s; }
+        .floating-hearts-bg .heart:nth-child(3) { left: 25%; animation-delay: 2s; }
+        .floating-hearts-bg .heart:nth-child(4) { left: 75%; animation-delay: 3s; }
+        .floating-hearts-bg .heart:nth-child(5) { left: 85%; animation-delay: 4s; }
+        .floating-hearts-bg .heart:nth-child(6) { left: 95%; animation-delay: 5s; }
+        
+        @keyframes floatHeart {
+            0%, 100% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.4;
+            }
+            90% {
+                opacity: 0.4;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Navigation button */
+        .nav-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .nav-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Responsive design */
+        @media only screen and (max-width: 768px) {
+            .love-title {
+                font-size: 2rem;
+                margin-bottom: 1rem;
+            }
+            
+            #pinkboard {
+                height: 300px;
+                width: 300px;
+            }
+            
+            .nav-button {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+                bottom: 20px;
+                right: 20px;
+            }
+        }
+        
+        @media only screen and (max-width: 480px) {
+            .love-title {
+                font-size: 1.5rem;
+            }
+            
+            #pinkboard {
+                height: 250px;
+                width: 250px;
+            }
+        }
+        
+        /* Enhanced accessibility */
+        .nav-button:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Smooth animations */
+        * {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    </style>
+</head>
+ 
+<body>
+    <!-- Floating hearts background -->
+    <div class="floating-hearts-bg">
+        <div class="heart">💕</div>
+        <div class="heart">💖</div>
+        <div class="heart">💝</div>
+        <div class="heart">💕</div>
+        <div class="heart">💖</div>
+        <div class="heart">💝</div>
+    </div>
+    
+    <div class="box">
+        <h1 class="love-title">
+            <i class="fas fa-heart"></i>
+            Iu Hân Nhứt Trên Đời
+            <i class="fas fa-heart"></i>
+        </h1>
+        <canvas id="pinkboard"></canvas>
+    </div>
+    
+    <!-- Navigation button -->
+    <button class="nav-button" onclick="goBack()" aria-label="Quay lại trang chủ">
+        <i class="fas fa-home"></i>
+    </button>
+    
+    <script>
+        // Navigation function
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' || e.key === 'Backspace') {
+                goBack();
+            }
+        });
+        
+        // Touch gesture for mobile
+        let touchStartY = 0;
+        document.addEventListener('touchstart', function(e) {
+            touchStartY = e.touches[0].clientY;
+        });
+        
+        document.addEventListener('touchend', function(e) {
+            const touchEndY = e.changedTouches[0].clientY;
+            const diff = touchStartY - touchEndY;
+            
+            if (diff > 100) { // Swipe up
+                // Could add more interactive features here
+            } else if (diff < -100) { // Swipe down
+                goBack();
+            }
+        });
+        
+        /*
+         * Settings
+         */
+        var settings = {
+            particles: {
+                length: 3000, // maximum amount of particles
+                duration: 2, // particle duration in sec
+                velocity: 200, // particle velocity in pixels/sec
+                effect: -1.4, // play with this for a nice effect
+                size: 12, // particle size in pixels
+            },
+        };
+        /*
+         * RequestAnimationFrame polyfill by Erik Möller
+         */
+        (function() {
+            var b = 0;
+            var c = ["ms", "moz", "webkit", "o"];
+            for (var a = 0; a < c.length && !window.requestAnimationFrame; ++a) {
+                window.requestAnimationFrame = window[c[a] + "RequestAnimationFrame"];
+                window.cancelAnimationFrame = window[c[a] + "CancelAnimationFrame"] || window[c[a] + "CancelRequestAnimationFrame"]
+            }
+            if (!window.requestAnimationFrame) {
+                window.requestAnimationFrame = function(h, e) {
+                    var d = new Date().getTime();
+                    var f = Math.max(0, 16 - (d - b));
+                    var g = window.setTimeout(function() {
+                        h(d + f)
+                    }, f);
+                    b = d + f;
+                    return g
+                }
+            }
+            if (!window.cancelAnimationFrame) {
+                window.cancelAnimationFrame = function(d) {
+                    clearTimeout(d)
+                }
+            }
+        }());
+        /*
+         * Point class
+         */
+        var Point = (function() {
+            function Point(x, y) {
+                this.x = (typeof x !== 'undefined') ? x : 0;
+                this.y = (typeof y !== 'undefined') ? y : 0;
+            }
+            Point.prototype.clone = function() {
+                return new Point(this.x, this.y);
+            };
+            Point.prototype.length = function(length) {
+                if (typeof length == 'undefined')
+                    return Math.sqrt(this.x * this.x + this.y * this.y);
+                this.normalize();
+                this.x *= length;
+                this.y *= length;
+                return this;
+            };
+            Point.prototype.normalize = function() {
+                var length = this.length();
+                this.x /= length;
+                this.y /= length;
+                return this;
+            };
+            return Point;
+        })();
+        /*
+         * Particle class
+         */
+        var Particle = (function() {
+            function Particle() {
+                this.position = new Point();
+                this.velocity = new Point();
+                this.acceleration = new Point();
+                this.age = 0;
+            }
+            Particle.prototype.initialize = function(x, y, dx, dy) {
+                this.position.x = x;
+                this.position.y = y;
+                this.velocity.x = dx;
+                this.velocity.y = dy;
+                this.acceleration.x = dx * settings.particles.effect;
+                this.acceleration.y = dy * settings.particles.effect;
+                this.age = 0;
+            };
+            Particle.prototype.update = function(deltaTime) {
+                this.position.x += this.velocity.x * deltaTime;
+                this.position.y += this.velocity.y * deltaTime;
+                this.velocity.x += this.acceleration.x * deltaTime;
+                this.velocity.y += this.acceleration.y * deltaTime;
+                this.age += deltaTime;
+            };
+            Particle.prototype.draw = function(context, image) {
+                function ease(t) {
+                    return (--t) * t * t + 1;
+                }
+                var size = image.width * ease(this.age / settings.particles.duration);
+                context.globalAlpha = 1 - this.age / settings.particles.duration;
+                context.drawImage(image, this.position.x - size / 2, this.position.y - size / 2, size, size);
+            };
+            return Particle;
+        })();
+        /*
+         * ParticlePool class
+         */
+        var ParticlePool = (function() {
+            var particles,
+                firstActive = 0,
+                firstFree = 0,
+                duration = settings.particles.duration;
+ 
+            function ParticlePool(length) {
+                // create and populate particle pool
+                particles = new Array(length);
+                for (var i = 0; i < particles.length; i++)
+                    particles[i] = new Particle();
+            }
+            ParticlePool.prototype.add = function(x, y, dx, dy) {
+                particles[firstFree].initialize(x, y, dx, dy);
+ 
+                // handle circular queue
+                firstFree++;
+                if (firstFree == particles.length) firstFree = 0;
+                if (firstActive == firstFree) firstActive++;
+                if (firstActive == particles.length) firstActive = 0;
+            };
+            ParticlePool.prototype.update = function(deltaTime) {
+                var i;
+ 
+                // update active particles
+                if (firstActive < firstFree) {
+                    for (i = firstActive; i < firstFree; i++)
+                        particles[i].update(deltaTime);
+                }
+                if (firstFree < firstActive) {
+                    for (i = firstActive; i < particles.length; i++)
+                        particles[i].update(deltaTime);
+                    for (i = 0; i < firstFree; i++)
+                        particles[i].update(deltaTime);
+                }
+ 
+                // remove inactive particles
+                while (particles[firstActive].age >= duration && firstActive != firstFree) {
+                    firstActive++;
+                    if (firstActive == particles.length) firstActive = 0;
+                }
+ 
+ 
+            };
+            ParticlePool.prototype.draw = function(context, image) {
+                // draw active particles
+                if (firstActive < firstFree) {
+                    for (i = firstActive; i < firstFree; i++)
+                        particles[i].draw(context, image);
+                }
+                if (firstFree < firstActive) {
+                    for (i = firstActive; i < particles.length; i++)
+                        particles[i].draw(context, image);
+                    for (i = 0; i < firstFree; i++)
+                        particles[i].draw(context, image);
+                }
+            };
+            return ParticlePool;
+        })();
+        /*
+         * Putting it all together
+         */
+        (function(canvas) {
+            var context = canvas.getContext('2d'),
+                particles = new ParticlePool(settings.particles.length),
+                particleRate = settings.particles.length / settings.particles.duration, // particles/sec
+                time;
+ 
+            // get point on heart with -PI <= t <= PI
+            function pointOnHeart(t) {
+                return new Point(
+                    160 * Math.pow(Math.sin(t), 3),
+                    130 * Math.cos(t) - 50 * Math.cos(2 * t) - 20 * Math.cos(3 * t) - 10 * Math.cos(4 * t) + 25
+                );
+            }
+ 
+            // creating the particle image using a dummy canvas
+            var image = (function() {
+                var canvas = document.createElement('canvas'),
+                    context = canvas.getContext('2d');
+                canvas.width = settings.particles.size;
+                canvas.height = settings.particles.size;
+                // helper function to create the path
+                function to(t) {
+                    var point = pointOnHeart(t);
+                    point.x = settings.particles.size / 2 + point.x * settings.particles.size / 350;
+                    point.y = settings.particles.size / 2 - point.y * settings.particles.size / 350;
+                    return point;
+                }
+                // create the path
+                context.beginPath();
+                var t = -Math.PI;
+                var point = to(t);
+                context.moveTo(point.x, point.y);
+                while (t < Math.PI) {
+                    t += 0.01; // baby steps!
+                    point = to(t);
+                    context.lineTo(point.x, point.y);
+                }
+                context.closePath();
+                // create the fill
+                context.fillStyle = '#FF5CA4';
+                context.fill();
+                // create the image
+                var image = new Image();
+                image.src = canvas.toDataURL();
+                return image;
+            })();
+ 
+            // render that thing!
+            function render() {
+                // next animation frame
+                requestAnimationFrame(render);
+ 
+                // update time
+                var newTime = new Date().getTime() / 1000,
+                    deltaTime = newTime - (time || newTime);
+                time = newTime;
+ 
+                // clear canvas
+                context.clearRect(0, 0, canvas.width, canvas.height);
+ 
+                // create new particles
+                var amount = particleRate * deltaTime;
+                for (var i = 0; i < amount; i++) {
+                    var pos = pointOnHeart(Math.PI - 2 * Math.PI * Math.random());
+                    var dir = pos.clone().length(settings.particles.velocity);
+                    particles.add(canvas.width / 2 + pos.x, canvas.height / 2 - pos.y, dir.x, -dir.y);
+                }
+ 
+                // update and draw particles
+                particles.update(deltaTime);
+                particles.draw(context, image);
+            }
+ 
+            // handle (re-)sizing of the canvas
+            function onResize() {
+                canvas.width = canvas.clientWidth;
+                canvas.height = canvas.clientHeight;
+            }
+            window.onresize = onResize;
+ 
+            // delay rendering bootstrap
+            setTimeout(function() {
+                onResize();
+                render();
+            }, 10);
+        })(document.getElementById('pinkboard'));
+    </script>
+</body>
+</html>
+ 

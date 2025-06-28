@@ -1,0 +1,200 @@
+.content {
+  position: relative;
+  z-index: 3;
+}
+
+#no {
+  position: absolute;
+  display: inline-block;
+  left: 35%;
+  top: 40vh;
+  -webkit-transition: all 0.1s ease-out;
+  transition: all 0.1s ease-out;
+  box-shadow:
+    0 2px 8px rgba(255,255,255,0.7),
+    0 0 24px rgba(255,255,255,0.8),
+    0 0 48px rgba(255,255,255,0.6);
+  border: none;
+}
+
+#yes {
+  position: absolute;
+  display: inline-block;
+  left: 70%;
+  top: 40vh;
+  -webkit-transition: all 0.3s ease-out;
+  transition: all 0.3s ease-out;
+  box-shadow:
+    0 2px 8px rgba(255,255,255,0.7),
+    0 0 24px rgba(255,255,255,0.8),
+    0 0 48px rgba(255,255,255,0.6);
+  border: none;
+}
+
+#bg {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  opacity: 0.8;
+  z-index: 0;
+  background-repeat: no-repeat;
+  background-image: url(../img/puung3.jpg);
+  background-size: cover;
+  background-position: 50%;
+  -webkit-filter: blur(4px);
+  filter: blur(4px);
+  -webkit-transition: all 0.3s ease-out;
+  transition: all 0.3s ease-out;
+}
+
+.swal2-title, .swal2-content {
+  color: azure !important;
+}
+
+.swal2-popup {
+  border-radius: 15px !important;
+}
+
+header h2, header h4 {
+  text-shadow:
+    0 2px 8px rgba(255,255,255,0.7),
+    0 0 24px rgba(255,255,255,0.8),
+    0 0 48px rgba(255,255,255,0.6);
+}
+
+header h2 {
+  font-family: 'Pacifico';
+  font-size: 80px;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+header h4 {
+  font-family: 'Pacifico';
+  text-align: center;
+}
+
+@media only screen and (max-width: 500px) {
+  header h2 {
+    font-family: 'Pacifico';
+    font-size: 45px;
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  header h4 {
+    font-family: 'Pacifico';
+    text-align: center;
+    padding: 15px;
+  }
+  #no {
+    position: absolute;
+    display: inline-block;
+    left: 7%;
+    top: 40vh;
+    font-size: 14px;
+    padding: 3px;
+    -webkit-transition: all 0.1s ease-out;
+    transition: all 0.1s ease-out;
+  }
+  #yes {
+    position: absolute;
+    display: inline-block;
+    left: 58%;
+    top: 40vh;
+    font-size: 14px;
+    padding: 3px;
+  }
+}
+
+/* Enhanced SweetAlert styling */
+.swal2-popup {
+  font-family: 'Quicksand', sans-serif !important;
+}
+
+.swal2-title {
+  font-family: 'Pacifico', cursive !important;
+  color: #F5F5F5 !important;
+}
+
+.swal2-content {
+  color: #F8E7F6 !important;
+}
+
+/* Improved button accessibility */
+.btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+}
+
+/* Enhanced preloader */
+#preloader {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Better text rendering */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: 'Quicksand', sans-serif;
+}
+
+/* Enhanced wrapper */
+.wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.button-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+  margin-top: 40px;
+  flex-wrap: wrap;
+  height: 80px;
+  min-width: 400px;
+}
+
+@media (min-width: 600px) {
+  .button-container {
+    height: 80px;
+    min-width: 400px;
+  }
+  .love-btn {
+    position: absolute;
+    top: 0;
+    left: 0;
+    min-width: 180px;
+    margin: 0;
+  }
+  #yes {
+    left: 70%;
+    z-index: 2;
+  }
+  #no {
+    left: 10%;
+    z-index: 2;
+  }
+}
+
+@media (max-width: 599px) {
+  .button-container {
+    flex-direction: column;
+    align-items: center;
+    height: auto;
+    min-width: unset;
+  }
+  .love-btn {
+    position: static !important;
+    margin: 10px 0;
+    width: 90%;
+    min-width: unset;
+  }
+}
